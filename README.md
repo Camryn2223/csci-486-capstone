@@ -211,51 +211,21 @@ project-root/
 Do this once after cloning the repo.
 
 ### 1. Clone the repository (if not done already)
-
+Go to a directory you want to place the project in to access later before running these commands. The clone command will create a separate `csci-486-capstone` directory automatically within whatever directory you're already in.
 ```bash
 git clone https://github.com/Camryn2223/csci-486-capstone.git
 cd csci-486-capstone
 ```
 
-### 2. Copy the environment file
-
-**Mac / Linux:**
-```bash
-cp .env.example .env
-```
-
-**Windows (Command Prompt):**
-```cmd
-copy .env.example .env
-```
-
-**Windows (PowerShell):**
-```powershell
-Copy-Item .env.example .env
-```
-
-> You do not need to change anything in `.env` to get started locally. The defaults are pre-configured to work with the Docker MySQL container.
-
-### 3. Build and start the containers
+### 2. Build and start the containers
 
 ```bash
 docker compose up --build -d
 ```
 
-This will:
-- Build the PHP/Nginx image
-- Pull the MySQL image
-- Install Composer dependencies inside the container
-- Generate an `APP_KEY` in your `.env`
-- Start both services in the background
+This will build the PHP/Nginx image, pull the MySQL image, install Composer dependencies, generate your `APP_KEY`, run database migrations, and start all services in the background. Wait for the containers to finish starting before moving on - you can watch progress with `docker compose logs app -f` and wait until you see `ready to handle connections`.
 
-### 4. Run database migrations
-
-```bash
-docker compose exec app php artisan migrate
-```
-
-### 5. Open the app
+### 3. Open the app
 
 Go to [http://localhost:8080](http://localhost:8080) in your browser.
 
