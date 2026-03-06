@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 
 if [ ! -f /var/www/html/.env ]; then
     cp /var/www/html/.env.example /var/www/html/.env
@@ -15,9 +14,26 @@ fi
 
 if [ "$(grep '^APP_ENV=' /var/www/html/.env | cut -d '=' -f2)" = "local" ]; then
     echo "Waiting for MySQL to be ready..."
-    until mysqladmin ping -h mysql -u laravel -psecret --silent 2>/dev/null; do
+
+    cat > /tmp/wait_mysql.php << 'PHPEOF'
+<?php
+try {
+    new PDO('mysql:host=mysql;port=3306;dbname=laravel', 'laravel', 'secret');
+    echo 'ok';
+} catch (Exception $e) {
+    echo 'fail';
+}
+PHPEOF
+
+    while true; do
+        result=$(php /tmp/wait_mysql.php 2>/dev/null)
+        if [ "$result" = "ok" ]; then
+            break
+        fi
+        echo "MySQL not ready, retrying in 2 seconds..."
         sleep 2
     done
+
     echo "MySQL is ready."
     php artisan migrate --force
 fi
