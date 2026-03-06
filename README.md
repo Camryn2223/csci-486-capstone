@@ -15,6 +15,7 @@ A Laravel application running in Docker with MySQL, structured using the **Model
 - [Resetting the Container](#resetting-the-container)
 - [Resetting the MySQL Database](#resetting-the-mysql-database)
 - [phpMyAdmin](#phpmyadmin)
+- [Recommended VSCode Setup](#recommended-vscode-setup)
 - [Syncing with Git](#syncing-with-git)
 - [Where to Put Your Code](#where-to-put-your-code)
 
@@ -294,12 +295,52 @@ phpMyAdmin is included and runs automatically alongside the app. Once your conta
 
 You will be logged in automatically using the credentials from your `.env` file (`DB_USERNAME` and `DB_PASSWORD`). From here you can browse tables, run SQL queries, inspect rows, and watch your data change in real time as you use the app - no extra login required.
 
-## Syncing and Copying Composer to LocaL
-```bash
-docker compose down
-docker compose up --build -d
-docker compose cp app:/var/www/html/vendor ./vendor
-```
+---
+
+## Recommended VSCode Setup
+1. Download the following extensions:
+ - Laravel Extra Intellisense
+ - PHP Intelephense
+
+2. Disable PHP language features that are built-in to VSCode by:
+    1. Opening VSCode settings with `Ctrl+Shift+P`
+    2. Typing in `Open User Settings JSON`
+    3. Adding the following to the JSON file:
+    ```json
+    "php.suggest.basic": false,
+    "php.validate.enable": false
+    ```
+
+3. Run the commands below:
+
+    **Mac/Linux:**
+    ```bash
+    docker compose down
+    docker compose up --build -d
+    docker compose logs app -f
+    ```
+    Wait for `ready to handle connections`, then press `Ctrl+C` and run the following in the project directory:
+    ```bash
+    sudo rm -rf ./vendor
+    docker compose cp app:/var/www/html/vendor /tmp/vendor
+    sudo cp -r /tmp/vendor/. ./vendor
+    sudo chown -R $USER:$USER ./vendor
+    ```
+
+    **Windows (PowerShell):**
+    ```powershell
+    docker compose down
+    docker compose up --build -d
+    docker compose logs app -f
+    ```
+    Wait for `ready to handle connections`, then press `Ctrl+C` and run the following in the project directory:
+    ```powershell
+    Remove-Item -Recurse -Force vendor
+    docker compose cp app:/var/www/html/vendor $env:TEMP\vendor
+    Move-Item $env:TEMP\vendor .\vendor
+    ```
+
+    This downloads all Composer packages from inside the Docker container to a local `vendor/` directory so that the PHP/Laravel extensions in VSCode can provide autocomplete and hover documentation.
 
 ---
 
