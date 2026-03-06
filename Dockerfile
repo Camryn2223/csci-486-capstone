@@ -7,6 +7,7 @@ RUN apk add --no-cache \
     git \
     oniguruma-dev \
     libxml2-dev \
+    mysql-client \
     && docker-php-ext-install pdo pdo_mysql mbstring xml bcmath
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

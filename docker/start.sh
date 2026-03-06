@@ -15,8 +15,7 @@ fi
 
 if [ "$(grep '^APP_ENV=' /var/www/html/.env | cut -d '=' -f2)" = "local" ]; then
     echo "Waiting for MySQL to be ready..."
-    until php -r "new PDO('mysql:host=mysql;port=3306;dbname=laravel', 'laravel', 'secret');" 2>/dev/null; do
-        echo "MySQL not ready, retrying in 2 seconds..."
+    until mysqladmin ping -h mysql -u laravel -psecret --silent 2>/dev/null; do
         sleep 2
     done
     echo "MySQL is ready."
