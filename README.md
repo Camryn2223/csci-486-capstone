@@ -294,6 +294,13 @@ phpMyAdmin is included and runs automatically alongside the app. Once your conta
 
 You will be logged in automatically using the credentials from your `.env` file (`DB_USERNAME` and `DB_PASSWORD`). From here you can browse tables, run SQL queries, inspect rows, and watch your data change in real time as you use the app - no extra login required.
 
+## Syncing and Copying Composer to LocaL
+```bash
+docker compose down
+docker compose up --build -d
+docker compose cp app:/var/www/html/vendor ./vendor
+```
+
 ---
 
 ## Syncing with Git
