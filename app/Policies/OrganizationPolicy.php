@@ -1,66 +1,49 @@
 <?php
-
 namespace App\Policies;
 
 use App\Models\Organization;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class OrganizationPolicy
 {
     /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Organization $organization): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can create models.
+     * Only chairmen can create organizations.
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->isChairman();
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Any member of the organization or its chairman can view it.
+     */
+    public function view(User $user, Organization $organization): bool
+    {
+        return $user->isChairman() && $organization->chairman_id === $user->id
+            || $user->organizations->contains($organization);
+    }
+
+    /**
+     * Only the chairman who owns the organization can update it.
      */
     public function update(User $user, Organization $organization): bool
     {
-        return false;
+        return $user->isChairman() && $organization->chairman_id === $user->id;
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Only the chairman who owns the organization can delete it.
      */
     public function delete(User $user, Organization $organization): bool
     {
-        return false;
+        return $user->isChairman() && $organization->chairman_id === $user->id;
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Only the chairman who owns the organization can transfer it.
      */
-    public function restore(User $user, Organization $organization): bool
+    public function transfer(User $user, Organization $organization): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Organization $organization): bool
-    {
-        return false;
+        return $user->isChairman() && $organization->chairman_id === $user->id;
     }
 }
