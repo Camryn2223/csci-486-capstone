@@ -400,7 +400,7 @@ Run this once while inside the project directory after cloning, and again any ti
 composer install
 ```
 
-This creates the `vendor/` folder on your machine. Intelephense will not work properly.
+This creates the `vendor/` folder on your machine. Intelephense will now work properly.
 
 ---
 
