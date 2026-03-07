@@ -298,49 +298,71 @@ You will be logged in automatically using the credentials from your `.env` file 
 ---
 
 ## Recommended VSCode Setup
-1. Download the following extensions:
- - Laravel Extra Intellisense
- - PHP Intelephense
 
-2. Disable PHP language features that are built-in to VSCode by:
-    1. Opening VSCode settings with `Ctrl+Shift+P`
-    2. Typing in `Open User Settings JSON`
-    3. Adding the following to the JSON file:
-    ```json
-    "php.suggest.basic": false,
-    "php.validate.enable": false
-    ```
+### 1. Install the following extensions
 
-3. Run the commands below:
+- **PHP Intelephense** (`bmewburn.vscode-intelephense-client`)
+- **Laravel Extra Intellisense** (`amiralizadeh9480.laravel-extra-intellisense`)
 
-    **Mac/Linux:**
-    ```bash
-    docker compose down
-    docker compose up --build -d
-    docker compose logs app -f
-    ```
-    Wait for `ready to handle connections`, then press `Ctrl+C` and run the following in the project directory:
-    ```bash
-    sudo rm -rf ./vendor
-    docker compose cp app:/var/www/html/vendor /tmp/vendor
-    sudo cp -r /tmp/vendor/. ./vendor
-    sudo chown -R $USER:$USER ./vendor
-    ```
+### 2. Disable VSCode's built-in PHP features
 
-    **Windows (PowerShell):**
-    ```powershell
-    docker compose down
-    docker compose up --build -d
-    docker compose logs app -f
-    ```
-    Wait for `ready to handle connections`, then press `Ctrl+C` and run the following in the project directory:
-    ```powershell
-    Remove-Item -Recurse -Force vendor
-    docker compose cp app:/var/www/html/vendor $env:TEMP\vendor
-    Move-Item $env:TEMP\vendor .\vendor
-    ```
+Open VSCode settings with `Ctrl+Shift+P`, type `Open User Settings JSON`, and add:
 
-    This downloads all Composer packages from inside the Docker container to a local `vendor/` directory so that the PHP/Laravel extensions in VSCode can provide autocomplete and hover documentation.
+```json
+"php.suggest.basic": false,
+"php.validate.enable": false
+```
+
+### 3. Install PHP and Composer locally
+
+This is required so the extensions above can read the project's dependencies for autocomplete and hover documentation. The app itself still runs entirely in Docker - this is only for IDE tooling.
+
+**Windows:**
+1. Download PHP 8.4 (8.4.16) **VS17 x64 Non Thread Safe** zip from https://windows.php.net/download, create a folder at `C:\php`, and extract the zip contents into it
+2. Add `C:\php` to your system PATH:
+   1. Press `Windows + S`, search **Environment Variables**, and click **Edit the system environment variables**
+   2. Click **Environment Variables** at the bottom
+   3. Under **System variables**, find and double-click **Path**
+   4. Click **New** and type `C:\php`
+   5. Click **OK** on all three windows
+   6. Close and reopen any terminal windows for the change to take effect
+3. Download and run `Composer-Setup.exe` from https://getcomposer.org/download
+
+**Mac:**
+```bash
+brew install php
+brew install composer
+```
+If you don't have Homebrew: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt update
+sudo apt install php-cli php-mbstring unzip curl
+curl -sS https://getcomposer.org/installer | php
+sudo mv composer.phar /usr/local/bin/composer
+```
+
+**Linux (Arch):**
+```bash
+sudo pacman -S php composer
+```
+
+Verify both installed correctly:
+```bash
+php -v
+composer -v
+```
+
+### 4. Install dependencies locally
+
+Run this once while inside the project directory after cloning, and again any time `composer.json` changes:
+
+```bash
+composer install
+```
+
+This creates the `vendor/` folder on your machine. Intelephense will not work properly.
 
 ---
 
