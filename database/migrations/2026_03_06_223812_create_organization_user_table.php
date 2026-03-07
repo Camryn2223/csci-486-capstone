@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('organization_user', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('organization_id')->constrained('organizations')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->boolean('can_create_job_positions')->default(false);
             $table->timestamps();
         });
     }
