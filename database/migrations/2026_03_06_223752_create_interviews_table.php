@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('interviews', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('application_id')->constrained('applications')->onDelete('cascade');
+            $table->foreignId('interviewer_id')->constrained('users')->onDelete('cascade');
+            $table->dateTime('scheduled_at');
+            $table->enum('status', ['scheduled', 'completed', 'canceled'])->default('scheduled');
             $table->timestamps();
         });
     }
