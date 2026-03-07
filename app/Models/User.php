@@ -1,17 +1,20 @@
 <?php
+
 namespace App\Models;
 
 use App\Models\Concerns\HasApplicantFeatures;
 use App\Models\Concerns\HasChairmanFeatures;
 use App\Models\Concerns\HasInterviewerFeatures;
 use App\Models\Concerns\HasPermissions;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use Notifiable;
+    use HasFactory, Notifiable;
     use HasApplicantFeatures;
     use HasInterviewerFeatures;
     use HasChairmanFeatures;
@@ -29,22 +32,27 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-
-    /**
-     * All organizations this user is a member of.
-     */
-    public function organizations(): BelongsToMany
+    protected function casts(): array
     {
-        return $this->belongsToMany(Organization::class, 'organization_user')
-            ->withTimestamps();
+        return [
+            'email_verified_at' => 'datetime',
+            'password'          => 'hashed',
+            'role'              => 'string',
+        ];
     }
 
     /**
-     * Whether this user is an applicant.
+     * All organizations this user belongs to as a member.
+     *
+     * @return BelongsToMany<Organization>
+     */
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class, 'organization_user');
+    }
+
+    /**
+     * Returns true if this user's role is applicant.
      */
     public function isApplicant(): bool
     {
@@ -52,7 +60,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Whether this user is an interviewer.
+     * Returns true if this user's role is interviewer.
      */
     public function isInterviewer(): bool
     {
@@ -60,10 +68,26 @@ class User extends Authenticatable
     }
 
     /**
-     * Whether this user is a chairman.
+     * Returns true if this user's role is chairman.
      */
     public function isChairman(): bool
     {
         return $this->role === 'chairman';
+    }
+
+    /**
+     * Returns true if this user is a member of the given organization.
+     */
+    public function isMemberOf(Organization $organization): bool
+    {
+        return $this->organizations()->where('organizations.id', $organization->id)->exists();
+    }
+
+    /**
+     * Returns true if this user is the chairman of the given organization.
+     */
+    public function isChairmanOf(Organization $organization): bool
+    {
+        return $organization->chairman_id === $this->id;
     }
 }
