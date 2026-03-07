@@ -354,10 +354,48 @@ php -v
 composer -v
 ```
 
-### 4. Install dependencies locally
+### 4. Enable php.ini extensions
+
+**Windows:**
+1. Open `C:\php\php.ini` and find and uncomment the following lines by removing the `;`:
+   ```
+   extension=fileinfo
+   extension=zip
+   ```
+2. Save the file
+
+**Mac:**
+1. Find your php.ini file:
+   ```bash
+   php --ini | grep "Loaded Configuration"
+   ```
+2. Open the file it outputs and uncomment the following lines by removing the `;`:
+   ```
+   extension=fileinfo
+   extension=zip
+   ```
+3. Save the file
+
+**Linux (Arch-based):**
+1. Open `/etc/php/php.ini` and uncomment the following lines by removing the `;`:
+   ```
+   extension=zip
+   extension=iconv
+   ```
+2. Save the file
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt install php8.4-fileinfo php8.4-zip
+```
+These are installed as separate packages on Ubuntu/Debian and enabled automatically - no php.ini editing needed.
+
+### 5. Install dependencies locally
 
 Run this once while inside the project directory after cloning, and again any time `composer.json` changes:
 
+
+**NOTE: You may need to restart VSCode before doing this**
 ```bash
 composer install
 ```
