@@ -12,12 +12,10 @@ class Interview extends Model
         'scheduled_at',
         'status',
         'notes',
-        'feedback_submitted_at',
     ];
 
     protected $casts = [
         'scheduled_at' => 'datetime',
-        'feedback_submitted_at' => 'datetime',
     ];
 
     /**

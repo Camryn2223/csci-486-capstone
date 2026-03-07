@@ -129,6 +129,8 @@ project-root/
 │   ├── Http/
 │   │   └── Controllers/
 │   │       └── Controller.php       # [CONTROLLER] Base controller - your controllers extend this
+│   ├── Policies/
+│   │   └── ApplicationPolicy.php    # [POLICY] Authorization rules per resource - your policies live here
 │   ├── Models/
 │   │   └── User.php                 # [MODEL] Default User model - add your models alongside this
 │   └── Providers/
@@ -473,6 +475,45 @@ docker compose exec app php artisan make:controller PostController --resource
 ```
 The `--resource` flag stubs all 7 methods for you.
 
+### Policies - `app/Policies/`
+
+One file per resource. A policy defines who is allowed to perform each action on that resource. Laravel automatically maps a policy to its model by naming convention - `ApplicationPolicy` maps to `Application`.
+```bash
+docker compose exec app php artisan make:policy ApplicationPolicy --model=Application
+```
+
+The `--model` flag stubs all 7 methods matching the standard CRUD actions and type-hints the model automatically. Without it you get an empty class.
+
+Policies are automatically discovered by Laravel - no registration needed as long as the model and policy follow the naming convention.
+```php
+// app/Policies/ApplicationPolicy.php
+class ApplicationPolicy
+{
+    public function view(User $user, Application $application): bool
+    {
+        return $user->id === $application->user_id || $user->isInterviewer() || $user->isChairman();
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->isApplicant();
+    }
+}
+```
+
+Then in a controller:
+```php
+$this->authorize('create', Application::class);  // no model instance needed
+$this->authorize('view', $application);           // pass the instance for actions on a specific record
+```
+
+And in Blade:
+```blade
+@can('create', App\Models\Application::class)
+    <a href="/applications/create">Apply Now</a>
+@endcan
+```
+
 ### Views - `resources/views/`
 
 One subfolder per resource, mirroring your controller. A controller named `PostController` should use views in `resources/views/posts/`.
@@ -540,6 +581,8 @@ docker compose exec app php artisan <command>
 |---------|--------------|
 | `make:model Post -m` | Create a model + migration |
 | `make:controller PostController --resource` | Create a resourceful controller |
+| `make:policy ApplicationPolicy --model=Application` | Create a policy for a specific model with stubbed methods |
+| `make:policy ApplicationPolicy` | Create an empty policy class |
 | `make:migration add_field_to_table` | Create a migration |
 | `make:seeder PostSeeder` | Create a seeder |
 | `migrate` | Run pending migrations |
