@@ -12,6 +12,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * Represents a system user. A user holds one of three roles — applicant,
+ * interviewer, or chairman — which controls what features they can access.
+ * Role-specific relationships and behaviour are split into trait concerns to
+ * keep this class focused on identity and shared logic only.
+ *
+ * @property int         $id
+ * @property string      $name
+ * @property string      $email
+ * @property string      $password
+ * @property string      $role               applicant | interviewer | chairman
+ * @property \Carbon\Carbon|null $email_verified_at
+ * @property \Carbon\Carbon      $created_at
+ * @property \Carbon\Carbon      $updated_at
+ */
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
