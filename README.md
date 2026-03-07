@@ -132,7 +132,11 @@ project-root/
 │   ├── Policies/
 │   │   └── ApplicationPolicy.php    # [POLICY] Authorization rules per resource - your policies live here
 │   ├── Models/
-│   │   └── User.php                 # [MODEL] Default User model - add your models alongside this
+│   │   ├── Concerns/
+│   │   │   ├── HasApplicantFeatures.php     # [MODEL] Trait — relationships and methods for applicant users
+│   │   │   ├── HasInterviewerFeatures.php   # [MODEL] Trait — relationships and methods for interviewer users
+│   │   │   └── HasChairmanFeatures.php      # [MODEL] Trait — relationships and methods for chairman users
+│   │   └── User.php                         # [MODEL] Default User model - add your models alongside this
 │   └── Providers/
 │       └── AppServiceProvider.php   # Laravel service provider (rarely edited)
 ├── bootstrap/                       # Laravel bootstrapping - do not edit
@@ -455,6 +459,44 @@ docker compose exec app php artisan make:model Post -m
 The `-m` flag creates a matching migration at the same time.
 
 Relationship methods, query scopes, and attribute accessors/mutators all belong on the model. Raw SQL does not - use Eloquent methods.
+
+### Concerns (Model Traits) - `app/Models/Concerns/`
+
+Concerns are PHP traits that split role-specific or reusable logic off of a model into their own files. Use them when a model is growing large or when a subset of methods only applies to a specific role or context.
+
+There is no Artisan command for traits - create them manually:
+```
+app/Models/Concerns/HasApplicantFeatures.php
+app/Models/Concerns/HasInterviewerFeatures.php
+app/Models/Concerns/HasChairmanFeatures.php
+```
+
+A concern should follow this structure:
+```php
+// app/Models/Concerns/HasApplicantFeatures.php
+namespace App\Models\Concerns;
+
+trait HasApplicantFeatures
+{
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
+    }
+}
+```
+
+Then apply it to the model:
+```php
+// app/Models/User.php
+use App\Models\Concerns\HasApplicantFeatures;
+
+class User extends Authenticatable
+{
+    use HasApplicantFeatures;
+}
+```
+
+Methods defined in a trait are called identically to methods defined directly on the model — `$user->applications` works whether `applications()` is in `User.php` or in `HasApplicantFeatures.php`.
 
 ### Controllers - `app/Http/Controllers/`
 

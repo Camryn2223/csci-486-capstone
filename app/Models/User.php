@@ -1,14 +1,19 @@
 <?php
 namespace App\Models;
 
+use App\Models\Concerns\HasApplicantFeatures;
+use App\Models\Concerns\HasChairmanFeatures;
+use App\Models\Concerns\HasInterviewerFeatures;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     use Notifiable;
+    use HasApplicantFeatures;
+    use HasInterviewerFeatures;
+    use HasChairmanFeatures;
 
     protected $fillable = [
         'name',
@@ -38,50 +43,26 @@ class User extends Authenticatable
     }
 
     /**
-     * All organizations this user chairs.
+     * Whether this user is an applicant.
      */
-    public function ownedOrganizations(): HasMany
+    public function isApplicant(): bool
     {
-        return $this->hasMany(Organization::class, 'chairman_id');
+        return $this->role === 'applicant';
     }
 
     /**
-     * All applications this user has submitted.
+     * Whether this user is an interviewer.
      */
-    public function applications(): HasMany
+    public function isInterviewer(): bool
     {
-        return $this->hasMany(Application::class);
+        return $this->role === 'interviewer';
     }
 
     /**
-     * All interviews this user has been assigned to conduct.
+     * Whether this user is a chairman.
      */
-    public function interviews(): HasMany
+    public function isChairman(): bool
     {
-        return $this->hasMany(Interview::class, 'interviewer_id');
-    }
-
-    /**
-     * All documents this user has uploaded.
-     */
-    public function documents(): HasMany
-    {
-        return $this->hasMany(Document::class);
-    }
-
-    /**
-     * All application templates this user has created.
-     */
-    public function createdTemplates(): HasMany
-    {
-        return $this->hasMany(ApplicationTemplate::class, 'created_by');
-    }
-
-    /**
-     * All job positions this user has created.
-     */
-    public function createdPositions(): HasMany
-    {
-        return $this->hasMany(JobPosition::class, 'created_by');
+        return $this->role === 'chairman';
     }
 }
