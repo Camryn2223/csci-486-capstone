@@ -15,11 +15,11 @@ class OrganizationPolicy
     }
 
     /**
-     * Any member of the organization or its chairman can view it.
+     * Any member of the organization can view it.
      */
     public function view(User $user, Organization $organization): bool
     {
-        return $user->isChairman() && $organization->chairman_id === $user->id
+        return $organization->chairman_id === $user->id
             || $user->organizations->contains($organization);
     }
 
@@ -28,7 +28,7 @@ class OrganizationPolicy
      */
     public function update(User $user, Organization $organization): bool
     {
-        return $user->isChairman() && $organization->chairman_id === $user->id;
+        return $organization->chairman_id === $user->id;
     }
 
     /**
@@ -36,14 +36,15 @@ class OrganizationPolicy
      */
     public function delete(User $user, Organization $organization): bool
     {
-        return $user->isChairman() && $organization->chairman_id === $user->id;
+        return $organization->chairman_id === $user->id;
     }
 
     /**
-     * Only the chairman who owns the organization can transfer it.
+     * Only users with manage_members permission can assign permissions to others.
+     * A user can only grant permissions they themselves hold.
      */
-    public function transfer(User $user, Organization $organization): bool
+    public function grantPermission(User $user, Organization $organization, string $permission): bool
     {
-        return $user->isChairman() && $organization->chairman_id === $user->id;
+        return $user->canGrantPermissionIn($organization, $permission);
     }
 }

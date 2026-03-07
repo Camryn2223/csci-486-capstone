@@ -4,6 +4,7 @@ namespace App\Models;
 use App\Models\Concerns\HasApplicantFeatures;
 use App\Models\Concerns\HasChairmanFeatures;
 use App\Models\Concerns\HasInterviewerFeatures;
+use App\Models\Concerns\HasPermissions;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -14,6 +15,7 @@ class User extends Authenticatable
     use HasApplicantFeatures;
     use HasInterviewerFeatures;
     use HasChairmanFeatures;
+    use HasPermissions;
 
     protected $fillable = [
         'name',
@@ -38,7 +40,6 @@ class User extends Authenticatable
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class, 'organization_user')
-            ->withPivot('role')
             ->withTimestamps();
     }
 

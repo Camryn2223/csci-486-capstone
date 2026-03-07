@@ -27,8 +27,15 @@ class Organization extends Model
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'organization_user')
-            ->withPivot('role')
             ->withTimestamps();
+    }
+
+    /**
+     * All granted permissions within this organization.
+     */
+    public function permissions(): HasMany
+    {
+        return $this->hasMany(OrganizationUserPermission::class);
     }
 
     /**

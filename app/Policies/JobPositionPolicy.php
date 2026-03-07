@@ -7,15 +7,15 @@ use App\Models\User;
 class JobPositionPolicy
 {
     /**
-     * Chairmen can always create positions. Organization members with can_create_positions can too.
+     * Users with create_positions permission in the relevant organization can create positions.
      */
-    public function create(User $user): bool
+    public function create(User $user, JobPosition $jobPosition): bool
     {
-        return $user->isChairman() || $user->organizations()->wherePivot('role', 'manager')->exists();
+        return $user->hasPermissionIn($jobPosition->organization, 'create_positions');
     }
 
     /**
-     * Anyone can view active positions. Chairmen and interviewers can view inactive ones.
+     * Anyone can view active positions. Only users with review_applications can view inactive ones.
      */
     public function view(User $user, JobPosition $jobPosition): bool
     {
@@ -23,24 +23,22 @@ class JobPositionPolicy
             return true;
         }
 
-        return $user->isChairman() || $user->isInterviewer();
+        return $user->hasPermissionIn($jobPosition->organization, 'review_applications');
     }
 
     /**
-     * Only the chairman of the owning organization or the creator can update a position.
+     * Only users with create_positions permission in the organization can update positions.
      */
     public function update(User $user, JobPosition $jobPosition): bool
     {
-        return $user->isChairman() && $jobPosition->organization->chairman_id === $user->id
-            || $jobPosition->created_by === $user->id;
+        return $user->hasPermissionIn($jobPosition->organization, 'create_positions');
     }
 
     /**
-     * Only the chairman of the owning organization or the creator can delete a position.
+     * Only users with create_positions permission in the organization can delete positions.
      */
     public function delete(User $user, JobPosition $jobPosition): bool
     {
-        return $user->isChairman() && $jobPosition->organization->chairman_id === $user->id
-            || $jobPosition->created_by === $user->id;
+        return $user->hasPermissionIn($jobPosition->organization, 'create_positions');
     }
 }

@@ -1,66 +1,36 @@
 <?php
-
 namespace App\Policies;
 
 use App\Models\Document;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class DocumentPolicy
 {
     /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Document $document): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can create models.
+     * Only applicants can upload documents.
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->isApplicant();
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Uploading user can view their own. Users with review_applications can view any.
      */
-    public function update(User $user, Document $document): bool
+    public function view(User $user, Document $document): bool
     {
-        return false;
+        return $document->user_id === $user->id
+            || $user->hasPermissionIn(
+                $document->application->jobPosition->organization,
+                'review_applications'
+            );
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Only the uploading user can delete their own documents.
      */
     public function delete(User $user, Document $document): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Document $document): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Document $document): bool
-    {
-        return false;
+        return $document->user_id === $user->id;
     }
 }

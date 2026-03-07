@@ -4,6 +4,8 @@ namespace App\Models\Concerns;
 use App\Models\ApplicationTemplate;
 use App\Models\JobPosition;
 use App\Models\Organization;
+use App\Models\OrganizationUserPermission;
+use App\Models\Permission;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait HasChairmanFeatures

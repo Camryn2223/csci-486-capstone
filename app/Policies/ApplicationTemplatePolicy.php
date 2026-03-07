@@ -1,66 +1,41 @@
 <?php
-
 namespace App\Policies;
 
 use App\Models\ApplicationTemplate;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ApplicationTemplatePolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Users with manage_templates permission in the organization can create templates.
      */
-    public function viewAny(User $user): bool
+    public function create(User $user, ApplicationTemplate $template): bool
     {
-        return false;
+        return $user->hasPermissionIn($template->organization, 'manage_templates');
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Users with review_applications or manage_templates permission can view templates.
      */
-    public function view(User $user, ApplicationTemplate $applicationTemplate): bool
+    public function view(User $user, ApplicationTemplate $template): bool
     {
-        return false;
+        return $user->hasPermissionIn($template->organization, 'review_applications')
+            || $user->hasPermissionIn($template->organization, 'manage_templates');
     }
 
     /**
-     * Determine whether the user can create models.
+     * Only users with manage_templates permission can update templates.
      */
-    public function create(User $user): bool
+    public function update(User $user, ApplicationTemplate $template): bool
     {
-        return false;
+        return $user->hasPermissionIn($template->organization, 'manage_templates');
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Only users with manage_templates permission can delete templates.
      */
-    public function update(User $user, ApplicationTemplate $applicationTemplate): bool
+    public function delete(User $user, ApplicationTemplate $template): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, ApplicationTemplate $applicationTemplate): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ApplicationTemplate $applicationTemplate): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ApplicationTemplate $applicationTemplate): bool
-    {
-        return false;
+        return $user->hasPermissionIn($template->organization, 'manage_templates');
     }
 }

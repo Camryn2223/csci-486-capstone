@@ -1,66 +1,52 @@
 <?php
-
 namespace App\Policies;
 
 use App\Models\Application;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ApplicationPolicy
 {
     /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Application $application): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can create models.
+     * Only applicants can submit applications.
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->isApplicant();
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Applicants can view their own. Users with review_applications can view any.
+     */
+    public function view(User $user, Application $application): bool
+    {
+        return $application->user_id === $user->id
+            || $user->hasPermissionIn($application->jobPosition->organization, 'review_applications');
+    }
+
+    /**
+     * Applicants can only update their own application while it is still submitted.
      */
     public function update(User $user, Application $application): bool
     {
-        return false;
+        return $user->isApplicant()
+            && $application->user_id === $user->id
+            && $application->status === 'submitted';
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Applicants can withdraw their own. Users with review_applications can remove any.
      */
     public function delete(User $user, Application $application): bool
     {
-        return false;
+        return ($user->isApplicant() && $application->user_id === $user->id)
+            || $user->hasPermissionIn($application->jobPosition->organization, 'review_applications');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Only users with review_applications permission can update application status.
      */
-    public function restore(User $user, Application $application): bool
+    public function updateStatus(User $user, Application $application): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Application $application): bool
-    {
-        return false;
+        return $user->hasPermissionIn($application->jobPosition->organization, 'review_applications');
     }
 }

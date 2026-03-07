@@ -1,66 +1,62 @@
 <?php
-
 namespace App\Policies;
 
 use App\Models\Interview;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class InterviewPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Only users with schedule_interviews permission can create interviews.
      */
-    public function viewAny(User $user): bool
+    public function create(User $user, Interview $interview): bool
     {
-        return false;
+        return $user->hasPermissionIn(
+            $interview->application->jobPosition->organization,
+            'schedule_interviews'
+        );
     }
 
     /**
-     * Determine whether the user can view the model.
+     * The assigned interviewer, the applicant, and users with review_applications can view.
      */
     public function view(User $user, Interview $interview): bool
     {
-        return false;
+        return $interview->interviewer_id === $user->id
+            || $interview->application->user_id === $user->id
+            || $user->hasPermissionIn(
+                $interview->application->jobPosition->organization,
+                'review_applications'
+            );
     }
 
     /**
-     * Determine whether the user can create models.
+     * Only the assigned interviewer can submit notes and feedback.
      */
-    public function create(User $user): bool
+    public function submitFeedback(User $user, Interview $interview): bool
     {
-        return false;
+        return $interview->interviewer_id === $user->id;
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Only users with schedule_interviews permission can update interview details.
      */
     public function update(User $user, Interview $interview): bool
     {
-        return false;
+        return $user->hasPermissionIn(
+            $interview->application->jobPosition->organization,
+            'schedule_interviews'
+        );
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Only users with schedule_interviews permission can cancel or delete interviews.
      */
     public function delete(User $user, Interview $interview): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Interview $interview): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Interview $interview): bool
-    {
-        return false;
+        return $user->hasPermissionIn(
+            $interview->application->jobPosition->organization,
+            'schedule_interviews'
+        );
     }
 }
