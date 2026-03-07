@@ -1,48 +1,87 @@
 <?php
-
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * All organizations this user is a member of.
      */
-    protected function casts(): array
+    public function organizations(): BelongsToMany
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsToMany(Organization::class, 'organization_user')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    /**
+     * All organizations this user chairs.
+     */
+    public function ownedOrganizations(): HasMany
+    {
+        return $this->hasMany(Organization::class, 'chairman_id');
+    }
+
+    /**
+     * All applications this user has submitted.
+     */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
+    }
+
+    /**
+     * All interviews this user has been assigned to conduct.
+     */
+    public function interviews(): HasMany
+    {
+        return $this->hasMany(Interview::class, 'interviewer_id');
+    }
+
+    /**
+     * All documents this user has uploaded.
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class);
+    }
+
+    /**
+     * All application templates this user has created.
+     */
+    public function createdTemplates(): HasMany
+    {
+        return $this->hasMany(ApplicationTemplate::class, 'created_by');
+    }
+
+    /**
+     * All job positions this user has created.
+     */
+    public function createdPositions(): HasMany
+    {
+        return $this->hasMany(JobPosition::class, 'created_by');
     }
 }
