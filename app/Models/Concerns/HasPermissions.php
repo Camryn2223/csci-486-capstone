@@ -1,34 +1,45 @@
 <?php
+
 namespace App\Models\Concerns;
 
 use App\Models\Organization;
 use App\Models\OrganizationUserPermission;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Provides organization-scoped permission checking for the User model. A user
+ * can hold different permissions in different organizations. Granting a
+ * permission to another user requires the granter to hold both manage_members
+ * and the target permission themselves.
+ */
 trait HasPermissions
 {
     /**
-     * All permissions this user has been granted across all organizations.
+     * All permission grants recorded for this user across all organizations.
+     *
+     * @return HasMany<OrganizationUserPermission>
      */
     public function organizationPermissions(): HasMany
     {
-        return $this->hasMany(OrganizationUserPermission::class);
+        return $this->hasMany(OrganizationUserPermission::class, 'user_id');
     }
 
     /**
-     * Check if this user has a specific permission within a given organization.
+     * Returns true if this user holds the named permission within the given
+     * organization.
      */
-    public function hasPermissionIn(Organization $organization, string $permission): bool
+    public function hasPermissionIn(Organization $organization, string $permissionName): bool
     {
         return $this->organizationPermissions()
             ->where('organization_id', $organization->id)
-            ->whereHas('permission', fn($q) => $q->where('name', $permission))
+            ->whereHas('permission', fn ($q) => $q->where('name', $permissionName))
             ->exists();
     }
 
     /**
-     * Check if this user can grant permissions within a given organization.
-     * A user can grant if they have manage_members permission in that organization.
+     * Returns true if this user holds the manage_members permission in the
+     * given organization, which is the prerequisite for granting permissions
+     * to others.
      */
     public function canGrantPermissionsIn(Organization $organization): bool
     {
@@ -36,12 +47,30 @@ trait HasPermissions
     }
 
     /**
-     * Check if this user can grant a specific permission within a given organization.
-     * A user can only grant permissions they themselves have.
+     * Returns true if this user is allowed to grant a specific permission to
+     * another user within the given organization. Requires manage_members AND
+     * that this user already holds the target permission themselves.
      */
-    public function canGrantPermissionIn(Organization $organization, string $permission): bool
+    public function canGrantPermissionIn(Organization $organization, string $permissionName): bool
     {
         return $this->canGrantPermissionsIn($organization)
-            && $this->hasPermissionIn($organization, $permission);
+            && $this->hasPermissionIn($organization, $permissionName);
+    }
+
+    /**
+     * Returns an array of all permission names this user holds within the
+     * given organization. Useful for loading all permissions in a single query
+     * when a controller needs to check multiple capabilities.
+     *
+     * @return string[]
+     */
+    public function permissionNamesIn(Organization $organization): array
+    {
+        return $this->organizationPermissions()
+            ->where('organization_id', $organization->id)
+            ->with('permission')
+            ->get()
+            ->pluck('permission.name')
+            ->toArray();
     }
 }

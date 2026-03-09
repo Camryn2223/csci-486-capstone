@@ -1,9 +1,24 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Pivot model for the organization_user_permissions table. Records a single
+ * permission granted to a user within a specific organization, along with who
+ * granted it. Enforces a composite unique constraint so the same permission
+ * cannot be granted to the same user in the same organization twice.
+ *
+ * @property int $id
+ * @property int $organization_id
+ * @property int $user_id
+ * @property int $permission_id
+ * @property int $granted_by
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ */
 class OrganizationUserPermission extends Model
 {
     protected $fillable = [
@@ -14,7 +29,9 @@ class OrganizationUserPermission extends Model
     ];
 
     /**
-     * The organization this permission belongs to.
+     * The organization this permission grant is scoped to.
+     *
+     * @return BelongsTo<Organization, OrganizationUserPermission>
      */
     public function organization(): BelongsTo
     {
@@ -22,15 +39,19 @@ class OrganizationUserPermission extends Model
     }
 
     /**
-     * The user this permission was granted to.
+     * The user who has been granted this permission.
+     *
+     * @return BelongsTo<User, OrganizationUserPermission>
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**
      * The permission that was granted.
+     *
+     * @return BelongsTo<Permission, OrganizationUserPermission>
      */
     public function permission(): BelongsTo
     {
@@ -39,6 +60,8 @@ class OrganizationUserPermission extends Model
 
     /**
      * The user who granted this permission.
+     *
+     * @return BelongsTo<User, OrganizationUserPermission>
      */
     public function grantedBy(): BelongsTo
     {

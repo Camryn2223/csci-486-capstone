@@ -1,10 +1,23 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Represents a reusable form template that defines what fields an applicant
+ * must fill out when applying for a job. Templates belong to an organization
+ * and are composed of ordered TemplateField records.
+ *
+ * @property int    $id
+ * @property int    $organization_id
+ * @property int    $created_by
+ * @property string $name
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ */
 class ApplicationTemplate extends Model
 {
     protected $fillable = [
@@ -15,6 +28,8 @@ class ApplicationTemplate extends Model
 
     /**
      * The organization this template belongs to.
+     *
+     * @return BelongsTo<Organization, ApplicationTemplate>
      */
     public function organization(): BelongsTo
     {
@@ -23,6 +38,8 @@ class ApplicationTemplate extends Model
 
     /**
      * The user who created this template.
+     *
+     * @return BelongsTo<User, ApplicationTemplate>
      */
     public function creator(): BelongsTo
     {
@@ -30,18 +47,30 @@ class ApplicationTemplate extends Model
     }
 
     /**
-     * All fields defined in this template, ordered by sort_order.
+     * The fields that make up this template, ordered by sort order ascending.
+     *
+     * @return HasMany<TemplateField>
      */
     public function fields(): HasMany
     {
-        return $this->hasMany(TemplateField::class, 'template_id')->orderBy('sort_order');
+        return $this->hasMany(TemplateField::class, 'template_id')->orderBy('order');
     }
 
     /**
-     * All applications submitted using this template.
+     * All applications that were submitted using this template.
+     *
+     * @return HasMany<Application>
      */
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class, 'template_id');
+    }
+
+    /**
+     * Returns true if this template contains at least one required field.
+     */
+    public function hasRequiredFields(): bool
+    {
+        return $this->fields()->where('required', true)->exists();
     }
 }

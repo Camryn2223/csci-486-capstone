@@ -1,10 +1,26 @@
 <?php
+
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Represents an applicant's submission for a specific job position. An
+ * application ties a user, a job position, and an application template together,
+ * and tracks the current review status. It aggregates the applicant's answers,
+ * uploaded documents, and scheduled interviews.
+ *
+ * @property int    $id
+ * @property int    $job_position_id
+ * @property int    $user_id
+ * @property int    $template_id
+ * @property string $status   submitted | under_review | no_longer_under_consideration | withdrawn
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ */
 class Application extends Model
 {
     protected $fillable = [
@@ -14,8 +30,17 @@ class Application extends Model
         'status',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'status' => 'string',
+        ];
+    }
+
     /**
-     * The job position this application is for.
+     * The job position this application was submitted for.
+     *
+     * @return BelongsTo<JobPosition, Application>
      */
     public function jobPosition(): BelongsTo
     {
@@ -23,7 +48,9 @@ class Application extends Model
     }
 
     /**
-     * The user who submitted this application.
+     * The user (applicant) who submitted this application.
+     *
+     * @return BelongsTo<User, Application>
      */
     public function applicant(): BelongsTo
     {
@@ -31,7 +58,9 @@ class Application extends Model
     }
 
     /**
-     * The template used to structure this application.
+     * The application template used when this application was submitted.
+     *
+     * @return BelongsTo<ApplicationTemplate, Application>
      */
     public function template(): BelongsTo
     {
@@ -39,7 +68,9 @@ class Application extends Model
     }
 
     /**
-     * All answers submitted as part of this application.
+     * The applicant's answers to each template field.
+     *
+     * @return HasMany<ApplicationAnswer>
      */
     public function answers(): HasMany
     {
@@ -47,7 +78,9 @@ class Application extends Model
     }
 
     /**
-     * All documents uploaded as part of this application.
+     * Documents uploaded by the applicant alongside this application.
+     *
+     * @return HasMany<Document>
      */
     public function documents(): HasMany
     {
@@ -55,10 +88,89 @@ class Application extends Model
     }
 
     /**
-     * All interviews scheduled for this application.
+     * Interviews scheduled for this application.
+     *
+     * @return HasMany<Interview>
      */
     public function interviews(): HasMany
     {
         return $this->hasMany(Interview::class);
+    }
+
+    /**
+     * Scope to applications that are still in an active review state —
+     * excludes withdrawn and no longer under consideration.
+     *
+     * @param  Builder<Application> $query
+     * @return Builder<Application>
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereNotIn('status', ['withdrawn', 'no_longer_under_consideration']);
+    }
+
+    /**
+     * Scope to applications with status = withdrawn.
+     *
+     * @param  Builder<Application> $query
+     * @return Builder<Application>
+     */
+    public function scopeWithdrawn(Builder $query): Builder
+    {
+        return $query->where('status', 'withdrawn');
+    }
+
+    /**
+     * Scope to applications with status = under_review.
+     *
+     * @param  Builder<Application> $query
+     * @return Builder<Application>
+     */
+    public function scopeUnderReview(Builder $query): Builder
+    {
+        return $query->where('status', 'under_review');
+    }
+
+    /**
+     * Returns true if this application has been withdrawn by the applicant.
+     */
+    public function isWithdrawn(): bool
+    {
+        return $this->status === 'withdrawn';
+    }
+
+    /**
+     * Returns true if this application is in an active review state.
+     */
+    public function isActive(): bool
+    {
+        return ! in_array($this->status, ['withdrawn', 'no_longer_under_consideration']);
+    }
+
+    /**
+     * Returns true if the given user is permitted to withdraw this application.
+     * Only the owning applicant may withdraw, and only while the application is active.
+     */
+    public function canBeWithdrawnBy(User $user): bool
+    {
+        return $this->user_id === $user->id && $this->isActive();
+    }
+
+    /**
+     * Traverses through the job position to resolve the organization this
+     * application ultimately belongs to.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough<Organization>
+     */
+    public function organization(): \Illuminate\Database\Eloquent\Relations\HasOneThrough
+    {
+        return $this->hasOneThrough(
+            Organization::class,
+            JobPosition::class,
+            'id',
+            'id',
+            'job_position_id',
+            'organization_id'
+        );
     }
 }

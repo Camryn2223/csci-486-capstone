@@ -1,17 +1,22 @@
 <?php
+
 namespace App\Models\Concerns;
 
 use App\Models\ApplicationTemplate;
 use App\Models\JobPosition;
 use App\Models\Organization;
-use App\Models\OrganizationUserPermission;
-use App\Models\Permission;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Provides chairman-specific relationships for the User model. A chairman owns
+ * organizations and may also directly create templates and job positions.
+ */
 trait HasChairmanFeatures
 {
     /**
-     * All organizations this user chairs.
+     * Organizations where this user is the chairman (owner).
+     *
+     * @return HasMany<Organization>
      */
     public function ownedOrganizations(): HasMany
     {
@@ -19,7 +24,9 @@ trait HasChairmanFeatures
     }
 
     /**
-     * All application templates this user has created.
+     * Application templates this user created directly.
+     *
+     * @return HasMany<ApplicationTemplate>
      */
     public function createdTemplates(): HasMany
     {
@@ -27,7 +34,9 @@ trait HasChairmanFeatures
     }
 
     /**
-     * All job positions this user has created.
+     * Job positions this user created directly.
+     *
+     * @return HasMany<JobPosition>
      */
     public function createdPositions(): HasMany
     {
