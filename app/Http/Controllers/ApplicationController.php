@@ -107,18 +107,8 @@ class ApplicationController extends Controller
         }
 
         return redirect()
-            ->route('applications.confirmation', $application)
+            ->route('organizations.job-positions.show', [$organization, $jobPosition])
             ->with('success', 'Your application has been submitted successfully.');
-    }
-
-    /**
-     * Display a submission confirmation page for the applicant after they
-     * submit. Shows their name and email back to them. No authentication
-     * required.
-     */
-    public function confirmation(Application $application): View
-    {
-        return view('applications.confirmation', compact('application'));
     }
 
     /**
@@ -144,7 +134,7 @@ class ApplicationController extends Controller
      * Update the status of an application. Requires review_applications in
      * the organization.
      *
-     * Valid transitions: submitted → under_review → no_longer_under_consideration | withdrawn
+     * Valid transitions: submitted -> under_review -> no_longer_under_consideration | withdrawn
      */
     public function updateStatus(Request $request, Application $application): RedirectResponse
     {
@@ -164,7 +154,7 @@ class ApplicationController extends Controller
      * the submitted answers array. Redirects back with errors if any are
      * missing.
      *
-     * @param  array<int, string> $answers  Keyed by template_field_id
+     * @param  array<int, string> $answers Keyed by template_field_id
      */
     private function validateRequiredFields(ApplicationTemplate $template, array $answers): void
     {
