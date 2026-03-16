@@ -11,15 +11,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * a given application. Tracks the scheduled time, current status, optional
  * notes, and when feedback was submitted after the interview was completed.
  *
- * @property int         $id
- * @property int         $application_id
- * @property int         $interviewer_id
- * @property \Carbon\Carbon      $scheduled_at
- * @property string      $status              scheduled | completed | canceled
+ * @property int $id
+ * @property int $application_id
+ * @property int $interviewer_id
+ * @property \Carbon\Carbon $scheduled_at
+ * @property string $status scheduled | completed | canceled
  * @property string|null $notes
  * @property \Carbon\Carbon|null $feedback_submitted_at
- * @property \Carbon\Carbon      $created_at
- * @property \Carbon\Carbon      $updated_at
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
  */
 class Interview extends Model
 {

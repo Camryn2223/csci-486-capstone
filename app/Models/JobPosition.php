@@ -12,13 +12,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * closed and may receive many applications from applicants. Positions are
  * created by authorized interviewers or the chairman.
  *
- * @property int    $id
- * @property int    $organization_id
- * @property int    $created_by
+ * @property int $id
+ * @property int $organization_id
+ * @property int $created_by
  * @property string $title
  * @property string $description
  * @property string $requirements
- * @property string $status          open | closed
+ * @property string $status open | closed
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */

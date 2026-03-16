@@ -1,36 +1,37 @@
 <?php
+
 namespace App\Policies;
 
 use App\Models\Document;
 use App\Models\User;
 
+/**
+ * Authorization policy for Document records. All authenticated actions (viewing and deleting) require
+ * review_applications in the document's organization.
+ */
 class DocumentPolicy
 {
     /**
-     * Only applicants can upload documents.
-     */
-    public function create(User $user): bool
-    {
-        return $user->isApplicant();
-    }
-
-    /**
-     * Uploading user can view their own. Users with review_applications can view any.
+     * Determine whether the user can view and download a document. Requires
+     * review_applications in the document's organization.
      */
     public function view(User $user, Document $document): bool
     {
-        return $document->user_id === $user->id
-            || $user->hasPermissionIn(
-                $document->application->jobPosition->organization,
-                'review_applications'
-            );
+        $organization = $document->application->jobPosition->organization;
+
+        return $user->isChairmanOf($organization)
+            || $user->hasPermissionIn($organization, 'review_applications');
     }
 
     /**
-     * Only the uploading user can delete their own documents.
+     * Determine whether the user can delete a document. Requires
+     * review_applications in the document's organization.
      */
     public function delete(User $user, Document $document): bool
     {
-        return $document->user_id === $user->id;
+        $organization = $document->application->jobPosition->organization;
+
+        return $user->isChairmanOf($organization)
+            || $user->hasPermissionIn($organization, 'review_applications');
     }
 }

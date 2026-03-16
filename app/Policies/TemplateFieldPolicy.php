@@ -59,7 +59,7 @@ class TemplateFieldPolicy
 
     /**
      * Determine whether the user can reorder fields on a template. Treated as
-     * an update-level action — requires manage_templates in the template's
+     * an update-level action - requires manage_templates in the template's
      * organization.
      */
     public function reorder(User $user, ApplicationTemplate $template): bool

@@ -54,7 +54,7 @@ class OrganizationUserPermissionPolicy
 
     /**
      * Determine whether the user can revoke an existing permission grant.
-     * Applies the same delegation rule as granting — the acting user must hold
+     * Applies the same delegation rule as granting - the acting user must hold
      * manage_members AND the permission being revoked, unless they are the
      * chairman.
      */

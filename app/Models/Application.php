@@ -6,18 +6,20 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
 /**
- * Represents an applicant's submission for a specific job position. An
- * application ties a user, a job position, and an application template together,
- * and tracks the current review status. It aggregates the applicant's answers,
- * uploaded documents, and scheduled interviews.
+ * Represents an anonymous submission for a specific job position. Applications
+ * are submitted by external applicants who do not have system accounts.
+ * Contact information is stored directly on the record and all further
+ * communication with the applicant happens via email. The record aggregates
+ * the applicant's form answers, uploaded documents, and scheduled interviews.
  *
- * @property int    $id
- * @property int    $job_position_id
- * @property int    $user_id
- * @property int    $template_id
- * @property string $status   submitted | under_review | no_longer_under_consideration | withdrawn
+ * @property int $id
+ * @property int $job_position_id
+ * @property int $template_id
+ * @property string $applicant_name
+ * @property string $applicant_email
+ * @property string|null $applicant_phone
+ * @property string $status submitted | under_review | no_longer_under_consideration | withdrawn
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
@@ -25,8 +27,10 @@ class Application extends Model
 {
     protected $fillable = [
         'job_position_id',
-        'user_id',
         'template_id',
+        'applicant_name',
+        'applicant_email',
+        'applicant_phone',
         'status',
     ];
 
@@ -45,16 +49,6 @@ class Application extends Model
     public function jobPosition(): BelongsTo
     {
         return $this->belongsTo(JobPosition::class);
-    }
-
-    /**
-     * The user (applicant) who submitted this application.
-     *
-     * @return BelongsTo<User, Application>
-     */
-    public function applicant(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**
@@ -78,7 +72,7 @@ class Application extends Model
     }
 
     /**
-     * Documents uploaded by the applicant alongside this application.
+     * Documents uploaded alongside this application.
      *
      * @return HasMany<Document>
      */
@@ -132,7 +126,7 @@ class Application extends Model
     }
 
     /**
-     * Returns true if this application has been withdrawn by the applicant.
+     * Returns true if this application has been withdrawn.
      */
     public function isWithdrawn(): bool
     {
@@ -148,12 +142,15 @@ class Application extends Model
     }
 
     /**
-     * Returns true if the given user is permitted to withdraw this application.
-     * Only the owning applicant may withdraw, and only while the application is active.
+     * Returns true if another application from the same email address already
+     * exists for this job position. Used to prevent duplicate submissions.
      */
-    public function canBeWithdrawnBy(User $user): bool
+    public function isDuplicateOf(string $email, int $jobPositionId): bool
     {
-        return $this->user_id === $user->id && $this->isActive();
+        return self::where('applicant_email', $email)
+            ->where('job_position_id', $jobPositionId)
+            ->whereNot('id', $this->id ?? 0)
+            ->exists();
     }
 
     /**

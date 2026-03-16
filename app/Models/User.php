@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\HasApplicantFeatures;
 use App\Models\Concerns\HasChairmanFeatures;
 use App\Models\Concerns\HasInterviewerFeatures;
 use App\Models\Concerns\HasPermissions;
@@ -13,24 +12,23 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 /**
- * Represents a system user. A user holds one of three roles — applicant,
- * interviewer, or chairman — which controls what features they can access.
+ * Represents a system user. A user holds one of two roles - interviewer,
+ * or chairman - which controls what features they can access.
  * Role-specific relationships and behaviour are split into trait concerns to
  * keep this class focused on identity and shared logic only.
  *
- * @property int         $id
- * @property string      $name
- * @property string      $email
- * @property string      $password
- * @property string      $role               applicant | interviewer | chairman
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string $password
+ * @property string $role interviewer | chairman
  * @property \Carbon\Carbon|null $email_verified_at
- * @property \Carbon\Carbon      $created_at
- * @property \Carbon\Carbon      $updated_at
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
-    use HasApplicantFeatures;
     use HasInterviewerFeatures;
     use HasChairmanFeatures;
     use HasPermissions;
@@ -64,14 +62,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class, 'organization_user');
-    }
-
-    /**
-     * Returns true if this user's role is applicant.
-     */
-    public function isApplicant(): bool
-    {
-        return $this->role === 'applicant';
     }
 
     /**

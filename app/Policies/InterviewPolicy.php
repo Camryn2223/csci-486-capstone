@@ -1,62 +1,65 @@
 <?php
+
 namespace App\Policies;
 
+use App\Models\Application;
 use App\Models\Interview;
 use App\Models\User;
 
+/**
+ * Authorization policy for Interview records.
+ * Scheduling requires the schedule_interviews permission. Feedback submission
+ * is restricted to the assigned interviewer.
+ */
 class InterviewPolicy
 {
     /**
-     * Only users with schedule_interviews permission can create interviews.
+     * Determine whether the user can schedule a new interview for an
+     * application. Requires schedule_interviews in the application's
+     * organization.
      */
-    public function create(User $user, Interview $interview): bool
+    public function create(User $user, Application $application): bool
     {
-        return $user->hasPermissionIn(
-            $interview->application->jobPosition->organization,
-            'schedule_interviews'
-        );
+        $organization = $application->jobPosition->organization;
+
+        return $user->isChairmanOf($organization)
+            || $user->hasPermissionIn($organization, 'schedule_interviews');
     }
 
     /**
-     * The assigned interviewer, the applicant, and users with review_applications can view.
+     * Determine whether the user can view an interview's details. Requires
+     * review_applications or schedule_interviews in the interview's
+     * organization, or the user must be the assigned interviewer.
      */
     public function view(User $user, Interview $interview): bool
     {
-        return $interview->interviewer_id === $user->id
-            || $interview->application->user_id === $user->id
-            || $user->hasPermissionIn(
-                $interview->application->jobPosition->organization,
-                'review_applications'
-            );
+        $organization = $interview->application->jobPosition->organization;
+
+        return $user->id === $interview->interviewer_id
+            || $user->isChairmanOf($organization)
+            || $user->hasPermissionIn($organization, 'review_applications')
+            || $user->hasPermissionIn($organization, 'schedule_interviews');
     }
 
     /**
-     * Only the assigned interviewer can submit notes and feedback.
-     */
-    public function submitFeedback(User $user, Interview $interview): bool
-    {
-        return $interview->interviewer_id === $user->id;
-    }
-
-    /**
-     * Only users with schedule_interviews permission can update interview details.
+     * Determine whether the user can update, reschedule, cancel, or complete
+     * an interview. Requires schedule_interviews in the interview's
+     * organization.
      */
     public function update(User $user, Interview $interview): bool
     {
-        return $user->hasPermissionIn(
-            $interview->application->jobPosition->organization,
-            'schedule_interviews'
-        );
+        $organization = $interview->application->jobPosition->organization;
+
+        return $user->isChairmanOf($organization)
+            || $user->hasPermissionIn($organization, 'schedule_interviews');
     }
 
     /**
-     * Only users with schedule_interviews permission can cancel or delete interviews.
+     * Determine whether the user can submit feedback for an interview. Only
+     * the assigned interviewer may submit feedback.
      */
-    public function delete(User $user, Interview $interview): bool
+    public function submitFeedback(User $user, Interview $interview): bool
     {
-        return $user->hasPermissionIn(
-            $interview->application->jobPosition->organization,
-            'schedule_interviews'
-        );
+        return $user->id === $interview->interviewer_id;
     }
 }

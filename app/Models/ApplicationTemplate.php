@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * must fill out when applying for a job. Templates belong to an organization
  * and are composed of ordered TemplateField records.
  *
- * @property int    $id
- * @property int    $organization_id
- * @property int    $created_by
+ * @property int $id
+ * @property int $organization_id
+ * @property int $created_by
  * @property string $name
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
