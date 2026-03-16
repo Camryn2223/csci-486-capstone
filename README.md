@@ -133,7 +133,6 @@ project-root/
 │   │   └── ApplicationPolicy.php    # [POLICY] Authorization rules per resource - your policies live here
 │   ├── Models/
 │   │   ├── Concerns/
-│   │   │   ├── HasApplicantFeatures.php     # [MODEL] Trait — relationships and methods for applicant users
 │   │   │   ├── HasInterviewerFeatures.php   # [MODEL] Trait — relationships and methods for interviewer users
 │   │   │   └── HasChairmanFeatures.php      # [MODEL] Trait — relationships and methods for chairman users
 │   │   └── User.php                         # [MODEL] Default User model - add your models alongside this
@@ -466,21 +465,25 @@ Concerns are PHP traits that split role-specific or reusable logic off of a mode
 
 There is no Artisan command for traits - create them manually:
 ```
-app/Models/Concerns/HasApplicantFeatures.php
 app/Models/Concerns/HasInterviewerFeatures.php
 app/Models/Concerns/HasChairmanFeatures.php
 ```
 
 A concern should follow this structure:
 ```php
-// app/Models/Concerns/HasApplicantFeatures.php
+// app/Models/Concerns/HasChairmanFeatures.php
 namespace App\Models\Concerns;
 
-trait HasApplicantFeatures
+trait HasChairmanFeatures
 {
-    public function applications(): HasMany
+    /**
+     * Organizations where this user is the chairman (owner).
+     *
+     * @return HasMany<Organization>
+     */
+    public function ownedOrganizations(): HasMany
     {
-        return $this->hasMany(Application::class);
+        return $this->hasMany(Organization::class, 'chairman_id');
     }
 }
 ```
@@ -488,19 +491,19 @@ trait HasApplicantFeatures
 Then apply it to the model:
 ```php
 // app/Models/User.php
-use App\Models\Concerns\HasApplicantFeatures;
+use App\Models\Concerns\HasChairmanFeatures;
 
 class User extends Authenticatable
 {
-    use HasApplicantFeatures;
+    use HasChairmanFeatures;
 }
 ```
 
-Methods defined in a trait are called identically to methods defined directly on the model — `$user->applications` works whether `applications()` is in `User.php` or in `HasApplicantFeatures.php`.
+Methods defined in a trait are called identically to methods defined directly on the model — `$user->applications` works whether `applications()` is in `User.php` or in `HasChairmanFeatures.php`.
 
 ### Controllers - `app/Http/Controllers/`
 
-One file per resource. A controller should have at most these 7 methods, matching standard CRUD actions:
+One file per resource. A controller should have at least these 7 methods, matching standard CRUD actions:
 
 | Method | Route | What it does |
 |--------|-------|--------------|
@@ -533,12 +536,10 @@ class ApplicationPolicy
 {
     public function view(User $user, Application $application): bool
     {
-        return $user->id === $application->user_id || $user->isInterviewer() || $user->isChairman();
-    }
+        $organization = $application->jobPosition->organization;
 
-    public function create(User $user): bool
-    {
-        return $user->isApplicant();
+        return $user->isChairmanOf($organization)
+            || $user->hasPermissionIn($organization, 'review_applications');
     }
 }
 ```
