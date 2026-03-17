@@ -1,13 +1,21 @@
 <?php
+
 namespace App\Policies;
 
 use App\Models\Organization;
 use App\Models\User;
 
+/**
+ * Authorization policy for Organization records. Creating organizations is
+ * restricted to users with the chairman role. Viewing requires membership or
+ * ownership. Updating and deleting are restricted to the organization's
+ * chairman.
+ */
 class OrganizationPolicy
 {
     /**
-     * Only chairmen can create organizations.
+     * Determine whether the user can create an organization. Restricted to
+     * users with the chairman role.
      */
     public function create(User $user): bool
     {
@@ -15,36 +23,41 @@ class OrganizationPolicy
     }
 
     /**
-     * Any member of the organization can view it.
+     * Determine whether the user can view an organization. Requires membership
+     * or ownership.
      */
     public function view(User $user, Organization $organization): bool
     {
-        return $organization->chairman_id === $user->id
-            || $user->organizations->contains($organization);
+        return $user->isChairmanOf($organization)
+            || $user->isMemberOf($organization);
     }
 
     /**
-     * Only the chairman who owns the organization can update it.
+     * Determine whether the user can update an organization's details or
+     * manage its members. Restricted to the organization's chairman.
      */
     public function update(User $user, Organization $organization): bool
     {
-        return $organization->chairman_id === $user->id;
+        return $user->isChairmanOf($organization);
     }
 
     /**
-     * Only the chairman who owns the organization can delete it.
+     * Determine whether the user can delete an organization. Restricted to
+     * the organization's chairman.
      */
     public function delete(User $user, Organization $organization): bool
     {
-        return $organization->chairman_id === $user->id;
+        return $user->isChairmanOf($organization);
     }
 
     /**
-     * Only users with manage_members permission can assign permissions to others.
-     * A user can only grant permissions they themselves hold.
+     * Determine whether the user can grant a permission to another member.
+     * The acting user must hold manage_members AND the target permission
+     * themselves, or be the organization's chairman.
      */
-    public function grantPermission(User $user, Organization $organization, string $permission): bool
+    public function grantPermission(User $user, Organization $organization, string $permissionName): bool
     {
-        return $user->canGrantPermissionIn($organization, $permission);
+        return $user->isChairmanOf($organization)
+            || $user->canGrantPermissionIn($organization, $permissionName);
     }
 }

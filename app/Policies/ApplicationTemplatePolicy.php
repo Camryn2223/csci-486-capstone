@@ -1,41 +1,73 @@
 <?php
+
 namespace App\Policies;
 
 use App\Models\ApplicationTemplate;
+use App\Models\Organization;
 use App\Models\User;
 
+/**
+ * Authorization policy for ApplicationTemplate records. All write actions
+ * require the manage_templates permission in the template's organization.
+ * Viewing is also permitted to users with review_applications.
+ */
 class ApplicationTemplatePolicy
 {
     /**
-     * Users with manage_templates permission in the organization can create templates.
+     * Determine whether the user can list templates for an organization.
+     * Requires manage_templates or review_applications.
      */
-    public function create(User $user, ApplicationTemplate $template): bool
+    public function viewAny(User $user, Organization $organization): bool
     {
-        return $user->hasPermissionIn($template->organization, 'manage_templates');
+        return $user->isChairmanOf($organization)
+            || $user->hasPermissionIn($organization, 'manage_templates')
+            || $user->hasPermissionIn($organization, 'review_applications');
     }
 
     /**
-     * Users with review_applications or manage_templates permission can view templates.
+     * Determine whether the user can view a specific template. Requires
+     * manage_templates or review_applications in the template's organization.
      */
     public function view(User $user, ApplicationTemplate $template): bool
     {
-        return $user->hasPermissionIn($template->organization, 'review_applications')
-            || $user->hasPermissionIn($template->organization, 'manage_templates');
+        $organization = $template->organization;
+
+        return $user->isChairmanOf($organization)
+            || $user->hasPermissionIn($organization, 'manage_templates')
+            || $user->hasPermissionIn($organization, 'review_applications');
     }
 
     /**
-     * Only users with manage_templates permission can update templates.
+     * Determine whether the user can create a template in an organization.
+     * Requires manage_templates.
+     */
+    public function create(User $user, Organization $organization): bool
+    {
+        return $user->isChairmanOf($organization)
+            || $user->hasPermissionIn($organization, 'manage_templates');
+    }
+
+    /**
+     * Determine whether the user can update a template. Requires
+     * manage_templates in the template's organization.
      */
     public function update(User $user, ApplicationTemplate $template): bool
     {
-        return $user->hasPermissionIn($template->organization, 'manage_templates');
+        $organization = $template->organization;
+
+        return $user->isChairmanOf($organization)
+            || $user->hasPermissionIn($organization, 'manage_templates');
     }
 
     /**
-     * Only users with manage_templates permission can delete templates.
+     * Determine whether the user can delete a template. Requires
+     * manage_templates in the template's organization.
      */
     public function delete(User $user, ApplicationTemplate $template): bool
     {
-        return $user->hasPermissionIn($template->organization, 'manage_templates');
+        $organization = $template->organization;
+
+        return $user->isChairmanOf($organization)
+            || $user->hasPermissionIn($organization, 'manage_templates');
     }
 }
