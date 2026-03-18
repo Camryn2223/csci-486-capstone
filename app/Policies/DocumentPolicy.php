@@ -4,34 +4,29 @@ namespace App\Policies;
 
 use App\Models\Document;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 /**
- * Authorization policy for Document records. All authenticated actions (viewing and deleting) require
- * review_applications in the document's organization.
+ * Authorization policy for Document records. All authenticated actions require the review-applications
+ * gate in the document's organization.
  */
 class DocumentPolicy
 {
     /**
      * Determine whether the user can view and download a document. Requires
-     * review_applications in the document's organization.
+     * the review-applications gate in the document's organization.
      */
     public function view(User $user, Document $document): bool
     {
-        $organization = $document->application->jobPosition->organization;
-
-        return $user->isChairmanOf($organization)
-            || $user->hasPermissionIn($organization, 'review_applications');
+        return Gate::forUser($user)->allows('review-applications', $document->application->jobPosition->organization);
     }
 
     /**
-     * Determine whether the user can delete a document. Requires
-     * review_applications in the document's organization.
+     * Determine whether the user can delete a document. Requires the
+     * review-applications gate in the document's organization.
      */
     public function delete(User $user, Document $document): bool
     {
-        $organization = $document->application->jobPosition->organization;
-
-        return $user->isChairmanOf($organization)
-            || $user->hasPermissionIn($organization, 'review_applications');
+        return Gate::forUser($user)->allows('review-applications', $document->application->jobPosition->organization);
     }
 }
