@@ -5,6 +5,7 @@ namespace App\Models\Concerns;
 use App\Models\Organization;
 use App\Models\OrganizationUserPermission;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Provides organization-scoped permission checking for the User model. A user
@@ -66,11 +67,15 @@ trait HasPermissions
      */
     public function permissionNamesIn(Organization $organization): array
     {
-        return $this->organizationPermissions()
-            ->where('organization_id', $organization->id)
-            ->with('permission')
-            ->get()
-            ->pluck('permission.name')
-            ->toArray();
+        return Cache::remember(
+            "user.{$this->id}.org.{$organization->id}.permissions",
+            now()->addMinutes(15),
+            fn () => $this->organizationPermissions()
+                ->where('organization_id', $organization->id)
+                ->with('permission')
+                ->get()
+                ->pluck('permission.name')
+                ->toArray()
+        );
     }
 }
