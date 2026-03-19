@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Permission as PermissionEnum;
 use App\Models\Organization;
 use App\Models\OrganizationUserPermission;
 use App\Models\Permission;
@@ -9,116 +10,111 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 /**
  * Handles granting and revoking organization-scoped permissions for members.
  * Also handles promoting a member's system-wide role (interviewer <-> chairman)
  * which is a chairman-only action.
- *
- * Granting and revoking enforce the delegation rule: the acting user must pass
- * the manage-members gate AND hold the target permission themselves.
  */
 class OrganizationUserPermissionController extends Controller
 {
     /**
      * Display all permissions currently granted to members of the organization.
-     * Grouped by user for the management UI.
      */
     public function index(Organization $organization): View
     {
         $this->authorize('viewAny', [OrganizationUserPermission::class, $organization]);
 
-        $organization->load([
-            'members',
-            'permissions.user',
-            'permissions.permission',
-        ]);
+        $organization->load(['members']);
+        
+        // Use the Enum directly so checkboxes ALWAYS show up, even if the database wasn't seeded yet.
+        $allPermissions = PermissionEnum::cases();
+        
+        /** @var User $actingUser */
+        $actingUser = Auth::user();
+        $actingUserPerms = $actingUser->permissionNamesIn($organization);
 
-        $allPermissions = Permission::all();
-
-        $memberPermissions = $organization->members->map(function (User $member) use ($organization, $allPermissions) {
-            $granted = $organization->permissions
-                ->where('user_id', $member->id)
-                ->pluck('permission.name')
-                ->toArray();
-
+        $memberPermissions = $organization->members->map(function (User $member) use ($organization) {
             return [
-                'user'        => $member,
-                'granted'     => $granted,
-                'available'   => $allPermissions->pluck('name')->diff($granted)->values(),
+                'user'    => $member,
+                'granted' => $member->permissionNamesIn($organization),
             ];
         });
 
-        return view('organization_permissions.index', compact('organization', 'memberPermissions', 'allPermissions'));
+        return view('organization_permissions.index', compact('organization', 'memberPermissions', 'allPermissions', 'actingUserPerms'));
     }
 
     /**
-     * Grant a permission to a member of the organization. The acting user must
-     * pass the manage-members gate AND hold the target permission themselves.
+     * Sync permissions for a user based on an array of requested permissions.
+     * Enforces that the acting user can only grant or revoke permissions they
+     * hold themselves.
      */
-    public function store(Request $request, Organization $organization): RedirectResponse
+    public function sync(Request $request, Organization $organization, User $user): RedirectResponse
     {
+        $this->authorize('sync', [OrganizationUserPermission::class, $organization]);
+
+        if (! $organization->hasMember($user)) {
+            return back()->withErrors(['user' => 'User is not a member of this organization.']);
+        }
+
+        if ($user->isChairmanOf($organization)) {
+            return back()->withErrors(['user' => 'The chairman inherently possesses all permissions and cannot be modified.']);
+        }
+
         $validated = $request->validate([
-            'user_id'         => ['required', 'exists:users,id'],
-            'permission_name' => ['required', 'exists:permissions,name'],
+            'permissions'   => ['nullable', 'array'],
+            'permissions.*' => ['string'],
         ]);
 
-        $this->authorize('grant', [OrganizationUserPermission::class, $organization, $validated['permission_name']]);
+        $submittedPerms = $validated['permissions'] ?? [];
+        
+        /** @var User $actingUser */
+        $actingUser = Auth::user();
+        $actingUserPerms = $actingUser->permissionNamesIn($organization);
 
-        $recipient = User::findOrFail($validated['user_id']);
+        $targetUserPerms = $user->permissionNamesIn($organization);
 
-        if (! $organization->hasMember($recipient)) {
-            return back()->withErrors(['user_id' => 'This user is not a member of the organization.']);
+        $toAdd = array_diff($submittedPerms, $targetUserPerms);
+        $toRemove = array_diff($targetUserPerms, $submittedPerms);
+
+        // Filter out permissions the acting user is not allowed to grant/revoke
+        $toAdd = array_intersect($toAdd, $actingUserPerms);
+        $toRemove = array_intersect($toRemove, $actingUserPerms);
+
+        if (!empty($toAdd)) {
+            foreach ($toAdd as $permName) {
+                // Self-healing: Create the permission in the DB if it doesn't exist
+                $permission = Permission::firstOrCreate(['name' => $permName]);
+                
+                OrganizationUserPermission::firstOrCreate([
+                    'organization_id' => $organization->id,
+                    'user_id'         => $user->id,
+                    'permission_id'   => $permission->id,
+                ], [
+                    'granted_by'      => $actingUser->id,
+                ]);
+            }
         }
 
-        $permission = Permission::where('name', $validated['permission_name'])->firstOrFail();
-
-        $alreadyGranted = OrganizationUserPermission::where([
-            'organization_id' => $organization->id,
-            'user_id'         => $recipient->id,
-            'permission_id'   => $permission->id,
-        ])->exists();
-
-        if ($alreadyGranted) {
-            return back()->withErrors(['permission_name' => 'This user already has this permission.']);
+        if (!empty($toRemove)) {
+            $permissionIds = Permission::whereIn('name', $toRemove)->pluck('id');
+            OrganizationUserPermission::where('organization_id', $organization->id)
+                ->where('user_id', $user->id)
+                ->whereIn('permission_id', $permissionIds)
+                ->delete();
         }
 
-        /** @var User $authenticatedUser */
-        $authenticatedUser = Auth::user();
+        Cache::forget("user.{$user->id}.org.{$organization->id}.permissions");
 
-        OrganizationUserPermission::create([
-            'organization_id' => $organization->id,
-            'user_id'         => $recipient->id,
-            'permission_id'   => $permission->id,
-            'granted_by'      => $authenticatedUser->id,
-        ]);
-
-        return back()->with('success', "Permission \"{$validated['permission_name']}\" granted to {$recipient->name}.");
-    }
-
-    /**
-     * Revoke a specific permission grant from a member. The acting user must
-     * satisfy the same delegation rule required for granting.
-     */    
-    public function destroy(Organization $organization, OrganizationUserPermission $permission): RedirectResponse
-    {
-        $this->authorize('revoke', $permission);
-
-        $userName       = $permission->user->name;
-        $permissionName = $permission->permission->name;
-
-        $permission->delete();
-
-        return back()->with('success', "Permission \"{$permissionName}\" revoked from {$userName}.");
+        return back()->with('success', "Permissions updated for {$user->name}.");
     }
 
     /**
      * Promote or demote a member's system-wide role. Only the chairman of the
      * organization may change roles. Prevents the chairman from modifying
      * their own role.
-     *
-     * Valid roles: interviewer, chairman
      */
     public function updateRole(Request $request, Organization $organization, User $user): RedirectResponse
     {

@@ -36,7 +36,7 @@ class TwoFactorController extends Controller
     public function show(): View
     {
         /** @var User $user */
-        $user = Auth::user();
+        $user = Auth::user()->fresh();
 
         return view('auth.two-factor', compact('user'));
     }
@@ -70,13 +70,19 @@ class TwoFactorController extends Controller
     public function confirm(Request $request, ConfirmTwoFactorAuthentication $confirm): RedirectResponse
     {
         /** @var User $user */
-        $user = Auth::user();
+        $user = Auth::user()->fresh();
 
         $request->validate([
             'code' => ['required', 'string'],
         ]);
 
-        $confirm($user, $request->input('code'));
+        try {
+            $confirm($user, str_replace(' ', '', $request->input('code')));
+        } catch (\Throwable $e) {
+            return redirect()
+                ->route('two-factor.show')
+                ->with('error', 'The code you entered is invalid. Please try again.');
+        }
 
         return redirect()
             ->route('two-factor.show')
@@ -100,7 +106,7 @@ class TwoFactorController extends Controller
 
         return redirect()
             ->route('two-factor.show')
-            ->with('success', 'Recovery codes have been regenerated. Save them somewhere safe — the previous codes are no longer valid.');
+            ->with('success', 'Recovery codes have been regenerated. Save them somewhere safe - the previous codes are no longer valid.');
     }
 
     /**

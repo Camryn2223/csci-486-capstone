@@ -92,7 +92,7 @@ class Application extends Model
     }
 
     /**
-     * Scope to applications that are still in an active review state —
+     * Scope to applications that are still in an active review state -
      * excludes withdrawn and no longer under consideration.
      *
      * @param  Builder<Application> $query

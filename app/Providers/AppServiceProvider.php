@@ -2,69 +2,33 @@
 
 namespace App\Providers;
 
+use App\Enums\Permission;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Registers application-level gate definitions for all organization-scoped
+ * permissions. Gates are generated automatically from the Permission enum.
+ *
+ * Each gate is named by replacing underscores with hyphens in the permission
+ * value, e.g. create_positions -> create-positions. Every gate follows the
+ * same rule: pass if the user holds the permission in that organization
+ * (the hasPermissionIn method naturally exempts the organization's chairman).
+ */
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        //
-    }
+    public function register(): void {}
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        /**
-         * Grants the ability to create, edit, and delete job positions within
-         * an organization.
-         */
-        Gate::define('create-positions', function (User $user, Organization $organization): bool {
-            return $user->isChairmanOf($organization)
-                || $user->hasPermissionIn($organization, 'create_positions');
-        });
- 
-        /**
-         * Grants the ability to create, edit, and delete application templates
-         * and their fields within an organization.
-         */
-        Gate::define('manage-templates', function (User $user, Organization $organization): bool {
-            return $user->isChairmanOf($organization)
-                || $user->hasPermissionIn($organization, 'manage_templates');
-        });
- 
-        /**
-         * Grants the ability to view and manage applications and their
-         * associated documents within an organization.
-         */
-        Gate::define('review-applications', function (User $user, Organization $organization): bool {
-            return $user->isChairmanOf($organization)
-                || $user->hasPermissionIn($organization, 'review_applications');
-        });
- 
-        /**
-         * Grants the ability to schedule, update, and cancel interviews within
-         * an organization.
-         */
-        Gate::define('schedule-interviews', function (User $user, Organization $organization): bool {
-            return $user->isChairmanOf($organization)
-                || $user->hasPermissionIn($organization, 'schedule_interviews');
-        });
- 
-        /**
-         * Grants the ability to grant and revoke permissions for other members
-         * within an organization.
-         */
-        Gate::define('manage-members', function (User $user, Organization $organization): bool {
-            return $user->isChairmanOf($organization)
-                || $user->hasPermissionIn($organization, 'manage_members');
-        });
+        foreach (Permission::cases() as $permission) {
+            $gateName = str_replace('_', '-', $permission->value);
+
+            Gate::define($gateName, function (User $user, Organization $organization) use ($permission): bool {
+                return $user->hasPermissionIn($organization, $permission->value);
+            });
+        }
     }
 }

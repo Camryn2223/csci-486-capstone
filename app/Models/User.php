@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
  * Represents a system user. A user holds one of two roles - interviewer,
@@ -32,6 +33,7 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasInterviewerFeatures;
     use HasChairmanFeatures;
     use HasPermissions;
+    use TwoFactorAuthenticatable;
 
     protected $fillable = [
         'name',

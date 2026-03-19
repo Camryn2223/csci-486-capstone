@@ -7,23 +7,30 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
  * Handles creation and management of organizations. Only users with the
  * chairman role may create organizations. Viewing and updating are restricted
- * to the organization's chairman or members.
+ * to the organization's chairman or members based on capabilities.
  */
 class OrganizationController extends Controller
 {
     /**
      * Display a listing of all organizations the authenticated user belongs to
-     * or chairs.
+     * or chairs. If a chairman has no organizations yet, redirect them to the
+     * creation page.
      */
-    public function index(): View
+    public function index(): View|RedirectResponse
     {
         /** @var User $user */
         $user = Auth::user();
+
+        if ($user->isChairman() && $user->ownedOrganizations()->count() === 0) {
+            return redirect()->route('organizations.create');
+        }
 
         $organizations = $user->isChairman()
             ? $user->ownedOrganizations()->withCount(['members', 'jobPositions'])->get()
@@ -130,29 +137,23 @@ class OrganizationController extends Controller
     }
 
     /**
-     * Show the member management page listing all members and their
-     * organization-scoped permissions.
+     * Show the member management page listing all members.
      */
     public function members(Organization $organization): View
     {
-        $this->authorize('update', $organization);
+        $this->authorize('manage-members', $organization);
 
-        $organization->load([
-            'members',
-            'permissions.user',
-            'permissions.permission',
-        ]);
+        $organization->load(['members']);
 
         return view('organizations.members', compact('organization'));
     }
 
     /**
-     * Add a user to the organization by email address. Only the chairman may
-     * add members.
+     * Add a existing user to the organization by email address.
      */
     public function addMember(Request $request, Organization $organization): RedirectResponse
     {
-        $this->authorize('update', $organization);
+        $this->authorize('manage-members', $organization);
 
         $validated = $request->validate([
             'email' => ['required', 'email', 'exists:users,email'],
@@ -170,20 +171,22 @@ class OrganizationController extends Controller
     }
 
     /**
-     * Remove a member from the organization. The chairman cannot remove
-     * themselves.
+     * Remove a member from the organization and delete their account.
+     * This will also force-logout the user by deleting their sessions.
      */
     public function removeMember(Organization $organization, User $user): RedirectResponse
     {
-        $this->authorize('update', $organization);
+        $this->authorize('manage-members', $organization);
 
         if ($organization->chairman_id === $user->id) {
             return back()->withErrors(['user' => 'The chairman cannot be removed from the organization.']);
         }
 
-        $organization->members()->detach($user->id);
-        $organization->permissions()->where('user_id', $user->id)->delete();
+        DB::table('sessions')->where('user_id', $user->id)->delete();
+        Cache::forget("user.{$user->id}.org.{$organization->id}.permissions");
+        $userName = $user->name;
+        $user->delete();
 
-        return back()->with('success', "{$user->name} has been removed from the organization.");
+        return back()->with('success', "{$userName} has been removed, their account has been deleted, and they have been logged out.");
     }
 }

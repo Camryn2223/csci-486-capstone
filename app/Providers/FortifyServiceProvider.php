@@ -28,6 +28,8 @@ class FortifyServiceProvider extends ServiceProvider
 
         Fortify::verifyEmailView(fn () => view('auth.verify-email'));
 
+        Fortify::confirmPasswordView(fn () => view('auth.confirm-password'));
+
         Fortify::redirects('login', '/dashboard');
         Fortify::redirects('register', '/dashboard');
         Fortify::redirects('email-verification', '/dashboard');

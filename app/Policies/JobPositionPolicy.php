@@ -5,71 +5,62 @@ namespace App\Policies;
 use App\Models\JobPosition;
 use App\Models\Organization;
 use App\Models\User;
-use Illuminate\Support\Facades\Gate;
 
 /**
- * Authorization policy for JobPosition records. Creating, updating, and
- * deleting positions requires the create-positions gate. Viewing open
- * positions is available to any organization member. Closed positions require
- * review-applications or create-positions.
+ * Authorization policy for JobPosition records.
  */
 class JobPositionPolicy
 {
     /**
-     * Determine whether the user can list job positions for an organization.
-     * Available to any organization member.
+     * Determine whether the user can list job positions.
+     * Guests (?User) are allowed to hit the index; filtering is handled in the controller.
      */
-    public function viewAny(User $user, Organization $organization): bool
+    public function viewAny(?User $user, Organization $organization): bool
     {
-        return $user->isChairmanOf($organization)
-            || $user->isMemberOf($organization);
+        return true;
     }
 
     /**
-     * Determine whether the user can view a specific job position. Open
-     * positions are visible to any member. Closed positions require the
-     * review-applications or create-positions gate.
+     * Determine whether the user can view a specific job position.
+     * Open positions are public. Closed positions require specific permissions.
      */
-    public function view(User $user, JobPosition $jobPosition): bool
+    public function view(?User $user, JobPosition $jobPosition): bool
     {
-        $organization = $jobPosition->organization;
-
-        if (! $user->isMemberOf($organization) && ! $user->isChairmanOf($organization)) {
-            return false;
-        }
-
         if ($jobPosition->isOpen()) {
             return true;
         }
 
-        return Gate::forUser($user)->allows('review-applications', $organization)
-            || Gate::forUser($user)->allows('create-positions', $organization);
+        // If the position is closed, only authenticated staff can see it
+        if (! $user) {
+            return false;
+        }
+
+        return $user->isChairmanOf($jobPosition->organization)
+            || $user->hasPermissionIn($jobPosition->organization, 'review_applications')
+            || $user->hasPermissionIn($jobPosition->organization, 'create_positions');
     }
 
     /**
-     * Determine whether the user can create a job position in an organization.
-     * Requires the create-positions gate.
+     * Determine whether the user can create a job position.
      */
     public function create(User $user, Organization $organization): bool
     {
-        return Gate::forUser($user)->allows('create-positions', $organization);
+        return $user->hasPermissionIn($organization, 'create_positions');
     }
 
     /**
-     * Determine whether the user can update a job position. Requires the
-     * create-positions gate in the position's organization.
+     * Determine whether the user can update a job position.
      */
     public function update(User $user, JobPosition $jobPosition): bool
     {
-        return Gate::forUser($user)->allows('create-positions', $jobPosition->organization);
+        return $user->hasPermissionIn($jobPosition->organization, 'create_positions');
     }
 
     /**
-     * Determine whether the user can delete a job position. Requires the
-     * create-positions gate in the position's organization.
+     * Determine whether the user can delete a job position.
      */
     public function delete(User $user, JobPosition $jobPosition): bool
     {
-        return Gate::forUser($user)->allows('create-positions', $jobPosition->organization);
+        return $user->hasPermissionIn($jobPosition->organization, 'create_positions');
     }
 }

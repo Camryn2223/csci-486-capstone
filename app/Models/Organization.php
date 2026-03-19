@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * organization has members (users), open job positions, application templates,
  * and a granular permission system that controls what each member can do.
  *
- * @property int $id
- * @property int $chairman_id
+ * @property int    $id
+ * @property int    $chairman_id
  * @property string $name
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at

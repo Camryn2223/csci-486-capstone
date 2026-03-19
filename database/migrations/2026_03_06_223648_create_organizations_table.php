@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('chairman_id')->constrained('users')->onDelete('cascade');
             $table->string('name');
+            $table->string('join_code')->unique()->nullable();
             $table->timestamps();
         });
     }

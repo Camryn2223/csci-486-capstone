@@ -36,7 +36,7 @@ class DocumentController extends Controller
 
     /**
      * Store an uploaded document and attach it to the given application. No
-     * authentication required — called as part of the public application
+     * authentication required - called as part of the public application
      * submission flow. Validates file type and size before storing.
      */
     public function store(Request $request, Application $application): RedirectResponse

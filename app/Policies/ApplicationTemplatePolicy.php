@@ -5,59 +5,60 @@ namespace App\Policies;
 use App\Models\ApplicationTemplate;
 use App\Models\Organization;
 use App\Models\User;
-use Illuminate\Support\Facades\Gate;
 
 /**
- * Authorization policy for ApplicationTemplate records. All write actions
- * require the manage-templates gate. Viewing is also permitted to users who
- * pass the review-applications gate.
+ * Authorization policy for ApplicationTemplate records.
  */
 class ApplicationTemplatePolicy
 {
     /**
      * Determine whether the user can list templates for an organization.
-     * Requires manage-templates or review-applications.
+     * Guests are allowed to resolve templates for applying.
      */
-    public function viewAny(User $user, Organization $organization): bool
+    public function viewAny(?User $user, Organization $organization): bool
     {
-        return Gate::forUser($user)->allows('manage-templates', $organization)
-            || Gate::forUser($user)->allows('review-applications', $organization);
+        if (! $user) {
+            return true;
+        }
+
+        return $user->hasPermissionIn($organization, 'manage_templates')
+            || $user->hasPermissionIn($organization, 'review_applications');
     }
 
     /**
-     * Determine whether the user can view a specific template. Requires
-     * manage-templates or review-applications in the template's organization.
+     * Determine whether the user can view a specific template.
      */
-    public function view(User $user, ApplicationTemplate $template): bool
+    public function view(?User $user, ApplicationTemplate $template): bool
     {
-        return Gate::forUser($user)->allows('manage-templates', $template->organization)
-            || Gate::forUser($user)->allows('review-applications', $template->organization);
+        if (! $user) {
+            return true;
+        }
+
+        return $user->hasPermissionIn($template->organization, 'manage_templates')
+            || $user->hasPermissionIn($template->organization, 'review_applications');
     }
 
     /**
-     * Determine whether the user can create a template in an organization.
-     * Requires manage-templates.
+     * Determine whether the user can create a template.
      */
     public function create(User $user, Organization $organization): bool
     {
-        return Gate::forUser($user)->allows('manage-templates', $organization);
+        return $user->hasPermissionIn($organization, 'manage_templates');
     }
 
     /**
-     * Determine whether the user can update a template. Requires
-     * manage-templates in the template's organization.
+     * Determine whether the user can update a template.
      */
     public function update(User $user, ApplicationTemplate $template): bool
     {
-        return Gate::forUser($user)->allows('manage-templates', $template->organization);
+        return $user->hasPermissionIn($template->organization, 'manage_templates');
     }
 
     /**
-     * Determine whether the user can delete a template. Requires
-     * manage-templates in the template's organization.
+     * Determine whether the user can delete a template.
      */
     public function delete(User $user, ApplicationTemplate $template): bool
     {
-        return Gate::forUser($user)->allows('manage-templates', $template->organization);
+        return $user->hasPermissionIn($template->organization, 'manage_templates');
     }
 }

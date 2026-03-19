@@ -8,44 +8,54 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+
 /**
  * Handles creation, management, and display of job positions within an
- * organization. Creating, editing, and deleting require the create-positions
- * gate. Viewing open positions is available to any organization member.
+ * organization. index and show methods are accessible to guests to allow
+ * for public job browsing.
  */
 class JobPositionController extends Controller
 {
     /**
-     * Display all job positions for an organization. Members who pass the
-     * review-applications or create-positions gate see all statuses. Other
-     * members see only open positions.
+     * Display all job positions for an organization.
      */
     public function index(Organization $organization): View
     {
         $this->authorize('viewAny', [JobPosition::class, $organization]);
 
-        $positions = Gate::allows('review-applications', $organization)
-            || Gate::allows('create-positions', $organization)
-                ? $organization->jobPositions()->withCount('applications')->latest()->get()
-                : $organization->openPositions()->withCount('applications')->latest()->get();
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        $query = $organization->jobPositions();
+
+        $isStaff = $user && ($user->isChairmanOf($organization) || $user->hasPermissionIn($organization, 'review_applications'));
+
+        if ($isStaff) {
+            $query->withCount('applications');
+        } else {
+            $query->where('status', 'open');
+        }
+
+        $positions = $query->latest()->get();
 
         return view('job_positions.index', compact('organization', 'positions'));
     }
 
     /**
-     * Show the form for creating a new job position within the organization.
+     * Show the form for creating a new job position.
      */
     public function create(Organization $organization): View
     {
         $this->authorize('create', [JobPosition::class, $organization]);
 
-        return view('job_positions.create', compact('organization'));
+        $templates = $organization->templates()->withCount('fields')->get();
+
+        return view('job_positions.create', compact('organization', 'templates'));
     }
 
     /**
-     * Store a newly created job position in the database.
+     * Store a newly created job position.
      */
     public function store(Request $request, Organization $organization): RedirectResponse
     {
@@ -53,17 +63,15 @@ class JobPositionController extends Controller
 
         $validated = $request->validate([
             'title'        => ['required', 'string', 'max:255'],
+            'template_id'  => ['required', 'exists:application_templates,id'],
             'description'  => ['required', 'string'],
             'requirements' => ['required', 'string'],
             'status'       => ['required', 'in:open,closed'],
         ]);
 
-        /** @var User $user */
-        $user = Auth::user();
-
         $organization->jobPositions()->create([
             ...$validated,
-            'created_by' => $user->id,
+            'created_by' => Auth::id(),
         ]);
 
         return redirect()
@@ -72,8 +80,7 @@ class JobPositionController extends Controller
     }
 
     /**
-     * Display a job position and its application form to prospective
-     * applicants, or its full detail view to interviewers and the chairman.
+     * Display a single job position.
      */
     public function show(Organization $organization, JobPosition $jobPosition): View
     {
@@ -91,11 +98,13 @@ class JobPositionController extends Controller
     {
         $this->authorize('update', $jobPosition);
 
-        return view('job_positions.edit', compact('organization', 'jobPosition'));
+        $templates = $organization->templates()->withCount('fields')->get();
+
+        return view('job_positions.edit', compact('organization', 'jobPosition', 'templates'));
     }
 
     /**
-     * Update an existing job position in the database.
+     * Update an existing job position.
      */
     public function update(Request $request, Organization $organization, JobPosition $jobPosition): RedirectResponse
     {
@@ -103,6 +112,7 @@ class JobPositionController extends Controller
 
         $validated = $request->validate([
             'title'        => ['required', 'string', 'max:255'],
+            'template_id'  => ['required', 'exists:application_templates,id'],
             'description'  => ['required', 'string'],
             'requirements' => ['required', 'string'],
             'status'       => ['required', 'in:open,closed'],
@@ -116,8 +126,7 @@ class JobPositionController extends Controller
     }
 
     /**
-     * Delete a job position. This will cascade-delete all associated
-     * applications and interviews.
+     * Delete a job position.
      */
     public function destroy(Organization $organization, JobPosition $jobPosition): RedirectResponse
     {

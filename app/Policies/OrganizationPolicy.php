@@ -4,13 +4,12 @@ namespace App\Policies;
 
 use App\Models\Organization;
 use App\Models\User;
-use Illuminate\Support\Facades\Gate;
 
 /**
  * Authorization policy for Organization records. Creating organizations is
  * restricted to users with the chairman role. Viewing requires membership or
  * ownership. Updating and deleting are restricted to the organization's
- * chairman. Permission granting uses the manage-members gate.
+ * chairman.
  */
 class OrganizationPolicy
 {
@@ -34,12 +33,21 @@ class OrganizationPolicy
     }
 
     /**
-     * Determine whether the user can update an organization's details or
-     * manage its members. Restricted to the organization's chairman.
+     * Determine whether the user can update an organization's details.
+     * Restricted to the organization's chairman.
      */
     public function update(User $user, Organization $organization): bool
     {
         return $user->isChairmanOf($organization);
+    }
+
+    /**
+     * Determine whether the user can manage the organization's members.
+     * Requires the manage_members permission.
+     */
+    public function manageMembers(User $user, Organization $organization): bool
+    {
+        return $user->hasPermissionIn($organization, 'manage_members');
     }
 
     /**
@@ -49,15 +57,5 @@ class OrganizationPolicy
     public function delete(User $user, Organization $organization): bool
     {
         return $user->isChairmanOf($organization);
-    }
-
-    /**
-     * Determine whether the user can grant a permission to another member.
-     * Requires the manage-members gate plus holding the target permission.
-     */
-    public function grantPermission(User $user, Organization $organization, string $permissionName): bool
-    {
-        return Gate::forUser($user)->allows('manage-members', $organization)
-            && $user->hasPermissionIn($organization, $permissionName);
     }
 }

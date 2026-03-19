@@ -26,6 +26,7 @@ class JobPosition extends Model
 {
     protected $fillable = [
         'organization_id',
+        'template_id',
         'created_by',
         'title',
         'description',
@@ -48,6 +49,15 @@ class JobPosition extends Model
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    /**
+     * The application template associated with this position, which defines the
+     * fields applicants must fill out when applying.
+     */
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(ApplicationTemplate::class, 'template_id');
     }
 
     /**

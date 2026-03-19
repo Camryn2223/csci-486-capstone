@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
-use App\Models\ApplicationTemplate;
 use App\Models\JobPosition;
 use App\Models\Organization;
 use Illuminate\Http\RedirectResponse;
@@ -11,18 +10,13 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Handles the full lifecycle of job applications. Public users (anonymous
- * applicants) submit applications via unauthenticated routes. Authenticated
- * staff (interviewers and the chairman) review applications, update statuses,
- * and manage records. Document uploads during submission are handled inline
- * here rather than in DocumentController since they form part of the atomic
- * submission flow.
+ * Handles the full lifecycle of job applications. Public users submit via
+ * unauthenticated routes. Authenticated staff review and manage records.
  */
 class ApplicationController extends Controller
 {
     /**
-     * Display all applications for a given job position. Requires
-     * review_applications in the organization.
+     * Display all applications for a given job position.
      */
     public function index(Organization $organization, JobPosition $jobPosition): View
     {
@@ -37,8 +31,7 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Show the public application form for a job position. No authentication
-     * required. Aborts with 403 if the position is not open.
+     * Show the public application form for a job position.
      */
     public function create(Organization $organization, JobPosition $jobPosition): View
     {
@@ -46,18 +39,14 @@ class ApplicationController extends Controller
             abort(403, 'This position is not currently accepting applications.');
         }
 
-        $jobPosition->load('organization');
+        $jobPosition->load('template.fields', 'organization');
 
-        $templates = $organization->templates()->with('fields')->get();
-
-        return view('applications.create', compact('organization', 'jobPosition', 'templates'));
+        return view('applications.create', compact('organization', 'jobPosition'));
     }
 
     /**
-     * Store a new application submitted by an anonymous applicant. No
-     * authentication required. Validates contact details, prevents duplicate
-     * submissions from the same email address for the same position, validates
-     * required template fields, and stores all answers.
+     * Store a new application submitted by an anonymous applicant.
+     * Includes processing of custom template answers and file uploads.
      */
     public function store(Request $request, Organization $organization, JobPosition $jobPosition): RedirectResponse
     {
@@ -65,13 +54,15 @@ class ApplicationController extends Controller
             abort(403, 'This position is not currently accepting applications.');
         }
 
+        $template = $jobPosition->template()->with('fields')->firstOrFail();
+
         $validated = $request->validate([
             'applicant_name'  => ['required', 'string', 'max:255'],
             'applicant_email' => ['required', 'email', 'max:255'],
             'applicant_phone' => ['nullable', 'string', 'max:50'],
-            'template_id'     => ['required', 'exists:application_templates,id'],
             'answers'         => ['nullable', 'array'],
-            'answers.*'       => ['nullable', 'string'],
+            'answers.*'       => ['nullable'],
+            'document'        => ['nullable', 'file', 'max:10240', 'mimetypes:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png'],
         ]);
 
         $alreadyApplied = Application::where('applicant_email', $validated['applicant_email'])
@@ -84,8 +75,6 @@ class ApplicationController extends Controller
             ])->withInput();
         }
 
-        $template = ApplicationTemplate::with('fields')->findOrFail($validated['template_id']);
-
         $this->validateRequiredFields($template, $validated['answers'] ?? []);
 
         $application = Application::create([
@@ -97,13 +86,28 @@ class ApplicationController extends Controller
             'status'          => 'submitted',
         ]);
 
+        // Process Template Answers
         foreach ($template->fields as $field) {
             if (isset($validated['answers'][$field->id])) {
+                $val = $validated['answers'][$field->id];
+                
                 $application->answers()->create([
                     'template_field_id' => $field->id,
-                    'value'             => $validated['answers'][$field->id],
+                    'value'             => is_array($val) ? implode(', ', $val) : $val,
                 ]);
             }
+        }
+
+        // Process File Upload
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            $path = $file->store("documents/{$application->id}", 'local');
+
+            $application->documents()->create([
+                'filename' => $file->getClientOriginalName(),
+                'filepath' => $path,
+                'mimetype' => $file->getMimeType(),
+            ]);
         }
 
         return redirect()
@@ -112,8 +116,7 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Display a single application with all answers, documents, and
-     * interviews. Requires review_applications in the organization.
+     * Display a single application with all answers.
      */
     public function show(Application $application): View
     {
@@ -131,10 +134,7 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Update the status of an application. Requires review_applications in
-     * the organization.
-     *
-     * Valid transitions: submitted -> under_review -> no_longer_under_consideration | withdrawn
+     * Update the status of an application.
      */
     public function updateStatus(Request $request, Application $application): RedirectResponse
     {
@@ -150,13 +150,9 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Validates that all required template fields have a non-empty answer in
-     * the submitted answers array. Redirects back with errors if any are
-     * missing.
-     *
-     * @param  array<int, string> $answers Keyed by template_field_id
+     * Validates that all required template fields have a non-empty answer.
      */
-    private function validateRequiredFields(ApplicationTemplate $template, array $answers): void
+    private function validateRequiredFields($template, array $answers): void
     {
         $errors = [];
 

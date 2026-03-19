@@ -6,30 +6,26 @@ use App\Models\Application;
 use App\Models\Interview;
 use App\Models\Organization;
 use App\Models\User;
+use App\Notifications\InterviewScheduledNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 /**
  * Handles scheduling, updating, canceling, and feedback submission for
- * interviews. Creating and updating interviews requires the
- * schedule_interviews permission in the relevant organization. Since
- * applicants have no system accounts, viewing is restricted to authenticated
- * staff — the assigned interviewer or users with review_applications or
- * schedule_interviews.
+ * interviews.
  */
 class InterviewController extends Controller
 {
     /**
-     * Display the shared interview calendar for an organization, showing all
-     * scheduled interviews across all interviewers. Available to any member
-     * with review_applications or schedule_interviews.
+     * Display the shared interview calendar for an organization.
      */
     public function index(Organization $organization): View
     {
-        $this->authorize('view', $organization);
+        $this->authorize('viewAny', [Interview::class, $organization]);
 
         /** @var User $user */
         $user = Auth::user();
@@ -48,7 +44,7 @@ class InterviewController extends Controller
     }
 
     /**
-     * Show the form for scheduling a new interview for an application.
+     * Show the form for scheduling a new interview.
      */
     public function create(Application $application): View
     {
@@ -66,8 +62,7 @@ class InterviewController extends Controller
     }
 
     /**
-     * Store a newly scheduled interview. Checks for scheduling conflicts with
-     * the chosen interviewer before saving.
+     * Store a newly scheduled interview and notify the applicant.
      */
     public function store(Request $request, Application $application): RedirectResponse
     {
@@ -76,6 +71,8 @@ class InterviewController extends Controller
         $validated = $request->validate([
             'interviewer_id' => ['required', 'exists:users,id'],
             'scheduled_at'   => ['required', 'date', 'after:now'],
+            'email_subject'  => ['required', 'string', 'max:255'],
+            'email_body'     => ['required', 'string', 'max:5000'],
         ]);
 
         $interviewer = User::findOrFail($validated['interviewer_id']);
@@ -83,25 +80,31 @@ class InterviewController extends Controller
         if ($this->hasConflict($interviewer, $validated['scheduled_at'])) {
             return back()->withErrors([
                 'scheduled_at' => 'The selected interviewer already has an interview scheduled at this time.',
-            ]);
+            ])->withInput();
         }
 
-        Interview::create([
+        $interview = Interview::create([
             'application_id'  => $application->id,
             'interviewer_id'  => $validated['interviewer_id'],
             'scheduled_at'    => $validated['scheduled_at'],
             'status'          => 'scheduled',
         ]);
 
+        // Send notification to the applicant
+        Notification::route('mail', $application->applicant_email)
+            ->notify(new InterviewScheduledNotification(
+                $interview, 
+                $validated['email_subject'], 
+                $validated['email_body']
+            ));
+
         return redirect()
             ->route('applications.show', $application)
-            ->with('success', 'Interview scheduled successfully.');
+            ->with('success', 'Interview scheduled and email sent to applicant.');
     }
 
     /**
-     * Display a single interview's details. Visible to the assigned
-     * interviewer, the applicant on the linked application, and users with
-     * review_applications.
+     * Display a single interview's details.
      */
     public function show(Interview $interview): View
     {
@@ -134,8 +137,7 @@ class InterviewController extends Controller
     }
 
     /**
-     * Update a scheduled interview's time or assigned interviewer. Checks for
-     * conflicts with the (potentially new) interviewer before saving.
+     * Update a scheduled interview's time or assigned interviewer.
      */
     public function update(Request $request, Interview $interview): RedirectResponse
     {
@@ -181,8 +183,7 @@ class InterviewController extends Controller
     }
 
     /**
-     * Submit feedback notes for a completed interview. Only the assigned
-     * interviewer may submit feedback, and only once.
+     * Submit feedback notes for a completed interview.
      */
     public function submitFeedback(Request $request, Interview $interview): RedirectResponse
     {
@@ -226,8 +227,7 @@ class InterviewController extends Controller
 
     /**
      * Checks whether the given interviewer already has a scheduled interview
-     * within a 1-hour window of the proposed time. Optionally excludes a
-     * specific interview ID to allow updating an existing record.
+     * within a 1-hour window of the proposed time.
      */
     private function hasConflict(User $interviewer, string $scheduledAt, ?int $excludeId = null): bool
     {

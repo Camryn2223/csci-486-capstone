@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('granted_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
 
-            $table->unique(['organization_id', 'user_id', 'permission_id']);
+            $table->unique(['organization_id', 'user_id', 'permission_id'], 'org_user_permission_unique');
         });
     }
 

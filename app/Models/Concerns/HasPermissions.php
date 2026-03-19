@@ -2,6 +2,7 @@
 
 namespace App\Models\Concerns;
 
+use App\Enums\Permission as PermissionEnum;
 use App\Models\Organization;
 use App\Models\OrganizationUserPermission;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -27,10 +28,14 @@ trait HasPermissions
 
     /**
      * Returns true if this user holds the named permission within the given
-     * organization.
+     * organization. The chairman inherently holds all permissions.
      */
     public function hasPermissionIn(Organization $organization, string $permissionName): bool
     {
+        if ($this->isChairmanOf($organization)) {
+            return true;
+        }
+
         return $this->organizationPermissions()
             ->where('organization_id', $organization->id)
             ->whereHas('permission', fn ($q) => $q->where('name', $permissionName))
@@ -67,6 +72,10 @@ trait HasPermissions
      */
     public function permissionNamesIn(Organization $organization): array
     {
+        if ($this->isChairmanOf($organization)) {
+            return PermissionEnum::values();
+        }
+
         return Cache::remember(
             "user.{$this->id}.org.{$organization->id}.permissions",
             now()->addMinutes(15),
