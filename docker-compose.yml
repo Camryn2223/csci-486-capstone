@@ -56,6 +56,16 @@ services:
     networks:
       - laravel
 
+  mailpit:
+    image: axllent/mailpit
+    container_name: laravel_mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - laravel
+
 volumes:
   mysql_data:
 
