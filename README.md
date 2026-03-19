@@ -1,6 +1,6 @@
 # Project Name
 
-A Laravel application running in Docker with MySQL, structured using the **Model-View-Controller (MVC)** pattern.
+A Laravel application running in Docker with MySQL, structured using the **Model-View-Controller (MVC)** pattern and using **Vite** for frontend assets.
 
 ---
 
@@ -12,39 +12,52 @@ A Laravel application running in Docker with MySQL, structured using the **Model
 - [Configuring Email (Resend)](#configuring-email-resend)
 
 ### Daily Development
-- [Running the Container](#running-the-container)
-- [Stopping the Container](#stopping-the-container)
+- [Starting the App](#starting-the-app)
+- [Stopping the App](#stopping-the-app)
 - [Syncing with Git](#syncing-with-git)
 
 ### Tools & Interfaces
 - [phpMyAdmin](#phpmyadmin)
 - [Recommended VSCode Setup](#recommended-vscode-setup)
 
-### Container Management
-- [Resetting the Container](#resetting-the-container)
+### Reset & Recovery
+- [Resetting the Containers](#resetting-the-containers)
 - [Resetting the MySQL Database](#resetting-the-mysql-database)
 
 ### Code Reference
 - [MVC Architecture Overview](#mvc-architecture-overview)
 - [Directory Structure](#directory-structure)
 - [Where to Put Your Code](#where-to-put-your-code)
+- [Artisan Quick Reference](#artisan-quick-reference)
 
 ---
 
 ## Prerequisites
 
-Install the following on your machine regardless of operating system:
+Install the following on your machine before working on the project:
 
 | Tool | Download |
 |------|----------|
 | Git | https://git-scm.com/downloads |
 | Docker Desktop | https://www.docker.com/products/docker-desktop |
+| Node.js (LTS) | https://nodejs.org |
+
+`npm` is included with Node.js and is required for installing frontend dependencies and running Vite during development.
 
 **Windows users:** Docker Desktop requires WSL 2. The installer will prompt you to enable it. Follow Docker's instructions during install.
 
 **Mac users:** Install Docker Desktop for Mac (Apple Silicon or Intel depending on your chip). You can check your chip under Apple menu → About This Mac.
 
-After installing Docker Desktop, make sure it is **running** (the Docker whale icon should be visible in your taskbar/menu bar) before running any commands below.
+After installing Docker Desktop, make sure it is **running** before using any Docker commands below.
+
+You can verify your tools with:
+
+```bash
+git --version
+docker --version
+node -v
+npm -v
+````
 
 ---
 
@@ -52,9 +65,9 @@ After installing Docker Desktop, make sure it is **running** (the Docker whale i
 
 Do this once after cloning the repo.
 
-### 1. Clone the repository (if not done already)
+### 1. Clone the repository
 
-Go to a directory you want to place the project in before running these commands. The clone command will create a separate `csci-486-capstone` directory automatically within whatever directory you're already in.
+Go to the directory where you want the project to live before running these commands. The clone command will create a separate `csci-486-capstone` directory automatically.
 
 ```bash
 git clone https://github.com/Camryn2223/csci-486-capstone.git
@@ -67,18 +80,35 @@ cd csci-486-capstone
 docker compose up --build -d
 ```
 
-This will build the PHP/Nginx image, pull the MySQL image, install Composer dependencies, generate your `APP_KEY`, run database migrations, and start all services in the background. Wait for the containers to finish starting before moving on — you can watch progress with `docker compose logs app -f` and wait until you see `ready to handle connections`.
+This will build the PHP/Nginx image, pull the MySQL image, install Composer dependencies, generate your `APP_KEY`, run database migrations, and start all services in the background.
 
-### 3. Install frontend dependencies and build assets
+To watch the startup process:
+
+```bash
+docker compose logs app -f
+```
+
+Wait until the services finish starting before moving on.
+
+### 3. Install frontend dependencies
 
 ```bash
 npm install
-npm run build
 ```
 
-To watch for changes during development instead of building once, run `npm run dev` in a separate terminal and leave it running.
+This installs the JavaScript packages used by Vite.
 
-### 4. Open the app
+### 4. Start the Vite development server
+
+Open a **second terminal** in the project root and run:
+
+```bash
+npm run dev
+```
+
+Leave this running while you work. It watches your CSS and JavaScript files and rebuilds them automatically whenever they change.
+
+### 5. Open the app
 
 Go to [http://localhost:8080](http://localhost:8080) in your browser.
 
@@ -86,17 +116,17 @@ Go to [http://localhost:8080](http://localhost:8080) in your browser.
 
 ## Configuring Email (Resend)
 
-This app sends transactional emails for account verification, password resets, and interview notifications. Resend is the recommended email provider — it has a free tier of 3,000 emails/month and integrates natively with Laravel.
+This app sends transactional emails for account verification, password resets, and interview notifications. **Resend** is the recommended email provider. It has a free tier and integrates cleanly with Laravel.
 
-> **This section only needs to be followed once** by whoever sets up the Resend account. The package is installed automatically for all teammates via `composer.lock`. Teammates only need step 3 — adding the environment variables to their local `.env`.
+> This only needs to be set up once per developer machine. The package itself is installed for everyone through `composer.lock`. Each teammate only needs to add the correct local values to their own `.env`.
 
 ### 1. Create a free account
 
-Sign up at [resend.com](https://resend.com) and create an API key from the dashboard.
+Sign up at [https://resend.com](https://resend.com) and create an API key from the dashboard.
 
-### 2. Verify a sender address (if not a dev)
+### 2. Verify a sender address
 
-In the Resend dashboard, go to **Domains** and verify the email address or domain you want to send from. During development you can verify a personal email address — you do not need a custom domain.
+In the Resend dashboard, go to **Domains** and verify the email address or domain you want to send from. During development, you can verify a personal email address.
 
 ### 3. Update your `.env`
 
@@ -107,7 +137,9 @@ MAIL_FROM_ADDRESS="onboarding@resend.dev"
 MAIL_FROM_NAME="${APP_NAME}"
 ```
 
-Replace `re_your_api_key_here` with your actual API key from the Resend dashboard, and `you@yourdomain.com` with your verified sender address.
+Replace:
+
+* `onboarding@resend.dev` with your verified sender address if needed
 
 ### 4. Add the key to `config/services.php`
 
@@ -117,11 +149,17 @@ Replace `re_your_api_key_here` with your actual API key from the Resend dashboar
 ],
 ```
 
-> **Never commit your actual API key.** The `.env` file is git-ignored — only `.env.example` gets committed, and it should always have empty or placeholder values for secrets.
+> Never commit your real API key. The `.env` file is git-ignored. Only `.env.example` should be committed, and it should always contain placeholder values instead of secrets.
+
+If you update `.env` and the app does not pick up the change, clear config inside the container:
+
+```bash
+docker compose exec app php artisan config:clear
+```
 
 ---
 
-## Running the Container
+## Starting the App
 
 After first-time setup, start the containers with:
 
@@ -129,9 +167,20 @@ After first-time setup, start the containers with:
 docker compose up -d
 ```
 
-The `-d` flag runs them in the background. Your app will be at [http://localhost:8080](http://localhost:8080).
+Then start the Vite development server in a separate terminal:
 
-To see live logs:
+```bash
+npm run dev
+```
+
+Leave both running while developing.
+
+The app will be available at:
+
+* **Application:** [http://localhost:8080](http://localhost:8080)
+* **phpMyAdmin:** [http://localhost:8081](http://localhost:8081)
+
+To watch container logs live:
 
 ```bash
 docker compose logs -f
@@ -139,7 +188,9 @@ docker compose logs -f
 
 ---
 
-## Stopping the Container
+## Stopping the App
+
+To stop the containers:
 
 ```bash
 docker compose down
@@ -147,65 +198,99 @@ docker compose down
 
 This stops and removes the containers but **preserves your database data**.
 
+To stop the Vite dev server, press `Ctrl + C` in the terminal where `npm run dev` is running.
+
 ---
 
 ## Syncing with Git
 
 ### Daily workflow
 
-```bash
-# Pull the latest changes before starting work
-git pull origin main
+Before starting work each day:
 
-# After pulling, re-run migrations in case new ones were added
+```bash
+git pull origin main
 docker compose exec app php artisan migrate
 ```
 
-### If a teammate added new dependencies (`composer.json` changed)
+Then start the app if it is not already running:
 
-The container installs dependencies automatically on start. If you notice errors related to missing classes, rebuild:
+```bash
+docker compose up -d
+npm run dev
+```
+
+### If a teammate added new PHP dependencies (`composer.json` changed)
+
+The container installs dependencies automatically on startup. If you see missing-class errors, rebuild:
 
 ```bash
 docker compose down
 docker compose up --build -d
 ```
 
+### If a teammate added new frontend dependencies (`package.json` changed)
+
+Reinstall them locally:
+
+```bash
+npm install
+```
+
+Then restart the Vite dev server:
+
+```bash
+npm run dev
+```
+
 ### If a teammate changed `.env.example`
 
-Check the diff and manually copy any new variables into your local `.env`:
+Check the changes and manually copy any new variables into your own `.env`:
 
 ```bash
 git diff HEAD~1 .env.example
 ```
 
-Then open your `.env` and add any missing keys with your own local values.
+Then update your local `.env` with your own values.
 
 ### Never commit `.env`
 
-The `.env` file is in `.gitignore` and must never be committed. It contains secrets and local values that differ per machine. Always use `.env.example` to share new environment variables with the team — with placeholder values, never real secrets.
+The `.env` file is git-ignored and must never be committed. It contains secrets and machine-specific values. If the team needs to share a new environment variable, add it to `.env.example` with a placeholder value only.
 
 ---
 
 ## phpMyAdmin
 
-phpMyAdmin is included and runs automatically alongside the app. Once your containers are up, go to:
+phpMyAdmin is included and starts automatically with Docker.
+
+Once your containers are up, go to:
 
 **[http://localhost:8081](http://localhost:8081)**
 
-You will be logged in automatically using the credentials from your `.env` file (`DB_USERNAME` and `DB_PASSWORD`). From here you can browse tables, run SQL queries, inspect rows, and watch your data change in real time as you use the app — no extra login required.
+Use the database credentials from your `.env` file:
+
+* `DB_USERNAME`
+* `DB_PASSWORD`
+
+From phpMyAdmin you can:
+
+* browse tables
+* inspect rows
+* run SQL queries
+* confirm that your app is creating or updating data correctly
 
 ---
 
 ## Recommended VSCode Setup
 
-### 1. Install the following extensions
+### 1. Install these extensions
 
-- **PHP Intelephense** (`bmewburn.vscode-intelephense-client`)
-- **Laravel Extra Intellisense** (`amiralizadeh9480.laravel-extra-intellisense`)
+* **PHP Intelephense** (`bmewburn.vscode-intelephense-client`)
+* **Laravel Extra Intellisense** (`amiralizadeh9480.laravel-extra-intellisense`)
 
 ### 2. Disable VSCode's built-in PHP features
 
-Open VSCode settings with `Ctrl+Shift+P`, type `Open User Settings JSON`, and add:
+Open VSCode settings JSON and add:
 
 ```json
 "php.suggest.basic": false,
@@ -214,27 +299,31 @@ Open VSCode settings with `Ctrl+Shift+P`, type `Open User Settings JSON`, and ad
 
 ### 3. Install PHP and Composer locally
 
-This is required so the extensions above can read the project's dependencies for autocomplete and hover documentation. The app itself still runs entirely in Docker — this is only for IDE tooling.
+This is required for editor tooling only. The app itself still runs in Docker.
 
-**Windows:**
-1. Download PHP 8.4 **VS17 x64 Non Thread Safe** zip from https://windows.php.net/download, create a folder at `C:\php`, and extract the zip contents into it
-2. Add `C:\php` to your system PATH:
-   1. Press `Windows + S`, search **Environment Variables**, and click **Edit the system environment variables**
-   2. Click **Environment Variables** at the bottom
-   3. Under **System variables**, find and double-click **Path**
-   4. Click **New** and type `C:\php`
-   5. Click **OK** on all three windows
-   6. Close and reopen any terminal windows for the change to take effect
-3. Download and run `Composer-Setup.exe` from https://getcomposer.org/download
+**Windows**
 
-**Mac:**
+1. Download PHP 8.4 **VS17 x64 Non Thread Safe** zip from [https://windows.php.net/download](https://windows.php.net/download)
+2. Create `C:\php`
+3. Extract the zip into `C:\php`
+4. Add `C:\php` to your system `Path`
+5. Download and run `Composer-Setup.exe` from [https://getcomposer.org/download](https://getcomposer.org/download)
+
+**Mac**
+
 ```bash
 brew install php
 brew install composer
 ```
-If you don't have Homebrew: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
 
-**Linux (Ubuntu/Debian):**
+If Homebrew is not installed:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+**Linux (Ubuntu/Debian)**
+
 ```bash
 sudo apt update
 sudo apt install php-cli php-mbstring unzip curl
@@ -242,7 +331,8 @@ curl -sS https://getcomposer.org/installer | php
 sudo mv composer.phar /usr/local/bin/composer
 ```
 
-**Linux (Arch):**
+**Linux (Arch)**
+
 ```bash
 sudo pacman -S php composer
 ```
@@ -254,72 +344,92 @@ php -v
 composer -v
 ```
 
-### 4. Enable php.ini extensions
+### 4. Enable required PHP extensions
 
-**Windows:**
-1. Open `C:\php\php.ini` and uncomment the following lines by removing the `;`:
+**Windows**
+
+1. Open `C:\php\php.ini`
+2. Uncomment these lines by removing the leading `;`:
+
    ```
    extension=fileinfo
    extension=zip
    ```
-2. Save the file
 
-**Mac:**
-1. Find your php.ini file:
+**Mac**
+
+1. Find your loaded config file:
+
    ```bash
    php --ini | grep "Loaded Configuration"
    ```
-2. Open the file it outputs and uncomment the following lines by removing the `;`:
+2. Open that file and uncomment:
+
    ```
    extension=fileinfo
    extension=zip
    ```
-3. Save the file
 
-**Linux (Arch-based):**
-1. Open `/etc/php/php.ini` and uncomment the following lines by removing the `;`:
+**Linux (Arch-based)**
+
+1. Open `/etc/php/php.ini`
+2. Uncomment:
+
    ```
    extension=zip
    extension=iconv
    ```
-2. Save the file
 
-**Linux (Ubuntu/Debian):**
+**Linux (Ubuntu/Debian)**
+
 ```bash
 sudo apt install php8.4-fileinfo php8.4-zip
 ```
-These are installed as separate packages on Ubuntu/Debian and enabled automatically — no php.ini editing needed.
 
-### 5. Install dependencies locally
+These are installed as separate packages and enabled automatically.
 
-Run this once while inside the project directory after cloning, and again any time `composer.json` changes.
+### 5. Install PHP dependencies locally for IntelliSense
 
-> **Note:** You may need to restart VSCode before doing this.
+Run this once after cloning, and again any time `composer.json` changes:
 
 ```bash
 composer install
 ```
 
-This creates the `vendor/` folder on your machine. Intelephense will now work properly.
+This creates the local `vendor/` folder so your editor can resolve Laravel classes properly.
 
 ---
 
-## Resetting the Container
+## Resetting the Containers
 
-Use this if a container is broken or you want a clean rebuild of the image (e.g., after Dockerfile changes):
+Use this if a container is broken or you need a clean rebuild after changing Docker-related files:
 
 ```bash
 docker compose down
 docker compose up --build -d
 ```
 
-This rebuilds the image from scratch and restarts everything. Your database volume is preserved.
+Your database volume is preserved.
+
+If frontend packages are missing afterward, rerun:
+
+```bash
+npm install
+```
+
+Then restart Vite:
+
+```bash
+npm run dev
+```
 
 ---
 
 ## Resetting the MySQL Database
 
-> ⚠️ This permanently deletes all data in your local database. Use only when you want a clean slate.
+> Warning: this permanently deletes all local database data.
+
+Use this only if you want a completely fresh local database.
 
 ```bash
 docker compose down -v
@@ -327,34 +437,44 @@ docker compose up -d
 docker compose exec app php artisan migrate
 ```
 
-The `-v` flag removes the named Docker volume that stores MySQL data. On the next `up`, the database is recreated from scratch and migrations are re-run.
+The `-v` flag removes the named Docker volume that stores MySQL data.
+
+After resetting, start the frontend dev server again if needed:
+
+```bash
+npm run dev
+```
 
 ---
 
 ## MVC Architecture Overview
 
-This project follows the **Model-View-Controller** pattern. Every feature you build should be split across these three responsibilities. Do not mix them.
+This project follows the **Model-View-Controller** pattern. Every feature should be split across these three responsibilities.
 
-```
+```text
 Request → Router → Controller → Model → Controller → View → Response
 ```
 
 ### Model
 
-The Model represents your data and all business logic tied to it. Models live in `app/Models/` and map directly to a database table via Laravel's Eloquent ORM. A model is responsible for:
+The Model represents your data and business logic. Models live in `app/Models/` and map to database tables through Eloquent ORM.
 
-- Defining the shape of a database record (fillable fields, casts, relationships)
-- Querying and persisting data
-- Defining relationships to other models (`hasMany`, `belongsTo`, etc.)
+A model is responsible for:
 
-A Model should **not** know anything about HTTP requests or how data is displayed.
+* defining fillable fields, casts, and relationships
+* querying and persisting data
+* encapsulating record-level business rules
+
+A Model should **not** know anything about HTTP requests or HTML rendering.
 
 ```php
 // app/Models/Post.php
-class Post extends Model {
+class Post extends Model
+{
     protected $fillable = ['title', 'body', 'user_id'];
 
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 }
@@ -362,12 +482,15 @@ class Post extends Model {
 
 ### View
 
-The View is the HTML that gets sent to the browser. Views live in `resources/views/` and use Laravel's **Blade** templating engine (`.blade.php` files). A view is responsible for:
+The View is the HTML returned to the browser. Views live in `resources/views/` and use Blade templates.
 
-- Rendering HTML using data passed to it from the Controller
-- Reusable layouts and components (`@extends`, `@include`, `@component`)
+A view is responsible for:
 
-A View should **not** query the database or contain business logic. It only displays what it is given.
+* rendering HTML from controller-provided data
+* reusing layouts and components
+* displaying data only
+
+A View should **not** query the database or contain business logic.
 
 ```blade
 {{-- resources/views/posts/index.blade.php --}}
@@ -382,19 +505,24 @@ A View should **not** query the database or contain business logic. It only disp
 
 ### Controller
 
-The Controller is the glue between a Route, the Model, and the View. Controllers live in `app/Http/Controllers/` and are responsible for:
+The Controller connects routes, models, and views. Controllers live in `app/Http/Controllers/`.
 
-- Receiving an HTTP request from a route
-- Calling the appropriate Model(s) to fetch or persist data
-- Passing data to a View and returning the response
+A controller is responsible for:
 
-A Controller should **not** contain raw SQL or HTML. Keep controller methods short — if a method grows long, move logic into the Model or a dedicated service class.
+* receiving the request
+* calling the appropriate model or service
+* returning the correct view or redirect
+
+A Controller should **not** contain raw SQL or large amounts of business logic.
 
 ```php
 // app/Http/Controllers/PostController.php
-class PostController extends Controller {
-    public function index(): View {
+class PostController extends Controller
+{
+    public function index(): View
+    {
         $posts = Post::latest()->get();
+
         return view('posts.index', compact('posts'));
     }
 }
@@ -402,47 +530,52 @@ class PostController extends Controller {
 
 ### Router
 
-Routes are not a formal MVC layer, but they are the entry point that ties everything together. Routes live in `routes/web.php` (browser) and `routes/api.php` (API). A route maps a URL + HTTP method to a Controller method.
+Routes are the entry point to the application. They live in:
+
+* `routes/web.php` for browser routes
+* `routes/api.php` for API routes
+
+A route maps a URL and HTTP method to a controller action.
 
 ```php
-// routes/web.php
 Route::get('/posts', [PostController::class, 'index']);
 Route::post('/posts', [PostController::class, 'store']);
 ```
 
-### The complete flow for a page request
+### Complete request flow
 
 1. Browser sends `GET /posts`
-2. `routes/web.php` matches the URL and calls `PostController@index`
-3. The controller calls `Post::latest()->get()` on the Model
-4. The Model queries MySQL and returns a collection
-5. The controller passes the collection to `resources/views/posts/index.blade.php`
-6. The View renders HTML and sends it back to the browser
+2. `routes/web.php` matches the request
+3. Laravel calls `PostController@index`
+4. The controller fetches data from `Post`
+5. The model queries MySQL and returns results
+6. The controller passes data to a Blade view
+7. The view renders HTML and returns the response
 
 ---
 
 ## Directory Structure
 
-```
+```text
 project-root/
 ├── app/                             # All server-side application code
 │   ├── Http/
 │   │   └── Controllers/
-│   │       └── Controller.php       # [CONTROLLER] Base controller - your controllers extend this
+│   │       └── Controller.php       # [CONTROLLER] Base controller
 │   ├── Policies/
-│   │   └── ApplicationPolicy.php    # [POLICY] Authorization rules per resource - your policies live here
+│   │   └── ApplicationPolicy.php    # [POLICY] Authorization rules per resource
 │   ├── Models/
 │   │   ├── Concerns/
-│   │   │   ├── HasInterviewerFeatures.php   # [MODEL] Trait — relationships and methods for interviewer users
-│   │   │   └── HasChairmanFeatures.php      # [MODEL] Trait — relationships and methods for chairman users
-│   │   └── User.php                         # [MODEL] Default User model - add your models alongside this
+│   │   │   ├── HasInterviewerFeatures.php   # [MODEL] Trait for interviewer-specific logic
+│   │   │   └── HasChairmanFeatures.php      # [MODEL] Trait for chairman-specific logic
+│   │   └── User.php                         # [MODEL] Default User model
 │   └── Providers/
 │       └── AppServiceProvider.php   # Gate definitions and application bootstrapping
-├── bootstrap/                       # Laravel bootstrapping - do not edit
+├── bootstrap/                       # Laravel bootstrapping
 │   ├── app.php
 │   ├── providers.php
 │   └── cache/
-├── config/                          # Laravel configuration files - edit these to change app behaviour
+├── config/                          # Laravel configuration
 │   ├── app.php
 │   ├── auth.php
 │   ├── cache.php
@@ -456,59 +589,59 @@ project-root/
 │   └── session.php
 ├── database/
 │   ├── factories/
-│   │   └── UserFactory.php          # [MODEL] Fake data generator for User - add yours here
-│   ├── migrations/                  # [MODEL] Every schema change goes here, never edit the DB directly
+│   │   └── UserFactory.php          # [MODEL] Fake data generator
+│   ├── migrations/                  # [MODEL] Database schema changes
 │   │   ├── 0001_01_01_000000_create_users_table.php
 │   │   ├── 0001_01_01_000001_create_cache_table.php
 │   │   └── 0001_01_01_000002_create_jobs_table.php
 │   └── seeders/
-│       └── DatabaseSeeder.php       # [MODEL] Entry point for seeding the database
-├── docker/                          # Docker support files - do not edit unless you know what you're doing
+│       └── DatabaseSeeder.php       # [MODEL] Seeder entry point
+├── docker/                          # Docker support files
 │   ├── mysql/
 │   │   └── init.sql
 │   ├── nginx.conf
 │   └── start.sh
-├── public/                          # Web root - only index.php and compiled assets live here
+├── public/                          # Web root
 │   ├── index.php
 │   ├── favicon.ico
 │   ├── robots.txt
 │   └── .htaccess
 ├── resources/
 │   ├── css/
-│   │   └── app.css                  # Raw CSS - compiled by Vite
+│   │   └── app.css                  # Raw CSS compiled by Vite
 │   ├── js/
-│   │   ├── app.js                   # Raw JS entry point - compiled by Vite
+│   │   ├── app.js                   # Raw JS entry point compiled by Vite
 │   │   └── bootstrap.js
-│   └── views/                       # [VIEW] All Blade templates live here
+│   └── views/                       # [VIEW] All Blade templates
 │       ├── auth/                    # Login, register, 2FA, password reset views
 │       └── welcome.blade.php
 ├── routes/
-│   ├── web.php                      # [ROUTER] Browser-facing routes -> Controllers
+│   ├── web.php                      # [ROUTER] Browser-facing routes
 │   └── console.php                  # Artisan console command routes
-├── storage/                         # Logs, cache, sessions - git-ignored, never commit contents
+├── storage/                         # Logs, cache, sessions
 │   ├── app/
 │   ├── framework/
 │   └── logs/
 ├── tests/
 │   ├── TestCase.php
 │   ├── Feature/
-│   │   └── ExampleTest.php          # Tests that cover full request -> response flows
+│   │   └── ExampleTest.php          # Full request/response tests
 │   └── Unit/
-│       └── ExampleTest.php          # Tests that cover individual classes and methods
-├── .editorconfig                    # Editor formatting rules (committed)
-├── .env                             # Your local environment variables - git-ignored, never commit this
-├── .env.example                     # Shared environment variable template - committed to git
-├── .gitattributes                   # Git line-ending and diff settings
+│       └── ExampleTest.php          # Unit tests
+├── .editorconfig
+├── .env                             # Local environment variables, never commit
+├── .env.example                     # Shared environment template
+├── .gitattributes
 ├── .gitignore
-├── artisan                          # Laravel CLI entry point - do not edit
+├── artisan                          # Laravel CLI entry point
 ├── composer.json                    # PHP dependency definitions
-├── composer.lock                    # Locked PHP dependency versions - always commit this
+├── composer.lock                    # Locked PHP dependency versions
 ├── docker-compose.yml               # Docker service definitions
 ├── Dockerfile                       # PHP/Nginx container definition
-├── package.json                     # JS dependency definitions (for Vite/frontend assets)
-├── phpunit.xml                      # PHPUnit test configuration
+├── package.json                     # JS dependency definitions
+├── phpunit.xml                      # PHPUnit configuration
 ├── README.md
-└── vite.config.js                   # Vite bundler configuration for CSS/JS assets
+└── vite.config.js                   # Vite configuration
 ```
 
 ---
@@ -517,40 +650,43 @@ project-root/
 
 ### Models — `app/Models/`
 
-One file per database table. The model defines the data shape, relationships, and any logic for querying or mutating that data.
+Create one model per database table.
 
 ```bash
 docker compose exec app php artisan make:model Post -m
 ```
 
-The `-m` flag creates a matching migration at the same time.
+The `-m` flag creates a migration too.
 
-Relationship methods, query scopes, and attribute accessors/mutators all belong on the model. Raw SQL does not — use Eloquent methods.
+Put these on the model:
+
+* relationships
+* query scopes
+* accessors and mutators
+* record-level data logic
+
+Do not put raw SQL directly in controllers when Eloquent can handle it.
+
+---
 
 ### Concerns (Model Traits) — `app/Models/Concerns/`
 
-Concerns are PHP traits that split role-specific or reusable logic off of a model into their own files. Use them when a model is growing large or when a subset of methods only applies to a specific role or context.
+Use concerns when a model is getting large or when some behavior applies only in certain roles or contexts.
 
-There is no Artisan command for traits — create them manually:
+There is no Artisan command for traits. Create them manually:
 
-```
+```text
 app/Models/Concerns/HasInterviewerFeatures.php
 app/Models/Concerns/HasChairmanFeatures.php
 ```
 
-A concern should follow this structure:
+Example:
 
 ```php
-// app/Models/Concerns/HasChairmanFeatures.php
 namespace App\Models\Concerns;
 
 trait HasChairmanFeatures
 {
-    /**
-     * Organizations where this user is the chairman (owner).
-     *
-     * @return HasMany<Organization>
-     */
     public function ownedOrganizations(): HasMany
     {
         return $this->hasMany(Organization::class, 'chairman_id');
@@ -558,10 +694,9 @@ trait HasChairmanFeatures
 }
 ```
 
-Then apply it to the model:
+Then use the trait in the model:
 
 ```php
-// app/Models/User.php
 use App\Models\Concerns\HasChairmanFeatures;
 
 class User extends Authenticatable
@@ -570,40 +705,45 @@ class User extends Authenticatable
 }
 ```
 
-Methods defined in a trait are called identically to methods defined directly on the model.
+---
 
 ### Controllers — `app/Http/Controllers/`
 
-One file per resource. A controller should have at most these 7 methods, matching standard CRUD actions:
-
-| Method | Route | What it does |
-|--------|-------|--------------|
-| `index` | `GET /posts` | List all records |
-| `create` | `GET /posts/create` | Show the create form |
-| `store` | `POST /posts` | Save a new record |
-| `show` | `GET /posts/{id}` | Show one record |
-| `edit` | `GET /posts/{id}/edit` | Show the edit form |
-| `update` | `PUT /posts/{id}` | Save changes to a record |
-| `destroy` | `DELETE /posts/{id}` | Delete a record |
+Use one controller per resource.
 
 ```bash
 docker compose exec app php artisan make:controller PostController --resource
 ```
 
-The `--resource` flag stubs all 7 methods for you.
+A resource controller gives you the standard 7 CRUD methods:
+
+| Method    | Route                  | Purpose           |
+| --------- | ---------------------- | ----------------- |
+| `index`   | `GET /posts`           | List all records  |
+| `create`  | `GET /posts/create`    | Show create form  |
+| `store`   | `POST /posts`          | Save a new record |
+| `show`    | `GET /posts/{id}`      | Show one record   |
+| `edit`    | `GET /posts/{id}/edit` | Show edit form    |
+| `update`  | `PUT /posts/{id}`      | Save changes      |
+| `destroy` | `DELETE /posts/{id}`   | Delete record     |
+
+Keep controller methods short.
+
+---
 
 ### Policies — `app/Policies/`
 
-One file per resource. A policy defines who is allowed to perform each action on that resource. Laravel automatically maps a policy to its model by naming convention — `ApplicationPolicy` maps to `Application`.
+Use one policy per model/resource.
 
 ```bash
 docker compose exec app php artisan make:policy ApplicationPolicy --model=Application
 ```
 
-The `--model` flag stubs all 7 methods and type-hints the model automatically.
+This creates a policy class with action methods stubbed out.
+
+Example:
 
 ```php
-// app/Policies/ApplicationPolicy.php
 class ApplicationPolicy
 {
     public function view(User $user, Application $application): bool
@@ -613,14 +753,14 @@ class ApplicationPolicy
 }
 ```
 
-Then in a controller:
+In controllers:
 
 ```php
-$this->authorize('create', Application::class);  // no model instance needed
-$this->authorize('view', $application);           // pass the instance for record-level actions
+$this->authorize('create', Application::class);
+$this->authorize('view', $application);
 ```
 
-And in Blade:
+In Blade:
 
 ```blade
 @can('view', $application)
@@ -628,74 +768,93 @@ And in Blade:
 @endcan
 ```
 
+---
+
 ### Gates — `app/Providers/AppServiceProvider.php`
 
-Gates define named, reusable permission checks that policies and controllers reference. This project uses five gates corresponding to the five organization-scoped permissions:
+Gates define reusable named permission checks.
 
-| Gate | Permission |
-|------|------------|
-| `create-positions` | Create, edit, delete job positions |
-| `manage-templates` | Create, edit, delete application templates |
-| `review-applications` | View and manage applications |
-| `schedule-interviews` | Schedule and update interviews |
-| `manage-members` | Grant and revoke permissions for members |
+This project uses these organization-scoped gates:
 
-Gates are defined in `AppServiceProvider::boot()` and called via `Gate::allows()`:
+| Gate                  | Permission                                 |
+| --------------------- | ------------------------------------------ |
+| `create-positions`    | Create, edit, delete job positions         |
+| `manage-templates`    | Create, edit, delete application templates |
+| `review-applications` | View and manage applications               |
+| `schedule-interviews` | Schedule and update interviews             |
+| `manage-members`      | Grant and revoke member permissions        |
+
+Example usage:
 
 ```php
 Gate::allows('review-applications', $organization)
 ```
 
+---
+
 ### Views — `resources/views/`
 
-One subfolder per resource, mirroring your controller. A controller named `PostController` should use views in `resources/views/posts/`.
+Use one subfolder per resource, matching the controller name.
 
-```
+```text
 resources/views/
 ├── layouts/
-│   └── app.blade.php       # Main page shell (nav, header, footer)
+│   └── app.blade.php
 ├── posts/
-│   ├── index.blade.php     # PostController@index
-│   ├── create.blade.php    # PostController@create
-│   ├── edit.blade.php      # PostController@edit
-│   └── show.blade.php      # PostController@show
+│   ├── index.blade.php
+│   ├── create.blade.php
+│   ├── edit.blade.php
+│   └── show.blade.php
 └── auth/
     ├── login.blade.php
     ├── register.blade.php
     └── ...
 ```
 
-Views receive data from the controller via `view('posts.index', compact('posts'))`. Never query the database inside a view.
+Controllers pass data into views like this:
+
+```php
+return view('posts.index', compact('posts'));
+```
+
+Do not query the database from Blade views.
+
+---
 
 ### Routes — `routes/web.php`
 
-Register a full set of resourceful routes for a controller in one line:
+Register a resource controller in one line:
 
 ```php
 Route::resource('posts', PostController::class);
 ```
 
-This automatically creates all 7 routes and maps them to the correct controller methods.
+Use:
 
-Use `routes/web.php` for anything that returns HTML. Use `routes/api.php` for anything that returns JSON.
+* `routes/web.php` for HTML pages
+* `routes/api.php` for JSON APIs
+
+---
 
 ### Migrations — `database/migrations/`
 
-Every change to the database schema must be a migration. Never edit the database directly.
+Every schema change must be represented by a migration.
 
 ```bash
 docker compose exec app php artisan make:migration add_published_at_to_posts_table
 ```
 
-After creating or pulling new migrations:
+Run pending migrations with:
 
 ```bash
 docker compose exec app php artisan migrate
 ```
 
+---
+
 ### Seeders — `database/seeders/`
 
-Use seeders to populate the database with default or test data.
+Use seeders for default, test, or demo data.
 
 ```bash
 docker compose exec app php artisan db:seed
@@ -705,22 +864,22 @@ docker compose exec app php artisan db:seed
 
 ## Artisan Quick Reference
 
-All `artisan` commands must be run inside the container:
+All Artisan commands must be run inside the container:
 
 ```bash
 docker compose exec app php artisan <command>
 ```
 
-| Command | What it does |
-|---------|--------------|
-| `make:model Post -m` | Create a model + migration |
-| `make:controller PostController --resource` | Create a resourceful controller |
-| `make:policy ApplicationPolicy --model=Application` | Create a policy for a specific model with stubbed methods |
-| `make:policy ApplicationPolicy` | Create an empty policy class |
-| `make:migration add_field_to_table` | Create a migration |
-| `make:seeder PostSeeder` | Create a seeder |
-| `migrate` | Run pending migrations |
-| `migrate:rollback` | Undo the last batch of migrations |
-| `db:seed` | Run seeders |
-| `route:list` | List all registered routes |
-| `tinker` | Open an interactive Laravel shell |
+| Command                                             | What it does                         |
+| --------------------------------------------------- | ------------------------------------ |
+| `make:model Post -m`                                | Create a model and migration         |
+| `make:controller PostController --resource`         | Create a resource controller         |
+| `make:policy ApplicationPolicy --model=Application` | Create a policy with stubbed methods |
+| `make:policy ApplicationPolicy`                     | Create an empty policy               |
+| `make:migration add_field_to_table`                 | Create a migration                   |
+| `make:seeder PostSeeder`                            | Create a seeder                      |
+| `migrate`                                           | Run pending migrations               |
+| `migrate:rollback`                                  | Roll back the last migration batch   |
+| `db:seed`                                           | Run seeders                          |
+| `route:list`                                        | Show all registered routes           |
+| `tinker`                                            | Open the Laravel REPL                |

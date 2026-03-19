@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -33,11 +34,7 @@ class InterviewController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        $canViewAll = $user->isChairmanOf($organization)
-            || $user->hasPermissionIn($organization, 'review_applications')
-            || $user->hasPermissionIn($organization, 'schedule_interviews');
-
-        $interviews = $canViewAll
+        $interviews = Gate::allows('viewAny', [Interview::class, $organization])
             ? Interview::whereHas('application.jobPosition', fn ($q) => $q->where('organization_id', $organization->id))
                 ->with(['application.jobPosition', 'interviewer'])
                 ->upcoming()

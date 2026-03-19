@@ -8,30 +8,26 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-
 /**
  * Handles creation, management, and display of job positions within an
- * organization. Creating, editing, and deleting require the create_positions
- * permission. Viewing open positions is available to any organization member.
+ * organization. Creating, editing, and deleting require the create-positions
+ * gate. Viewing open positions is available to any organization member.
  */
 class JobPositionController extends Controller
 {
     /**
-     * Display all job positions for an organization. Members with
-     * review_applications or create_positions see all statuses. Other members
-     * see only open positions.
+     * Display all job positions for an organization. Members who pass the
+     * review-applications or create-positions gate see all statuses. Other
+     * members see only open positions.
      */
     public function index(Organization $organization): View
     {
-        $this->authorize('view', $organization);
+        $this->authorize('viewAny', [JobPosition::class, $organization]);
 
-        /** @var User $user */
-        $user = Auth::user();
-
-        $positions = $user->hasPermissionIn($organization, 'review_applications')
-            || $user->hasPermissionIn($organization, 'create_positions')
-            || $user->isChairmanOf($organization)
+        $positions = Gate::allows('review-applications', $organization)
+            || Gate::allows('create-positions', $organization)
                 ? $organization->jobPositions()->withCount('applications')->latest()->get()
                 : $organization->openPositions()->withCount('applications')->latest()->get();
 
