@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendar</title>
+
+    <!-- Using FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #1a1d21;
+            color: #e6e6e6;
+        }
+
+        /* Top Purple Bar */
+        .navbar {
+            width: 100%;
+            background: #6d3fa9;
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #3e215c;
+            box-sizing: border-box;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 22px;
+            color: white;
+        }
+
+        /* Control Bar */
+        .control-bar {
+            width: 1100px;
+            margin: 30px auto 10px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            padding: 10px 18px;
+            background: #6d3fa9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: #593287;
+        }
+
+        .role-select {
+            padding: 10px;
+            background: #1f2327;
+            color: #e6e6e6;
+            border: 1px solid #3a3f45;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        /* Calendar Container */
+        #calendar {
+            max-width: 1100px;
+            margin: 20px auto;
+            background: #24282d;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #2f343a;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        /* Dark theme overrides */
+        .fc {
+            color: #e6e6e6;
+        }
+
+        .fc-toolbar-title {
+            color: #ffffff;
+        }
+
+        .fc-button {
+            background: #6d3fa9 !important;
+            border: none !important;
+        }
+
+        .fc-button:hover {
+            background: #593287 !important;
+        }
+
+        .fc-daygrid-day {
+            background: #1f2327;
+        }
+
+        .fc-daygrid-day-number {
+            color: #cfcfcf;
+        }
+
+        .fc-event {
+            background: #6d3fa9;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Purple Top Bar -->
+    <div class="navbar">
+        <h1>Website Name</h1>
+    </div>
+
+    <!-- Back Button + Role Selector -->
+    <div class="control-bar">
+        <button class="back-btn" id="backBtn">Back to Dashboard</button>
+
+        <select class="role-select" id="roleSelect">
+            <option value="interviewer">Interviewer Dashboard</option>
+            <option value="admin">Admin Dashboard</option>
+        </select>
+    </div>
+
+    <!-- Calendar -->
+    <div id="calendar"></div>
+
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                height: 'auto',
+
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+
+                events: [
+                    {
+                        title: 'Sample Interview',
+                        start: new Date().toISOString().split('T')[0]
+                    }
+                ],
+
+                dateClick: function(info) {
+                    alert('Clicked date: ' + info.dateStr);
+                }
+            });
+
+            calendar.render();
+        });
+
+        // Back button logic
+        document.getElementById("backBtn").addEventListener("click", () => {
+            const role = document.getElementById("roleSelect").value;
+
+            if (role === "admin") {
+                window.location.href = "adminDashboard.html";
+            } else {
+                window.location.href = "interviewerDashboard.html";
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Company Name Here</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #1a1d21;
+            color: #e6e6e6;
+        }
+
+        .navbar {
+            background: #6d3fa9;
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #3e215c;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 22px;
+            color: white;
+        }
+
+        .navbar .subtag {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-left: 6px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .bell-default {
+            font-size: 20px;
+            cursor: pointer;
+            color: white;
+            transition: 0.2s;
+        }
+
+        .bell-alert {
+            font-size: 20px;
+            cursor: pointer;
+            color: #ff4d4d;
+            text-shadow: 0 0 10px #ff4d4d, 0 0 20px #ff4d4d;
+            display: none;
+            transition: 0.2s;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .navbar a:hover {
+            color: #e9d6ff;
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 850px;
+            margin-left: 40px;
+            margin-right: 580px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #6d3fa9;
+        }
+
+        .card {
+            background: #24282d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            border: 1px solid #2f343a;
+        }
+
+        /* Calendar Box */
+        .calendar-placeholder {
+            position: fixed;
+            top: 50%;
+            right: 40px;
+            transform: translateY(-50%);
+            width: 520px;
+            height: 70vh;
+            background: #2b3036;
+            border: 1px solid #3e215c;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+        }
+
+        .calendar-title {
+            font-size: 22px;
+            color: #cfcfcf;
+            margin-bottom: 10px;
+        }
+
+        .calendar-content {
+            margin-top: 20px;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .calendar-btn {
+            margin-top: auto;
+            margin-bottom: 20px;
+            padding: 10px 16px;
+            background: #6d3fa9;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .calendar-btn:hover {
+            background: #593287;
+        }
+
+        /* Test Boxes */
+        .company-test-box,
+        .notif-test-box,
+        .interview-test-box,
+        .applicant-test-box {
+            position: fixed;
+            width: 220px;
+            background: #2b3036;
+            border: 1px solid #3e215c;
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+            z-index: 999;
+            font-size: 14px;
+        }
+
+        .company-test-box { top: 90px; right: 40px; }
+        .applicant-test-box { top: 90px; right: 280px; }
+        .notif-test-box { top: 270px; right: 40px; }
+        .interview-test-box { top: 270px; right: 280px; }
+
+        .company-test-box input,
+        .interview-test-box input,
+        .applicant-test-box input {
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #3a3f45;
+            background: #1f2327;
+            color: #e6e6e6;
+        }
+
+        .company-test-box button,
+        .notif-test-box button,
+        .interview-test-box button,
+        .applicant-test-box button {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: none;
+            background: #6d3fa9;
+            color: white;
+            cursor: pointer;
+        }
+
+        .company-test-box button:hover,
+        .notif-test-box button:hover,
+        .interview-test-box button:hover,
+        .applicant-test-box button:hover {
+            background: #593287;
+        }
+
+        /* Entry styling */
+        .entry-box {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #1f2327;
+            border: 1px solid #3a3f45;
+            border-radius: 6px;
+        }
+
+        .entry-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .status {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: inline-block;
+        }
+
+        .status-needs-review { background: #004d5e; color: #7eeaff; }
+        .status-schedule-interview { background: #3a245a; color: #c7a6ff; }
+        .status-awaiting-interview { background: #2f3a4a; color: #b7c7d9; }
+        .status-awaiting-feedback { background: #4a3d00; color: #ffe58a; }
+        .status-complete { background: #0f3d1e; color: #9dffb0; }
+
+        .status-test-btn {
+            font-size: 11px;
+            margin-left: 8px;
+            color: #ff8080;
+            cursor: pointer;
+        }
+
+        .status-test-btn:hover {
+            text-decoration: underline;
+        }
+
+        .review-btn {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #6d3fa9;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .review-btn:hover {
+            background: #593287;
+        }
+
+        /* Dropdown styling */
+        .status-dropdown {
+            background: #1f2327;
+            color: #e6e6e6;
+            border: 1px solid #3a3f45;
+            padding: 6px;
+            border-radius: 4px;
+        }
+
+        .confirm-btn {
+            background:#3a6;
+            color:white;
+            border:none;
+            padding:6px 10px;
+            border-radius:4px;
+            cursor:pointer;
+        }
+
+        .cancel-btn {
+            background:#666;
+            color:white;
+            border:none;
+            padding:6px 10px;
+            border-radius:4px;
+            cursor:pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h1 id="companyNameDisplay">
+            Company Name Here 
+            <span class="subtag">(Admin)</span>
+        </h1>
+
+        <div class="nav-right">
+            <span class="bell-default" style="display:inline;">🔔</span>
+            <span class="bell-alert" style="display:none;">🔔</span>
+            <a href="companyManagement.html">Company Management</a>
+            <a href="profile.html">Profile</a>
+            <a href="signin.html">Logout</a>
+        </div>
+    </div>
+
+    <!-- Test Boxes -->
+    <div class="company-test-box">
+        <h3>TEST COMPANY NAME</h3>
+        <input id="companyNameInput" type="text" placeholder="Company Name">
+        <button id="companyNameBtn">Apply</button>
+    </div>
+
+    <div class="applicant-test-box">
+        <h3>ADD APPLICANT (TEST)</h3>
+        <input id="applicantName" type="text" placeholder="Applicant Name">
+        <button id="addApplicantBtn">Add Applicant</button>
+    </div>
+
+    <div class="notif-test-box">
+        <h3>TEST NOTIFICATION</h3>
+        <button id="notifToggleBtn">Toggle Bell</button>
+    </div>
+
+    <div class="interview-test-box">
+        <h3>ADD INTERVIEW (TEST)</h3>
+        <input id="interviewName" type="text" placeholder="Applicant Name">
+        <input id="interviewDate" type="date">
+        <input id="interviewTime" type="time">
+        <button id="addInterviewBtn">Add Interview</button>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>Upcoming Interviews</h2>
+            <div id="upcomingList" style="color:#aaa;">
+                <p>No interviews added yet.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Applicants Needing Action</h2>
+            <div id="applicantList" style="color:#aaa;">
+                <p>No applicants currently require your action.</p>
+            </div>
+        </div>
+
+        <!-- ADMIN FINAL ACTIONS -->
+        <div class="card">
+            <h2>Admin Final Actions</h2>
+            <div id="adminFinalList" style="color:#aaa;">
+                <p>No completed applicants.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="calendar-placeholder">
+        <h3 class="calendar-title">Calendar</h3>
+
+        <div class="calendar-content">
+            (Calendar will appear here)
+        </div>
+
+        <a class="calendar-btn" href="calendar.html">View Full Calendar</a>
+    </div>
+
+    <script>
+        // Company name update
+        document.getElementById("companyNameBtn").addEventListener("click", function () {
+            const newName = document.getElementById("companyNameInput").value.trim();
+            if (!newName) return;
+
+            document.getElementById("companyNameDisplay").innerHTML =
+                `${newName} <span class="subtag">(Admin)</span>`;
+
+            document.title = newName;
+            document.getElementById("companyNameInput").value = "";
+        });
+
+        // Bell toggle
+        const bellDefault = document.querySelector(".bell-default");
+        const bellAlert = document.querySelector(".bell-alert");
+        const notifToggleBtn = document.getElementById("notifToggleBtn");
+
+        let hasNotification = false;
+
+        notifToggleBtn.addEventListener("click", () => {
+            hasNotification = !hasNotification;
+
+            if (hasNotification) {
+                bellDefault.style.display = "none";
+                bellAlert.style.display = "inline";
+            } else {
+                bellAlert.style.display = "none";
+                bellDefault.style.display = "inline";
+            }
+        });
+
+        // ===== STATUS CYCLING ORDER =====
+        const interviewerStatusOrder = [
+            "needs-review",
+            "schedule-interview",
+            "awaiting-interview",
+            "awaiting-feedback",
+            "complete"
+        ];
+
+        function formatInterviewerStatusText(status) {
+            switch (status) {
+                case "needs-review": return "Needs Review";
+                case "schedule-interview": return "Schedule Interview";
+                case "awaiting-interview": return "Awaiting Interview";
+                case "awaiting-feedback": return "Awaiting Feedback";
+                case "complete": return "Complete";
+                default: return status;
+            }
+        }
+
+        // Move completed applicants to Admin Final Actions
+        function moveToAdminFinalActions(entryElement) {
+            const adminList = document.getElementById("adminFinalList");
+
+            // Clear placeholder
+            if (adminList.children.length === 1 && adminList.children[0].tagName === "P") {
+                adminList.innerHTML = "";
+            }
+
+            const name = entryElement.querySelector("strong").textContent;
+
+            const finalEntry = document.createElement("div");
+            finalEntry.className = "entry-box";
+
+            finalEntry.innerHTML = `
+                <div class="entry-top">
+                    <strong>${name}</strong>
+
+                    <div style="display:flex; gap:8px;">
+                        <button class="change-status-btn" style="
+                            background:#3a6;
+                            color:white;
+                            border:none;
+                            padding:6px 10px;
+                            border-radius:4px;
+                            cursor:pointer;
+                        ">Change Status</button>
+
+                        <button class="delete-btn" style="
+                            background:#a33;
+                            color:white;
+                            border:none;
+                            padding:6px 10px;
+                            border-radius:4px;
+                            cursor:pointer;
+                        ">Delete</button>
+                    </div>
+                </div>
+
+                <span style="color:#9dffb0;">Completed</span>
+            `;
+
+            // Delete button logic
+            finalEntry.querySelector(".delete-btn").addEventListener("click", () => {
+                if (confirm(`Are you sure you want to delete ${name}?`)) {
+                    finalEntry.remove();
+
+                    if (adminList.children.length === 0) {
+                        adminList.innerHTML = `<p>No completed applicants.</p>`;
+                    }
+                }
+            });
+
+            // Change Status logic
+            finalEntry.querySelector(".change-status-btn").addEventListener("click", () => {
+
+                // Replace buttons with dropdown UI
+                finalEntry.innerHTML = `
+                    <div class="entry-top">
+                        <strong>${name}</strong>
+                    </div>
+
+                    <select class="status-dropdown">
+                        <option value="needs-review">Needs Review</option>
+                        <option value="schedule-interview">Schedule Interview</option>
+                        <option value="awaiting-interview">Awaiting Interview</option>
+                        <option value="awaiting-feedback">Awaiting Feedback</option>
+                        <option value="complete">Complete</option>
+                    </select>
+
+                    <div style="margin-top:10px; display:flex; gap:10px;">
+                        <button class="confirm-btn">Confirm</button>
+                        <button class="cancel-btn">Cancel</button>
+                    </div>
+                `;
+
+                const dropdown = finalEntry.querySelector(".status-dropdown");
+                const confirmBtn = finalEntry.querySelector(".confirm-btn");
+                const cancelBtn = finalEntry.querySelector(".cancel-btn");
+
+                // Cancel to restore to original entry
+                cancelBtn.addEventListener("click", () => {
+                    finalEntry.remove();
+                    moveToAdminFinalActions(entryElement);
+                });
+
+                // Confirm to apply the chosen status
+                confirmBtn.addEventListener("click", () => {
+                    const chosen = dropdown.value;
+
+                    // If still complete it stays here
+                    if (chosen === "complete") {
+                        finalEntry.remove();
+                        moveToAdminFinalActions(entryElement);
+                        return;
+                    }
+
+                    // Otherwise it moves back to Applicants Needing Action
+                    finalEntry.remove();
+
+                    if (adminList.children.length === 0) {
+                        adminList.innerHTML = `<p>No completed applicants.</p>`;
+                    }
+
+                    const list = document.getElementById("applicantList");
+
+                    if (list.children.length === 1 && list.children[0].tagName === "P") {
+                        list.innerHTML = "";
+                    }
+
+                    const entry = document.createElement("div");
+                    entry.className = "entry-box applicant-entry";
+                    entry.setAttribute("data-istatus", chosen);
+
+                    entry.innerHTML = `
+                        <div class="entry-top">
+                            <strong>${name}</strong>
+                            <a class="review-btn" href="review.html">Review Application</a>
+                        </div>
+
+                        <span class="status status-${chosen}">
+                            ${formatInterviewerStatusText(chosen)}
+                        </span>
+                        <span class="status-test-btn">Test Status</span>
+                    `;
+
+                    list.appendChild(entry);
+
+                    const statusBtn = entry.querySelector(".status-test-btn");
+                    attachInterviewerStatusHandler(statusBtn, entry);
+                });
+            });
+
+            adminList.appendChild(finalEntry);
+        }
+
+        // Status cycling logic
+        function attachInterviewerStatusHandler(btn, entryElement) {
+            btn.addEventListener("click", () => {
+                const current = entryElement.getAttribute("data-istatus");
+                let index = interviewerStatusOrder.indexOf(current);
+                index = (index + 1) % interviewerStatusOrder.length;
+                const newStatus = interviewerStatusOrder[index];
+
+                entryElement.setAttribute("data-istatus", newStatus);
+
+                const statusLabel = entryElement.querySelector(".status");
+                statusLabel.textContent = formatInterviewerStatusText(newStatus);
+                statusLabel.className = "status status-" + newStatus;
+
+                // If status becomes COMPLETE it moves to Admin Final Actions
+                if (newStatus === "complete") {
+                    entryElement.remove();
+                    moveToAdminFinalActions(entryElement);
+
+                    const list = document.getElementById("applicantList");
+                    if (list.children.length === 0) {
+                        list.innerHTML = `<p>No applicants currently require your action.</p>`;
+                    }
+                }
+            });
+        }
+
+        // Add Interview box adds to Upcoming Interviews
+        document.getElementById("addInterviewBtn").addEventListener("click", () => {
+            const name = document.getElementById("interviewName").value.trim();
+            const date = document.getElementById("interviewDate").value;
+            const time = document.getElementById("interviewTime").value;
+
+            if (!name || !date || !time) {
+                alert("Please fill out all fields.");
+                return;
+            }
+
+            const list = document.getElementById("upcomingList");
+
+            if (list.children.length === 1 && list.children[0].tagName === "P") {
+                list.innerHTML = "";
+            }
+
+            const entry = document.createElement("div");
+            entry.className = "entry-box";
+
+            entry.innerHTML = `
+                <strong>${name}</strong><br>
+                ${date} at ${time}
+            `;
+
+            list.appendChild(entry);
+
+            document.getElementById("interviewName").value = "";
+            document.getElementById("interviewDate").value = "";
+            document.getElementById("interviewTime").value = "";
+        });
+
+        // Add Applicant to Applicants Needing Action
+        document.getElementById("addApplicantBtn").addEventListener("click", () => {
+            const name = document.getElementById("applicantName").value.trim();
+            if (!name) {
+                alert("Please enter a name.");
+                return;
+            }
+
+            const list = document.getElementById("applicantList");
+
+            if (list.children.length === 1 && list.children[0].tagName === "P") {
+                list.innerHTML = "";
+            }
+
+            const entry = document.createElement("div");
+            entry.className = "entry-box applicant-entry";
+            entry.setAttribute("data-istatus", "needs-review");
+
+            entry.innerHTML = `
+                <div class="entry-top">
+                    <strong>${name}</strong>
+                    <a class="review-btn" href="review.html">Review Application</a>
+                </div>
+
+                <span class="status status-needs-review">Needs Review</span>
+                <span class="status-test-btn">Test Status</span>
+            `;
+
+            list.appendChild(entry);
+
+            const statusBtn = entry.querySelector(".status-test-btn");
+            attachInterviewerStatusHandler(statusBtn, entry);
+
+            document.getElementById("applicantName").value = "";
+        });
+    </script>
+
+</body>
+</html>

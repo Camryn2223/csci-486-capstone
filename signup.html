@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #1a1d21;
+            color: #e6e6e6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Top Purple Bar */
+        .navbar {
+            width: 100%;
+            background: #6d3fa9;
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #3e215c;
+            box-sizing: border-box;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 22px;
+            color: white;
+        }
+
+        /* Sign-Up Box */
+        .signup-box {
+            background: #24282d;
+            padding: 40px;
+            width: 380px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            border: 1px solid #2f343a;
+            margin-top: 80px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #cfcfcf;
+            font-size: 24px;
+        }
+
+        label {
+            font-size: 14px;
+            color: #bdbdbd;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            margin-bottom: 18px;
+            border-radius: 6px;
+            border: 1px solid #3a3f45;
+            background: #1f2327;
+            color: #e6e6e6;
+            font-size: 14px;
+        }
+
+        .signup-btn {
+            width: 100%;
+            padding: 12px;
+            background: #6d3fa9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .signup-btn:hover {
+            background: #593287;
+        }
+
+        .signin-link,
+        .create-company-link {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 14px;
+        }
+
+        .signin-link a,
+        .create-company-link a {
+            color: #a97dff;
+            text-decoration: none;
+        }
+
+        .signin-link a:hover,
+        .create-company-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Purple Top Bar -->
+    <div class="navbar">
+        <h1>Website Name</h1>
+    </div>
+
+    <div class="signup-box">
+        <h2>Create an Account</h2>
+
+        <label>First Name</label>
+        <input type="text" id="firstName" placeholder="Enter your first name">
+
+        <label>Last Name</label>
+        <input type="text" id="lastName" placeholder="Enter your last name">
+
+        <label>Email</label>
+        <input type="email" id="emailInput" placeholder="Enter your email">
+
+        <label>Password</label>
+        <input type="password" id="passwordInput" placeholder="Create a password">
+
+        <label>Confirm Password</label>
+        <input type="password" id="confirmPasswordInput" placeholder="Re-enter your password">
+
+        <label>Company ID</label>
+        <input type="text" id="companyIdInput" placeholder="Enter your company ID">
+
+        <!-- Not wired up yet -->
+        <button class="signup-btn" id="signupBtn">Sign Up</button>
+
+        <div class="signin-link">
+            Already have an account?
+            <a href="signin.html">Sign In</a>
+        </div>
+
+        <!-- Company Creation Link -->
+        <div class="create-company-link">
+            Want to create a new company?
+            <a href="createCompany.html">Create New Company</a>
+        </div>
+    </div>
+
+</body>
+</html>

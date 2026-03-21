@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #1a1d21;
+            color: #e6e6e6;
+        }
+
+        /* Top Purple Bar */
+        .navbar {
+            width: 100%;
+            background: #6d3fa9;
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #3e215c;
+            box-sizing: border-box;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        /* Control Bar */
+        .control-bar {
+            width: 900px;
+            margin: 30px auto 10px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            padding: 10px 18px;
+            background: #6d3fa9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: #593287;
+        }
+
+        .role-select {
+            padding: 10px;
+            background: #1f2327;
+            color: #e6e6e6;
+            border: 1px solid #3a3f45;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        /* Wide Profile Card */
+        .profile-box {
+            background: #24282d;
+            width: 900px;
+            margin: 40px auto;
+            padding: 40px;
+            border-radius: 10px;
+            border: 1px solid #2f343a;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: #3a3f45;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #cfcfcf;
+            margin: 0 auto 25px auto;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: #bdbdbd;
+            margin-top: 15px;
+        }
+
+        .info-value {
+            font-size: 18px;
+            color: #e6e6e6;
+            margin-top: 4px;
+        }
+
+        /* Edit Mode Inputs */
+        .edit-input {
+            width: 80%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid #3a3f45;
+            background: #1f2327;
+            color: #e6e6e6;
+            font-size: 16px;
+        }
+
+        /* Buttons */
+        .edit-btn, .save-btn, .cancel-btn {
+            margin-top: 30px;
+            padding: 12px 20px;
+            background: #6d3fa9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .edit-btn:hover, .save-btn:hover, .cancel-btn:hover {
+            background: #593287;
+        }
+
+        .cancel-btn {
+            background: #444;
+            margin-left: 10px;
+        }
+
+        .cancel-btn:hover {
+            background: #333;
+        }
+
+        /* Availability Calendar Section */
+        .calendar-section {
+            width: 900px;
+            margin: 30px auto;
+            background: #24282d;
+            border: 1px solid #2f343a;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .calendar-title {
+            font-size: 22px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #cfcfcf;
+        }
+
+        .calendar-grid {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .calendar-grid th {
+            background: #2f343a;
+            padding: 12px;
+            color: #e6e6e6;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .calendar-grid td {
+            width: 12%;
+            height: 45px;
+            text-align: center;
+            border: 1px solid #3a3f45;
+            background: #2a2e33;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .calendar-grid td.available {
+            background: #4b8f6f;
+        }
+
+        .calendar-grid tr:nth-child(even) td {
+            background: #262a2f;
+        }
+
+        .calendar-grid tr:nth-child(even) td.available {
+            background: #4b8f6f;
+        }
+
+        .hour-label {
+            width: 10%;
+            background: #1f2327 !important;
+            color: #cfcfcf;
+            font-size: 14px;
+            border-right: 1px solid #3a3f45;
+        }
+
+        /* Right-side Test Box */
+        .test-box {
+            position: fixed;
+            right: 20px;
+            top: 120px;
+            width: 260px;
+            background: #24282d;
+            border: 1px solid #2f343a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .test-box h3 {
+            margin-top: 0;
+            color: #cfcfcf;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .test-input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #3a3f45;
+            background: #1f2327;
+            color: #e6e6e6;
+        }
+
+        .apply-btn {
+            width: 100%;
+            padding: 10px;
+            background: #6d3fa9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .apply-btn:hover {
+            background: #593287;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="navbar">
+        <h1>Website Name</h1>
+    </div>
+
+    <!-- Back + Role Selector -->
+    <div class="control-bar">
+        <button class="back-btn" id="backBtn">Back to Dashboard</button>
+
+        <select class="role-select" id="roleSelect">
+            <option value="interviewer">Interviewer Dashboard</option>
+            <option value="admin">Admin Dashboard</option>
+        </select>
+    </div>
+
+    <!-- Wide Profile Card -->
+    <div class="profile-box">
+
+        <div class="avatar" id="avatarInitials">NN</div>
+
+        <div class="info-label">Name</div>
+        <div class="info-value view-mode" id="nameValue">No Name</div>
+        <input class="edit-input edit-mode" id="nameInput" value="No Name" style="display:none;">
+
+        <div class="info-label">Email</div>
+        <div class="info-value view-mode" id="emailValue">No Email</div>
+        <input class="edit-input edit-mode" id="emailInput" value="No Email" style="display:none;">
+
+        <div class="info-label">Role</div>
+        <div class="info-value view-mode" id="roleValue">Unknown Role</div>
+        <input class="edit-input edit-mode" id="roleInput" value="Unknown Role" style="display:none;">
+
+        <div class="info-label">Company Name</div>
+        <div class="info-value" id="companyNameValue">No Company</div>
+
+        <div class="info-label">Company ID</div>
+        <div class="info-value" id="companyIdValue">No ID</div>
+
+        <button class="edit-btn view-mode" id="editBtn">Edit Profile</button>
+
+        <div class="edit-mode" id="editButtons" style="display:none;">
+            <button class="save-btn" id="saveBtn">Save</button>
+            <button class="cancel-btn" id="cancelBtn">Cancel</button>
+        </div>
+
+    </div>
+
+    <!-- Availability Calendar -->
+    <div class="calendar-section">
+        <div class="calendar-title">Availability Calendar</div>
+
+        <table class="calendar-grid" id="calendarGrid">
+            <thead>
+                <tr>
+                    <th class="hour-label">Time</th>
+                    <th>Sun</th>
+                    <th>Mon</th>
+                    <th>Tue</th>
+                    <th>Wed</th>
+                    <th>Thu</th>
+                    <th>Fri</th>
+                    <th>Sat</th>
+                </tr>
+            </thead>
+            <tbody id="calendarBody">
+            </tbody>
+        </table>
+
+        <!-- Save Availability Button -->
+        <div style="text-align:center; margin-top:25px;">
+            <button class="save-btn" id="saveAvailabilityBtn">Save Availability</button>
+        </div>
+    </div>
+
+    <!-- Test Box -->
+    <div class="test-box">
+        <h3>Test Company Data</h3>
+
+        <label>Company Name</label>
+        <input class="test-input" id="testCompanyName" placeholder="Enter company name">
+
+        <label>Company ID</label>
+        <input class="test-input" id="testCompanyId" placeholder="Enter company ID">
+
+        <button class="apply-btn" id="applyTestBtn">Apply Test Values</button>
+    </div>
+
+    <script>
+        // Back button logic
+        document.getElementById("backBtn").addEventListener("click", () => {
+            const role = document.getElementById("roleSelect").value;
+            window.location.href = role === "admin" ? "adminDashboard.html" : "interviewerDashboard.html";
+        });
+
+        // Toggle Edit Mode
+        const viewElements = document.querySelectorAll(".view-mode");
+        const editElements = document.querySelectorAll(".edit-mode");
+
+        document.getElementById("editBtn").addEventListener("click", () => {
+            viewElements.forEach(el => el.style.display = "none");
+            editElements.forEach(el => el.style.display = "block");
+        });
+
+        document.getElementById("cancelBtn").addEventListener("click", () => {
+            editElements.forEach(el => el.style.display = "none");
+            viewElements.forEach(el => el.style.display = "block");
+        });
+
+        document.getElementById("saveBtn").addEventListener("click", () => {
+            document.getElementById("nameValue").textContent = document.getElementById("nameInput").value;
+            document.getElementById("emailValue").textContent = document.getElementById("emailInput").value;
+            document.getElementById("roleValue").textContent = document.getElementById("roleInput").value;
+
+            const name = document.getElementById("nameInput").value.trim();
+            const initials = name.split(" ").map(n => n[0]?.toUpperCase() || "").join("").slice(0, 2);
+            document.getElementById("avatarInitials").textContent = initials || "NN";
+
+            editElements.forEach(el => el.style.display = "none");
+            viewElements.forEach(el => el.style.display = "block");
+        });
+
+        // Test Box Logic
+        document.getElementById("applyTestBtn").addEventListener("click", () => {
+            const newCompany = document.getElementById("testCompanyName").value || "No Company";
+            const newId = document.getElementById("testCompanyId").value || "No ID";
+
+            document.getElementById("companyNameValue").textContent = newCompany;
+            document.getElementById("companyIdValue").textContent = newId;
+        });
+
+        // Build Availability Calendar
+        const calendarBody = document.getElementById("calendarBody");
+
+        const hours = [
+            "12 AM","1 AM","2 AM","3 AM","4 AM","5 AM","6 AM","7 AM",
+            "8 AM","9 AM","10 AM","11 AM","12 PM","1 PM","2 PM","3 PM",
+            "4 PM","5 PM","6 PM","7 PM","8 PM","9 PM","10 PM","11 PM"
+        ];
+
+        hours.forEach(hour => {
+            const row = document.createElement("tr");
+
+            const hourCell = document.createElement("td");
+            hourCell.textContent = hour;
+            hourCell.className = "hour-label";
+            row.appendChild(hourCell);
+
+            for (let i = 0; i < 7; i++) {
+                const cell = document.createElement("td");
+                cell.addEventListener("click", () => {
+                    cell.classList.toggle("available");
+                });
+                row.appendChild(cell);
+            }
+
+            calendarBody.appendChild(row);
+        });
+
+        // Save Availability Button
+        document.getElementById("saveAvailabilityBtn").addEventListener("click", () => {
+            const availability = {};
+
+            const rows = document.querySelectorAll("#calendarBody tr");
+
+            rows.forEach((row, hourIndex) => {
+                const hourLabel = hours[hourIndex];
+                availability[hourLabel] = [];
+
+                const cells = row.querySelectorAll("td");
+
+                // Skip the first cell (hour label)
+                for (let i = 1; i < cells.length; i++) {
+                    const isAvailable = cells[i].classList.contains("available");
+                    availability[hourLabel].push(isAvailable);
+                }
+            });
+
+            console.log("Saved Availability:", availability);
+            alert("Availability saved!");
+        });
+    </script>
+
+</body>
+</html>

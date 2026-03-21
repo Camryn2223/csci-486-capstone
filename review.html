@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Applicant</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #1a1d21;
+            color: #e6e6e6;
+        }
+
+        /* Top Purple Bar */
+        .navbar {
+            width: 100%;
+            background: #6d3fa9;
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #3e215c;
+            box-sizing: border-box;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        /* Back Button + Role Selector */
+        .control-bar {
+            width: 90%;
+            max-width: 1100px;
+            margin: 25px auto 10px auto;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .back-btn {
+            padding: 10px 18px;
+            background: #6d3fa9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: #593287;
+        }
+
+        .role-select {
+            padding: 10px;
+            background: #1f2327;
+            color: #e6e6e6;
+            border: 1px solid #3a3f45;
+            border-radius: 6px;
+        }
+
+        /* LEFT TEST BOX */
+        .left-test-box {
+            position: fixed;
+            left: 20px;
+            top: 120px;
+            width: 230px;
+            height: 80%;
+            overflow-y: auto;
+            background: #24282d;
+            border: 1px solid #2f343a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .left-test-box h3 {
+            margin-top: 0;
+            color: #cfcfcf;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .test-input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            border: 1px solid #3a3f45;
+            background: #1f2327;
+            color: #e6e6e6;
+        }
+
+        .apply-btn {
+            width: 100%;
+            padding: 10px;
+            background: #6d3fa9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .apply-btn:hover {
+            background: #593287;
+        }
+
+        /* Main Container */
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 20px auto;
+            display: flex;
+            gap: 25px;
+            margin-left: 280px; /* shift right to make room for test box */
+        }
+
+        /* Left Column */
+        .left-col {
+            width: 60%;
+        }
+
+        /* Right Column */
+        .right-col {
+            width: 40%;
+        }
+
+        /* Section Boxes */
+        .section-box {
+            background: #24282d;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #2f343a;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #cfcfcf;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: #bdbdbd;
+            margin-top: 10px;
+        }
+
+        .info-value {
+            font-size: 17px;
+            margin-top: 3px;
+        }
+
+        /* Resume Viewer Placeholder */
+        .resume-box {
+            background: #1f2327;
+            border: 1px dashed #3a3f45;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            color: #bdbdbd;
+        }
+
+        /* Notes Section */
+        .note {
+            background: #1f2327;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #3a3f45;
+        }
+
+        .note-tag {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-top: 8px;
+            color: white;
+        }
+
+        /* Tag Colors */
+        .tag-strong { background: #4b8f6f; }
+        .tag-tech { background: #8f6f4b; }
+        .tag-referred { background: #6f4b8f; }
+        .tag-follow { background: #4b5f8f; }
+        .tag-general { background: #3a6f81; }
+        .tag-nohire { background: #8f4b4b; }
+
+        /* Add Note Box */
+        .add-note-box {
+            background: #1f2327;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #3a3f45;
+            margin-top: 15px;
+        }
+
+        .note-input {
+            width: 100%;
+            height: 90px;
+            background: #24282d;
+            border: 1px solid #3a3f45;
+            border-radius: 6px;
+            color: #e6e6e6;
+            padding: 10px;
+            resize: none;
+        }
+
+        .tag-select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: #24282d;
+            border: 1px solid #3a3f45;
+            color: #e6e6e6;
+            border-radius: 6px;
+        }
+
+        .save-btn, .cancel-btn, .add-note-btn, .schedule-btn {
+            padding: 10px 18px;
+            background: #6d3fa9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .cancel-btn {
+            background: #444;
+            margin-left: 10px;
+        }
+
+        .save-btn:hover, .add-note-btn:hover, .schedule-btn:hover {
+            background: #593287;
+        }
+
+        .cancel-btn:hover {
+            background: #333;
+        }
+
+        /* Interview History */
+        .history-item {
+            background: #1f2327;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #3a3f45;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="navbar">
+        <h1>Review Applicant</h1>
+    </div>
+
+    <!-- LEFT TEST BOX -->
+    <div class="left-test-box">
+        <h3>Test Applicant Data</h3>
+
+        <label>Name</label>
+        <input class="test-input" id="testName">
+
+        <label>Email</label>
+        <input class="test-input" id="testEmail">
+
+        <label>Phone</label>
+        <input class="test-input" id="testPhone">
+
+        <label>Position</label>
+        <input class="test-input" id="testPosition">
+
+        <label>Application Date</label>
+        <input class="test-input" id="testDate">
+
+        <label>Status</label>
+        <input class="test-input" id="testStatus">
+
+        <button class="apply-btn" id="applyTestBtn">Apply Test Values</button>
+    </div>
+
+    <!-- Back + Role -->
+    <div class="control-bar">
+        <button class="back-btn" id="backBtn">Back to Dashboard</button>
+
+        <select class="role-select" id="roleSelect">
+            <option value="interviewer">Interviewer Dashboard</option>
+            <option value="admin">Admin Dashboard</option>
+        </select>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="container">
+
+        <!-- LEFT COLUMN -->
+        <div class="left-col">
+
+            <!-- Applicant Info -->
+            <div class="section-box">
+                <div class="section-title">Applicant Information</div>
+
+                <div class="info-label">Name</div>
+                <div class="info-value" id="nameValue">No Name</div>
+
+                <div class="info-label">Email</div>
+                <div class="info-value" id="emailValue">No Email</div>
+
+                <div class="info-label">Phone</div>
+                <div class="info-value" id="phoneValue">No Phone</div>
+
+                <div class="info-label">Position Applied For</div>
+                <div class="info-value" id="positionValue">No Position</div>
+
+                <div class="info-label">Application Date</div>
+                <div class="info-value" id="dateValue">No Date</div>
+
+                <div class="info-label">Status</div>
+                <div class="info-value" id="statusValue">No Status</div>
+            </div>
+
+            <!-- Resume -->
+            <div class="section-box">
+                <div class="section-title">Resume</div>
+                <div class="resume-box">
+                    Resume Viewer Placeholder<br>
+                    (PDF will appear here)
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="right-col">
+
+            <!-- Notes -->
+            <div class="section-box">
+                <div class="section-title">Interview Notes</div>
+
+                <div id="notesList">
+                    <div class="note">No Notes Available</div>
+                </div>
+
+                <!-- Tags TLDR -->
+                <div class="section-title" style="margin-top:20px;">Tags Summary</div>
+                <div id="tagSummary">
+                    <span class="note-tag tag-general">No Tags Available</span>
+                </div>
+
+                <!-- Add Note Button -->
+                <button class="add-note-btn" id="showAddNote">Add Note</button>
+
+                <!-- Add Note Box -->
+                <div class="add-note-box" id="addNoteBox" style="display:none;">
+                    <textarea class="note-input" id="noteInput" placeholder="Enter note..."></textarea>
+
+                    <select class="tag-select" id="tagSelect">
+                        <option value="">Select a Tag (Optional)</option>
+                        <option value="strong">Strong Candidate</option>
+                        <option value="tech">Needs Technical Test</option>
+                        <option value="referred">Referred</option>
+                        <option value="follow">Follow-Up Needed</option>
+                        <option value="general">General Tag</option>
+                        <option value="nohire">Not Recommended for Hire</option>
+                    </select>
+
+                    <button class="save-btn" id="saveNote">Save Note</button>
+                    <button class="cancel-btn" id="cancelNote">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Interview History -->
+            <div class="section-box">
+                <div class="section-title">Interview History</div>
+
+                <div id="historyList">
+                    <div class="history-item">No Interview History</div>
+                </div>
+
+                <button class="schedule-btn" id="scheduleBtn">Schedule Interview</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Back button
+        document.getElementById("backBtn").addEventListener("click", () => {
+            const role = document.getElementById("roleSelect").value;
+            window.location.href = role === "admin" ? "adminDashboard.html" : "interviewerDashboard.html";
+        });
+
+        // Apply Test Values
+        document.getElementById("applyTestBtn").addEventListener("click", () => {
+            document.getElementById("nameValue").textContent = document.getElementById("testName").value || "No Name";
+            document.getElementById("emailValue").textContent = document.getElementById("testEmail").value || "No Email";
+            document.getElementById("phoneValue").textContent = document.getElementById("testPhone").value || "No Phone";
+            document.getElementById("positionValue").textContent = document.getElementById("testPosition").value || "No Position";
+            document.getElementById("dateValue").textContent = document.getElementById("testDate").value || "No Date";
+            document.getElementById("statusValue").textContent = document.getElementById("testStatus").value || "No Status";
+        });
+
+        // Show Add Note Box
+        document.getElementById("showAddNote").addEventListener("click", () => {
+            document.getElementById("addNoteBox").style.display = "block";
+        });
+
+        // Cancel Add Note
+        document.getElementById("cancelNote").addEventListener("click", () => {
+            document.getElementById("addNoteBox").style.display = "none";
+            document.getElementById("noteInput").value = "";
+            document.getElementById("tagSelect").value = "";
+        });
+
+        // Save Note
+        document.getElementById("saveNote").addEventListener("click", () => {
+            const text = document.getElementById("noteInput").value.trim();
+            const tag = document.getElementById("tagSelect").value;
+
+            const notesList = document.getElementById("notesList");
+            const tagSummary = document.getElementById("tagSummary");
+
+            // Remove placeholder if first note
+            if (notesList.children[0].textContent === "No Notes Available") {
+                notesList.innerHTML = "";
+            }
+            if (tagSummary.children[0].textContent === "No Tags Available") {
+                tagSummary.innerHTML = "";
+            }
+
+            // Create note
+            const noteDiv = document.createElement("div");
+            noteDiv.className = "note";
+            noteDiv.textContent = text || "No Note Text Provided";
+
+            // Add tag to note
+            if (tag) {
+                const tagSpan = document.createElement("span");
+                tagSpan.className = "note-tag tag-" + tag;
+                tagSpan.textContent =
+                    tag === "strong" ? "Strong Candidate" :
+                    tag === "tech" ? "Needs Technical Test" :
+                    tag === "referred" ? "Referred" :
+                    tag === "follow" ? "Follow-Up Needed" :
+                    tag === "general" ? "General Tag" :
+                    tag === "nohire" ? "Not Recommended for Hire" :
+                    "Empty Tag";
+
+                noteDiv.appendChild(document.createElement("br"));
+                noteDiv.appendChild(tagSpan);
+
+                // Add to tag summary
+                const summaryTag = tagSpan.cloneNode(true);
+                tagSummary.appendChild(summaryTag);
+            } else {
+                const emptyTag = document.createElement("span");
+                emptyTag.className = "note-tag tag-general";
+                emptyTag.textContent = "Empty Tag";
+                noteDiv.appendChild(document.createElement("br"));
+                noteDiv.appendChild(emptyTag);
+
+                const summaryTag = emptyTag.cloneNode(true);
+                tagSummary.appendChild(summaryTag);
+            }
+
+            notesList.appendChild(noteDiv);
+
+            // Reset fields
+            document.getElementById("noteInput").value = "";
+            document.getElementById("tagSelect").value = "";
+            document.getElementById("addNoteBox").style.display = "none";
+        });
+
+        // Schedule Interview
+        document.getElementById("scheduleBtn").addEventListener("click", () => {
+            window.location.href = "schedule.html";
+        });
+    </script>
+
+</body>
+</html>
