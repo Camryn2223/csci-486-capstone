@@ -1,67 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Set New Password</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body>
-    <div>
-        <h1>Set New Password</h1>
+@extends('layouts.app')
 
-        @if ($errors->any())
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        @endif
+@section('content')
+    <h1>Set New Password</h1>
 
-        <form method="POST" action="{{ route('password.update') }}">
-            @csrf
+    <form method="POST" action="{{ route('password.update') }}">
+        @csrf
 
-            <input type="hidden" name="token" value="{{ $request->route('token') }}">
+        <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-            <div>
-                <label for="email">Email</label>
-                <input
-                    id="email"
-                    type="email"
-                    name="email"
-                    value="{{ old('email', $request->email) }}"
-                    required
-                    autofocus
-                    autocomplete="username"
-                >
-            </div>
+        <label>Email<br>
+            <input type="email" name="email" value="{{ old('email', $request->email) }}" required autofocus autocomplete="username">
+        </label>
+        <br><br>
 
-            <div>
-                <label for="password">New Password</label>
-                <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    required
-                    autocomplete="new-password"
-                >
-            </div>
+        <label>New Password<br>
+            <input type="password" name="password" required autocomplete="new-password">
+        </label>
+        <br><br>
 
-            <div>
-                <label for="password_confirmation">Confirm New Password</label>
-                <input
-                    id="password_confirmation"
-                    type="password"
-                    name="password_confirmation"
-                    required
-                    autocomplete="new-password"
-                >
-            </div>
+        <label>Confirm New Password<br>
+            <input type="password" name="password_confirmation" required autocomplete="new-password">
+        </label>
+        <br><br>
 
-            <div>
-                <button type="submit">Reset Password</button>
-            </div>
-        </form>
-    </div>
-</body>
-</html>
+        <button type="submit">Reset Password</button>
+    </form>
+@endsection

@@ -1,33 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body>
-    <div>
-        <h1>Verify Your Email Address</h1>
+@extends('layouts.app')
 
-        <p>
-            Thanks for signing up. Before getting started, please verify your
-            email address by clicking the link we sent to your inbox.
-        </p>
+@section('content')
+    <h1>Verify Your Email Address</h1>
 
-        @if (session('status') === 'verification-link-sent')
-            <p>A new verification link has been sent to your email address.</p>
-        @endif
+    <p>
+        Thanks for signing up. Before getting started, please verify your
+        email address by clicking the link we sent to your inbox.
+    </p>
 
-        <form method="POST" action="{{ route('verification.send') }}">
-            @csrf
-            <button type="submit">Resend Verification Email</button>
-        </form>
+    @if (session('status') === 'verification-link-sent')
+        <p style="color:green">A new verification link has been sent to your email address.</p>
+    @endif
 
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit">Sign Out</button>
-        </form>
-    </div>
-</body>
-</html>
+    <form method="POST" action="{{ route('verification.send') }}">
+        @csrf
+        <button type="submit">Resend Verification Email</button>
+    </form>
+
+    <br>
+
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit">Sign Out</button>
+    </form>
+@endsection

@@ -1,79 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body>
-    <div>
-        <h1>Create Account</h1>
+@extends('layouts.app')
 
-        @if ($errors->any())
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+@section('content')
+    <h1>Create Account</h1>
+
+    @if ($isFirstUser)
+        <p><em>You are creating the first account. You will be registered as the chairman.</em></p>
+    @elseif ($inviteCode && $inviteValid)
+        <p style="color:green"><em>Your invite link is valid. Fill in your details below to join.</em></p>
+    @elseif ($inviteCode && ! $inviteValid)
+        <p style="color:red"><em>This invite link is invalid or has already been used. Enter a valid invite code manually below.</em></p>
+    @else
+        <p><em>Enter the invite code provided by your organization to register.</em></p>
+    @endif
+
+    <form method="POST" action="{{ route('register') }}">
+        @csrf
+
+        <label>Name<br>
+            <input type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name">
+        </label>
+        <br><br>
+
+        <label>Email<br>
+            <input type="email" name="email" value="{{ old('email') }}" required autocomplete="username">
+        </label>
+        <br><br>
+
+        <label>Password<br>
+            <input type="password" name="password" required autocomplete="new-password">
+        </label>
+        <br><br>
+
+        <label>Confirm Password<br>
+            <input type="password" name="password_confirmation" required autocomplete="new-password">
+        </label>
+        <br><br>
+
+        @if (! $isFirstUser)
+            <label>Invite Code<br>
+                <input
+                    type="text"
+                    name="invite_code"
+                    value="{{ old('invite_code', $inviteCode) }}"
+                    required
+                    autocomplete="off"
+                    style="text-transform:uppercase"
+                    {{ ($inviteCode && $inviteValid) ? 'readonly' : '' }}
+                >
+            </label>
+            @if ($inviteCode && $inviteValid)
+                <small>Pre-filled from your invite link.</small>
+            @endif
+            <br><br>
         @endif
 
-        <form method="POST" action="{{ route('register') }}">
-            @csrf
+        <button type="submit">Create Account</button>
+    </form>
 
-            <div>
-                <label for="name">Name</label>
-                <input
-                    id="name"
-                    type="text"
-                    name="name"
-                    value="{{ old('name') }}"
-                    required
-                    autofocus
-                    autocomplete="name"
-                >
-            </div>
-
-            <div>
-                <label for="email">Email</label>
-                <input
-                    id="email"
-                    type="email"
-                    name="email"
-                    value="{{ old('email') }}"
-                    required
-                    autocomplete="username"
-                >
-            </div>
-
-            <div>
-                <label for="password">Password</label>
-                <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    required
-                    autocomplete="new-password"
-                >
-            </div>
-
-            <div>
-                <label for="password_confirmation">Confirm Password</label>
-                <input
-                    id="password_confirmation"
-                    type="password"
-                    name="password_confirmation"
-                    required
-                    autocomplete="new-password"
-                >
-            </div>
-
-            <div>
-                <button type="submit">Create Account</button>
-            </div>
-        </form>
-
-        <p>Already have an account? <a href="{{ route('login') }}">Sign in</a></p>
-    </div>
-</body>
-</html>
+    <br><p>Already have an account? <a href="{{ route('login') }}">Sign in</a></p>
+@endsection
