@@ -1,61 +1,72 @@
 @extends('layouts.app')
 
+@section('title', 'Sign Up')
+
 @section('content')
-    <h1>Create Account</h1>
+    <div class="centered-content">
+        <div class="form-box">
+            <h2>Create an Account</h2>
 
-    @if ($isFirstUser)
-        <p><em>You are creating the first account. You will be registered as the chairman.</em></p>
-    @elseif ($inviteCode && $inviteValid)
-        <p style="color:green"><em>Your invite link is valid. Fill in your details below to join.</em></p>
-    @elseif ($inviteCode && ! $inviteValid)
-        <p style="color:red"><em>This invite link is invalid or has already been used. Enter a valid invite code manually below.</em></p>
-    @else
-        <p><em>Enter the invite code provided by your organization to register.</em></p>
-    @endif
-
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
-
-        <label>Name<br>
-            <input type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name">
-        </label>
-        <br><br>
-
-        <label>Email<br>
-            <input type="email" name="email" value="{{ old('email') }}" required autocomplete="username">
-        </label>
-        <br><br>
-
-        <label>Password<br>
-            <input type="password" name="password" required autocomplete="new-password">
-        </label>
-        <br><br>
-
-        <label>Confirm Password<br>
-            <input type="password" name="password_confirmation" required autocomplete="new-password">
-        </label>
-        <br><br>
-
-        @if (! $isFirstUser)
-            <label>Invite Code<br>
-                <input
-                    type="text"
-                    name="invite_code"
-                    value="{{ old('invite_code', $inviteCode) }}"
-                    required
-                    autocomplete="off"
-                    style="text-transform:uppercase"
-                    {{ ($inviteCode && $inviteValid) ? 'readonly' : '' }}
-                >
-            </label>
-            @if ($inviteCode && $inviteValid)
-                <small>Pre-filled from your invite link.</small>
+            @if ($isFirstUser)
+                <p style="color: #9dffb0; text-align: center; font-size: 14px;">
+                    You are creating the first account. You will be registered as the chairman.
+                </p>
+            @elseif ($inviteCode && $inviteValid)
+                <p style="color: #9dffb0; text-align: center; font-size: 14px;">
+                    Your invite link is valid. Fill in your details below to join.
+                </p>
+            @elseif ($inviteCode && ! $inviteValid)
+                <p style="color: #ff9d9d; text-align: center; font-size: 14px;">
+                    This invite link is invalid or has already been used. Enter a valid invite code below.
+                </p>
+            @else
+                <p style="color: #bdbdbd; text-align: center; font-size: 14px;">
+                    Enter the invite code provided by your organization to register.
+                </p>
             @endif
-            <br><br>
-        @endif
 
-        <button type="submit">Create Account</button>
-    </form>
+            <form method="POST" action="{{ route('register') }}">
+                @csrf
 
-    <br><p>Already have an account? <a href="{{ route('login') }}">Sign in</a></p>
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" value="{{ old('name') }}" placeholder="Enter your full name" required autofocus autocomplete="name">
+
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="Enter your email" required autocomplete="username">
+
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a password" required autocomplete="new-password">
+
+                <label for="password_confirmation">Confirm Password</label>
+                <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Re-enter your password" required autocomplete="new-password">
+
+                @if (! $isFirstUser)
+                    <label for="invite_code">Invite Code</label>
+                    <input
+                        type="text"
+                        id="invite_code"
+                        name="invite_code"
+                        value="{{ old('invite_code', $inviteCode) }}"
+                        placeholder="Enter your invite code"
+                        required
+                        autocomplete="off"
+                        style="text-transform: uppercase;"
+                        {{ ($inviteCode && $inviteValid) ? 'readonly' : '' }}
+                    >
+                    @if ($inviteCode && $inviteValid)
+                        <small style="color: #9dffb0; display: block; margin-top: -12px; margin-bottom: 18px;">
+                            Pre-filled from your invite link.
+                        </small>
+                    @endif
+                @endif
+
+                <button type="submit" class="btn">Create Account</button>
+            </form>
+
+            <div class="form-link">
+                Already have an account?
+                <a href="{{ route('login') }}">Sign In</a>
+            </div>
+        </div>
+    </div>
 @endsection

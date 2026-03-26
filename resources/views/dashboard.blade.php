@@ -1,13 +1,25 @@
 @extends('layouts.app')
 
+@section('title', 'Dashboard')
+
 @section('content')
-    <h1>Dashboard</h1>
-    <p>Logged in as: <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->role }})</p>
-    <ul>
-        <li><a href="{{ route('organizations.index') }}">My Organizations</a></li>
-        @can('create', App\Models\Organization::class)
-            <li><a href="{{ route('organizations.create') }}">Create Organization</a></li>
-        @endcan
-        <li><a href="{{ route('two-factor.show') }}">Two-Factor Authentication Settings</a></li>
-    </ul>
+    <div class="container">
+        <div class="card">
+            <h2>Welcome, {{ auth()->user()->name }}</h2>
+            <p style="color: #bdbdbd;">
+                You are logged in as <strong style="color: #a97dff;">{{ auth()->user()->role }}</strong>.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>Quick Links</h2>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <a href="{{ route('organizations.index') }}" class="btn btn-sm">My Organizations</a>
+                @can('create', App\Models\Organization::class)
+                    <a href="{{ route('organizations.create') }}" class="btn btn-sm">Create Organization</a>
+                @endcan
+                <a href="{{ route('two-factor.show') }}" class="btn btn-sm">Two-Factor Settings</a>
+            </div>
+        </div>
+    </div>
 @endsection
