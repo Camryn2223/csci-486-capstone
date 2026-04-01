@@ -1,4 +1,4 @@
-# Project Name
+# HireFlow
 
 A Laravel application running in Docker with MySQL, structured using the **Model-View-Controller (MVC)** pattern.
 
