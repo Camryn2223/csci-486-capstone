@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organization;
+use App\Models\OrganizationInvite;
 use App\Models\User;
+use App\Notifications\OrganizationInviteNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 /**
@@ -149,17 +152,40 @@ class OrganizationController extends Controller
     }
 
     /**
-     * Add a existing user to the organization by email address.
+     * Add an existing user by email, or create/send an invite if the user has
+     * not registered yet.
      */
     public function addMember(Request $request, Organization $organization): RedirectResponse
     {
         $this->authorize('manage-members', $organization);
 
         $validated = $request->validate([
-            'email' => ['required', 'email', 'exists:users,email'],
+            'email' => ['required', 'email', 'max:255'],
         ]);
 
-        $user = User::where('email', $validated['email'])->firstOrFail();
+        $user = User::where('email', $validated['email'])->first();
+
+        if (! $user) {
+            if ($request->user()->cannot('create', [OrganizationInvite::class, $organization])) {
+                return back()->withErrors(['email' => 'You do not have permission to invite users to this organization.']);
+            }
+
+            /** @var User $actor */
+            $actor = Auth::user();
+
+            $invite = OrganizationInvite::create([
+                'organization_id' => $organization->id,
+                'created_by'      => $actor->id,
+                'code'            => OrganizationInvite::generateCode(),
+                'email'           => $validated['email'],
+                'used'            => false,
+            ]);
+
+            Notification::route('mail', $invite->email)
+                ->notify(new OrganizationInviteNotification($invite));
+
+            return back()->with('success', "No account was found for {$validated['email']}. An invite was created and emailed.");
+        }
 
         if ($organization->hasMember($user)) {
             return back()->withErrors(['email' => 'This user is already a member of this organization.']);

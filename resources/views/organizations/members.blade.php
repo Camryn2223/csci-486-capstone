@@ -7,7 +7,7 @@
         <h2>Add Member</h2>
         <form method="POST" action="{{ route('organizations.members.add', $organization) }}">
             @csrf
-            <label>Email address<br>
+            <label>Email address (existing users are added immediately; new emails get an invite)<br>
                 <input type="email" name="email" required>
             </label>
             <button type="submit">Add</button>
