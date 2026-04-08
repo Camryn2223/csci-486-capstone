@@ -52,22 +52,23 @@ class ApplicationTemplateController extends Controller
         $this->authorize('create', [ApplicationTemplate::class, $organization]);
 
         $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                \Illuminate\Validation\Rule::unique('application_templates')->where(
-                    fn ($query) => $query->where('organization_id', $organization->id)
-                ),
-            ],
+            'name'           => ['required', 'string', 'max:255', \Illuminate\Validation\Rule::unique('application_templates')->where(fn ($query) => $query->where('organization_id', $organization->id))],
+            'request_name'   => ['nullable', 'boolean'],
+            'request_email'  => ['nullable', 'boolean'],
+            'request_phone'  => ['nullable', 'boolean'],
+            'request_resume' => ['nullable', 'boolean'],
         ]);
 
         /** @var User $user */
         $user = Auth::user();
 
         $template = $organization->templates()->create([
-            'name'       => $validated['name'],
-            'created_by' => $user->id,
+            'name'           => $validated['name'],
+            'created_by'     => $user->id,
+            'request_name'   => $request->boolean('request_name', true),
+            'request_email'  => $request->boolean('request_email', true),
+            'request_phone'  => $request->boolean('request_phone', true),
+            'request_resume' => $request->boolean('request_resume', true),
         ]);
 
         return redirect()
@@ -102,28 +103,36 @@ class ApplicationTemplateController extends Controller
     }
 
     /**
-     * Update the template's name.
+     * Update the template's configuration and standard fields toggles.
      */
     public function update(Request $request, Organization $organization, ApplicationTemplate $applicationTemplate): RedirectResponse
     {
         $this->authorize('update', $applicationTemplate);
 
         $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
+            'name'           => [
+                'required', 'string', 'max:255',
                 \Illuminate\Validation\Rule::unique('application_templates')
                     ->where(fn ($query) => $query->where('organization_id', $organization->id))
                     ->ignore($applicationTemplate->id),
             ],
+            'request_name'   => ['nullable', 'boolean'],
+            'request_email'  => ['nullable', 'boolean'],
+            'request_phone'  => ['nullable', 'boolean'],
+            'request_resume' => ['nullable', 'boolean'],
         ]);
 
-        $applicationTemplate->update($validated);
+        $applicationTemplate->update([
+            'name'           => $validated['name'],
+            'request_name'   => $request->boolean('request_name', false),
+            'request_email'  => $request->boolean('request_email', false),
+            'request_phone'  => $request->boolean('request_phone', false),
+            'request_resume' => $request->boolean('request_resume', false),
+        ]);
 
         return redirect()
-            ->route('organizations.application-templates.show', [$organization, $applicationTemplate])
-            ->with('success', 'Template updated successfully.');
+            ->route('organizations.application-templates.edit', [$organization, $applicationTemplate])
+            ->with('success', 'Template settings updated successfully.');
     }
 
     /**

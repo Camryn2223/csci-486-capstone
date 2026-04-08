@@ -30,9 +30,9 @@ class DocumentController extends Controller
     ];
 
     /**
-     * Maximum upload size in kilobytes (10 MB).
+     * Maximum upload size in kilobytes (7.5 MB safe limit for 8MB environments).
      */
-    private const MAX_SIZE_KB = 10240;
+    private const MAX_SIZE_KB = 7680;
 
     /**
      * Store an uploaded document and attach it to the given application. No
@@ -63,11 +63,10 @@ class DocumentController extends Controller
     }
 
     /**
-     * Stream the document file to the browser as a download. Requires
-     * review_applications in the document's organization. Aborts with 404 if
-     * the file no longer exists on disk.
+     * Stream the document file to the browser to view or force download.
+     * Requires review_applications in the document's organization. 
      */
-    public function show(Document $document): BinaryFileResponse
+    public function show(Request $request, Document $document): BinaryFileResponse
     {
         $this->authorize('view', $document);
 
@@ -75,7 +74,14 @@ class DocumentController extends Controller
             abort(404, 'The requested file could not be found.');
         }
 
-        return response()->file(Storage::disk('local')->path($document->filepath));
+        $path = Storage::disk('local')->path($document->filepath);
+
+        // If the route was triggered with ?download=1
+        if ($request->boolean('download')) {
+            return response()->download($path, $document->filename);
+        }
+
+        return response()->file($path);
     }
 
     /**

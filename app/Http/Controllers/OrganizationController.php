@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Organization;
 use App\Models\OrganizationInvite;
 use App\Models\User;
+use App\Models\Interview;
 use App\Notifications\OrganizationInviteNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
@@ -80,7 +82,7 @@ class OrganizationController extends Controller
 
     /**
      * Display the organization dashboard, including open positions, members,
-     * and templates visible to the authenticated user.
+     * templates visible to the authenticated user, and their upcoming interviews.
      */
     public function show(Organization $organization): View
     {
@@ -93,7 +95,21 @@ class OrganizationController extends Controller
             'members',
         ]);
 
-        return view('organizations.show', compact('organization'));
+        /** @var User $user */
+        $user = Auth::user();
+
+        // Fetch interviews for the mini calendar
+        $interviews = Gate::allows('viewAny', [Interview::class, $organization])
+            ? Interview::whereHas('application.jobPosition', fn ($q) => $q->where('organization_id', $organization->id))
+                ->with(['application', 'application.jobPosition', 'interviewers'])
+                ->upcoming()
+                ->get()
+            : $user->upcomingInterviews()
+                ->whereHas('application.jobPosition', fn ($q) => $q->where('organization_id', $organization->id))
+                ->with(['application', 'application.jobPosition', 'interviewers'])
+                ->get();
+
+        return view('organizations.show', compact('organization', 'interviews'));
     }
 
     /**

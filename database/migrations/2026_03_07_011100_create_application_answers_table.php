@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('application_id')->constrained('applications')->onDelete('cascade');
             $table->foreignId('template_field_id')->constrained('template_fields')->onDelete('cascade');
             $table->text('value')->nullable();
+            $table->foreignId('document_id')->nullable()->constrained('documents')->cascadeOnDelete();
             $table->timestamps();
         });
     }

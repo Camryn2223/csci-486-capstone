@@ -20,7 +20,7 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
 
-                <label style="display: flex; align-items: center; margin-bottom: 18px;">
+                <label style="display: flex; align-items: center; margin-bottom: 18px; color: #bdbdbd; cursor: pointer;">
                     <input type="checkbox" name="remember"> Remember me
                 </label>
 

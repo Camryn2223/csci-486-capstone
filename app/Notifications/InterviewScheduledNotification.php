@@ -8,7 +8,8 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Sends an email to an applicant when an interview is scheduled.
+ * Sends an email when an interview is initially scheduled. Used for both
+ * the applicant and the interviewers.
  */
 class InterviewScheduledNotification extends Notification
 {
@@ -20,7 +21,8 @@ class InterviewScheduledNotification extends Notification
     public function __construct(
         protected Interview $interview,
         protected string $subject,
-        protected string $body
+        protected string $body,
+        protected string $recipientName
     ) {}
 
     /**
@@ -40,17 +42,19 @@ class InterviewScheduledNotification extends Notification
     {
         $scheduledAt = $this->interview->scheduled_at->format('F j, Y \a\t g:i A');
 
+        $interviewersList = $this->interview->interviewers->pluck('name')->implode(', ');
+
         return (new MailMessage)
             ->subject($this->subject)
-            ->greeting("Hello {$this->interview->application->applicant_name},")
+            ->greeting("Hello {$this->recipientName},")
             ->line($this->body)
             ->line("---")
             ->line("**Interview Details:**")
             ->line("Date & Time: {$scheduledAt}")
             ->line("Position: {$this->interview->application->jobPosition->title}")
             ->line("Organization: {$this->interview->application->jobPosition->organization->name}")
-            ->line("Interviewer: {$this->interview->interviewer->name}")
+            ->line("Interviewer(s): {$interviewersList}")
             ->line("---")
-            ->line('If you need to reschedule, please reply to this email.');
+            ->line('If you have any questions or conflicts, please reply to this email.');
     }
 }

@@ -49,7 +49,7 @@ class JobPositionController extends Controller
     {
         $this->authorize('create', [JobPosition::class, $organization]);
 
-        $templates = $organization->templates()->withCount('fields')->get();
+        $templates = $organization->templates()->with('fields')->withCount('fields')->get();
 
         return view('job_positions.create', compact('organization', 'templates'));
     }
@@ -98,7 +98,7 @@ class JobPositionController extends Controller
     {
         $this->authorize('update', $jobPosition);
 
-        $templates = $organization->templates()->withCount('fields')->get();
+        $templates = $organization->templates()->with('fields')->withCount('fields')->get();
 
         return view('job_positions.edit', compact('organization', 'jobPosition', 'templates'));
     }

@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Represents a single applicant's answer to one TemplateField within an
  * Application. Each answer stores the raw value submitted for that field.
+ * Custom file uploads also link directly to the Document record.
  *
  * @property int         $id
  * @property int         $application_id
  * @property int         $template_field_id
  * @property string|null $value
+ * @property int|null    $document_id
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
@@ -22,6 +24,7 @@ class ApplicationAnswer extends Model
         'application_id',
         'template_field_id',
         'value',
+        'document_id',
     ];
 
     /**
@@ -42,5 +45,15 @@ class ApplicationAnswer extends Model
     public function field(): BelongsTo
     {
         return $this->belongsTo(TemplateField::class, 'template_field_id');
+    }
+
+    /**
+     * The document securely attached if this was a custom file upload field.
+     * 
+     * @return BelongsTo<Document, ApplicationAnswer>
+     */
+    public function document(): BelongsTo
+    {
+        return $this->belongsTo(Document::class);
     }
 }

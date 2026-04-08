@@ -15,6 +15,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $organization_id
  * @property int $created_by
  * @property string $name
+ * @property bool $request_name
+ * @property bool $request_email
+ * @property bool $request_phone
+ * @property bool $request_resume
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
@@ -24,7 +28,21 @@ class ApplicationTemplate extends Model
         'organization_id',
         'created_by',
         'name',
+        'request_name',
+        'request_email',
+        'request_phone',
+        'request_resume',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'request_name' => 'boolean',
+            'request_email' => 'boolean',
+            'request_phone' => 'boolean',
+            'request_resume' => 'boolean',
+        ];
+    }
 
     /**
      * The organization this template belongs to.

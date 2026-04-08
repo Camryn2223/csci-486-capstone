@@ -37,13 +37,13 @@ class InterviewPolicy
     /**
      * Determine whether the user can view an interview's details. Requires
      * the review_applications or schedule_interviews permission, or the user must
-     * be the assigned interviewer.
+     * be an assigned interviewer.
      */
     public function view(User $user, Interview $interview): bool
     {
         $organization = $interview->application->jobPosition->organization;
 
-        return $user->id === $interview->interviewer_id
+        return $interview->interviewers->contains('id', $user->id)
             || $user->hasPermissionIn($organization, 'review_applications')
             || $user->hasPermissionIn($organization, 'schedule_interviews');
     }
@@ -60,10 +60,10 @@ class InterviewPolicy
 
     /**
      * Determine whether the user can submit feedback for an interview. Only
-     * the assigned interviewer may submit feedback.
+     * the assigned interviewers may submit feedback.
      */
     public function submitFeedback(User $user, Interview $interview): bool
     {
-        return $user->id === $interview->interviewer_id;
+        return $interview->interviewers->contains('id', $user->id);
     }
 }

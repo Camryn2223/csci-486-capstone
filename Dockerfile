@@ -15,6 +15,7 @@ WORKDIR /var/www/html
 
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/start.sh /start.sh
+COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
 RUN chmod +x /start.sh
 
 EXPOSE 80

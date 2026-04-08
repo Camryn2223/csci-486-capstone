@@ -5,19 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * Represents a scheduled interview between an interviewer and an applicant for
- * a given application. Tracks the scheduled time, current status, optional
- * notes, and when feedback was submitted after the interview was completed.
+ * Represents a scheduled interview block for an application. An interview
+ * is associated with one or more interviewers who each can provide individual
+ * feedback via the pivot table.
  *
  * @property int $id
  * @property int $application_id
- * @property int $interviewer_id
  * @property \Carbon\Carbon $scheduled_at
  * @property string $status scheduled | completed | canceled
- * @property string|null $notes
- * @property \Carbon\Carbon|null $feedback_submitted_at
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
@@ -25,19 +23,15 @@ class Interview extends Model
 {
     protected $fillable = [
         'application_id',
-        'interviewer_id',
         'scheduled_at',
         'status',
-        'notes',
-        'feedback_submitted_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'scheduled_at'          => 'datetime',
-            'feedback_submitted_at' => 'datetime',
-            'status'                => 'string',
+            'scheduled_at' => 'datetime',
+            'status'       => 'string',
         ];
     }
 
@@ -52,13 +46,16 @@ class Interview extends Model
     }
 
     /**
-     * The interviewer who is conducting this interview.
+     * The interviewers conducting this interview. Feedback and notes
+     * are stored individually on the pivot table.
      *
-     * @return BelongsTo<User, Interview>
+     * @return BelongsToMany<User>
      */
-    public function interviewer(): BelongsTo
+    public function interviewers(): BelongsToMany
     {
-        return $this->belongsTo(User::class, 'interviewer_id');
+        return $this->belongsToMany(User::class, 'interview_user')
+            ->withPivot(['notes', 'feedback_submitted_at'])
+            ->withTimestamps();
     }
 
     /**
@@ -87,8 +84,8 @@ class Interview extends Model
     }
 
     /**
-     * Scope to completed interviews where the interviewer has not yet
-     * submitted feedback.
+     * Scope to completed interviews where at least one assigned interviewer
+     * has not yet submitted feedback.
      *
      * @param  Builder<Interview> $query
      * @return Builder<Interview>
@@ -96,7 +93,9 @@ class Interview extends Model
     public function scopePendingFeedback(Builder $query): Builder
     {
         return $query->where('status', 'completed')
-            ->whereNull('feedback_submitted_at');
+            ->whereHas('interviewers', function ($q) {
+                $q->whereNull('interview_user.feedback_submitted_at');
+            });
     }
 
     /**
@@ -124,11 +123,13 @@ class Interview extends Model
     }
 
     /**
-     * Returns true if the interviewer has already submitted feedback for this
-     * interview.
+     * Returns true if the specified interviewer has already submitted feedback
+     * for this interview.
      */
-    public function hasFeedback(): bool
+    public function hasFeedbackFrom(User $user): bool
     {
-        return ! is_null($this->feedback_submitted_at);
+        $interviewer = $this->interviewers->firstWhere('id', $user->id);
+
+        return $interviewer && ! is_null($interviewer->pivot->feedback_submitted_at);
     }
 }

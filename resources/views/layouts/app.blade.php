@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Interview Management')</title>
+    <title>@yield('title', 'HireFlow')</title>
     <style>
         /* ===== Global Reset & Base ===== */
         *, *::before, *::after {
@@ -84,29 +84,36 @@
         }
 
         /* ===== Flash Messages ===== */
+        .flash-success, .flash-error {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            min-width: 300px;
+            text-align: center;
+            padding: 12px 20px;
+            border-radius: 6px;
+            transition: opacity 0.5s ease;
+        }
+
         .flash-success {
             background: #0f3d1e;
             color: #9dffb0;
-            padding: 12px 20px;
-            margin: 20px auto;
-            max-width: 600px;
-            border-radius: 6px;
             border: 1px solid #1a5c30;
         }
 
         .flash-error {
             background: #3d0f0f;
             color: #ff9d9d;
-            padding: 12px 20px;
-            margin: 20px auto;
-            max-width: 600px;
-            border-radius: 6px;
             border: 1px solid #5c1a1a;
         }
 
         .flash-error ul {
             margin: 0;
             padding-left: 20px;
+            text-align: left;
         }
 
         /* ===== Common Elements ===== */
@@ -166,7 +173,6 @@
         input[type="number"],
         input[type="tel"],
         input[type="url"],
-        select,
         textarea {
             width: 100%;
             padding: 10px;
@@ -180,13 +186,48 @@
             font-family: inherit;
         }
 
+        /* Date Input Specifics */
+        input[type="date"] {
+            cursor: pointer;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8);
+            cursor: pointer;
+        }
+
+        /* Select Dropdown Styling */
+        select {
+            width: 100%;
+            padding: 10px 35px 10px 10px; /* Right padding ensures text doesn't overlap the arrow */
+            margin-top: 6px;
+            margin-bottom: 18px;
+            border-radius: 6px;
+            border: 1px solid #3a3f45;
+            background-color: #1f2327;
+            background-image: url("data:image/svg+xml;utf8,<svg fill='%23bdbdbd' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            color: #e6e6e6;
+            font-size: 14px;
+            font-family: inherit;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+        }
+
         textarea {
             resize: vertical;
             min-height: 80px;
         }
 
-        input[type="checkbox"] {
+        input[type="checkbox"], input[type="radio"] {
             margin-right: 6px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 18px;
+            font-size: 14px;
         }
 
         h2 {
@@ -262,11 +303,12 @@
         .status-awaiting-interview { background: #2f3a4a; color: #b7c7d9; }
         .status-awaiting-feedback { background: #4a3d00; color: #ffe58a; }
         .status-complete { background: #0f3d1e; color: #9dffb0; }
+        .status-danger { background: #3d0f0f; color: #ff9d9d; }
 
         /* ===== Entry Boxes ===== */
         .entry-box {
             margin-bottom: 10px;
-            padding: 10px;
+            padding: 15px 20px;
             background: #1f2327;
             border: 1px solid #3a3f45;
             border-radius: 6px;
@@ -308,12 +350,17 @@
     <div class="navbar">
         @auth
             <h1>
-                Interview Management
+                HireFlow
                 <span class="subtag">({{ auth()->user()->role }})</span>
             </h1>
 
             <div class="nav-right">
-                <a href="{{ route('dashboard') }}">Dashboard</a>
+                @php
+                    $user = auth()->user();
+                    $orgs = $user->isChairman() ? $user->ownedOrganizations() : $user->organizations();
+                    $dashRoute = $orgs->count() === 1 ? route('organizations.show', $orgs->first()) : route('dashboard');
+                @endphp
+                <a href="{{ $dashRoute }}">Dashboard</a>
                 <a href="{{ route('organizations.index') }}">Organizations</a>
                 <a href="{{ route('two-factor.show') }}">Settings</a>
                 <form method="POST" action="{{ route('logout') }}" style="display:inline">
@@ -322,7 +369,7 @@
                 </form>
             </div>
         @else
-            <h1>Interview Management</h1>
+            <h1>HireFlow</h1>
 
             <div class="nav-right">
                 <a href="{{ route('login') }}">Sign In</a>
@@ -355,5 +402,18 @@
         @yield('content')
     </div>
 
+    <!-- Quality of Life Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Auto-dismiss flash messages after 5 seconds
+            const flashMessages = document.querySelectorAll('.flash-success, .flash-error');
+            flashMessages.forEach(function(msg) {
+                setTimeout(function() {
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500);
+                }, 5000);
+            });
+        });
+    </script>
 </body>
 </html>

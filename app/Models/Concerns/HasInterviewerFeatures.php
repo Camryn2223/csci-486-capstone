@@ -3,7 +3,7 @@
 namespace App\Models\Concerns;
 
 use App\Models\Interview;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Provides interviewer-specific relationships and convenience methods for the
@@ -12,24 +12,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 trait HasInterviewerFeatures
 {
     /**
-     * All interviews assigned to this user as the interviewer.
+     * All interviews assigned to this user as an interviewer.
      *
-     * @return HasMany<Interview>
+     * @return BelongsToMany<Interview>
      */
-    public function interviews(): HasMany
+    public function interviews(): BelongsToMany
     {
-        return $this->hasMany(Interview::class, 'interviewer_id');
+        return $this->belongsToMany(Interview::class, 'interview_user')
+            ->withPivot(['notes', 'feedback_submitted_at'])
+            ->withTimestamps();
     }
 
     /**
      * Scheduled interviews assigned to this user that have not yet occurred,
      * ordered by soonest first.
      *
-     * @return HasMany<Interview>
+     * @return BelongsToMany<Interview>
      */
-    public function upcomingInterviews(): HasMany
+    public function upcomingInterviews(): BelongsToMany
     {
-        return $this->hasMany(Interview::class, 'interviewer_id')
+        return $this->interviews()
             ->where('status', 'scheduled')
             ->where('scheduled_at', '>=', now())
             ->orderBy('scheduled_at');
@@ -39,12 +41,12 @@ trait HasInterviewerFeatures
      * Completed interviews assigned to this user for which feedback has not
      * yet been submitted.
      *
-     * @return HasMany<Interview>
+     * @return BelongsToMany<Interview>
      */
-    public function pendingFeedbackInterviews(): HasMany
+    public function pendingFeedbackInterviews(): BelongsToMany
     {
-        return $this->hasMany(Interview::class, 'interviewer_id')
+        return $this->interviews()
             ->where('status', 'completed')
-            ->whereNull('feedback_submitted_at');
+            ->whereNull('interview_user.feedback_submitted_at');
     }
 }

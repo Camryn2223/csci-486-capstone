@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
+
 /**
  * Represents a file uploaded alongside an application. Documents are not
  * associated with a system user since applicants do not have accounts.
@@ -37,6 +39,17 @@ class Document extends Model
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class);
+    }
+
+    /**
+     * If this document belongs to a specific custom field, this relationship resolves it.
+     * Used to prevent duplicating custom field files into the generic documents pile.
+     *
+     * @return HasOne<ApplicationAnswer>
+     */
+    public function answer(): HasOne
+    {
+        return $this->hasOne(ApplicationAnswer::class, 'document_id');
     }
 
     /**

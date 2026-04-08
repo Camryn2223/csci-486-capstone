@@ -56,23 +56,40 @@ class ApplicationController extends Controller
 
         $template = $jobPosition->template()->with('fields')->firstOrFail();
 
-        $validated = $request->validate([
-            'applicant_name'  => ['required', 'string', 'max:255'],
-            'applicant_email' => ['required', 'email', 'max:255'],
-            'applicant_phone' => ['nullable', 'string', 'max:50'],
+        $rules = [
             'answers'         => ['nullable', 'array'],
             'answers.*'       => ['nullable'],
-            'document'        => ['nullable', 'file', 'max:10240', 'mimetypes:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png'],
-        ]);
+        ];
 
-        $alreadyApplied = Application::where('applicant_email', $validated['applicant_email'])
-            ->where('job_position_id', $jobPosition->id)
-            ->exists();
+        // Only enforce rules on standard fields if the template requests them
+        if ($template->request_name) {
+            $rules['applicant_name'] = ['required', 'string', 'max:255'];
+        }
+        if ($template->request_email) {
+            $rules['applicant_email'] = ['required', 'email', 'max:255'];
+        }
+        if ($template->request_phone) {
+            $rules['applicant_phone'] = ['nullable', 'string', 'max:50'];
+        }
+        
+        $rules['document'] = [$template->request_resume ? 'required' : 'nullable', 'file', 'max:7500', 'mimetypes:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png'];
 
-        if ($alreadyApplied) {
-            return back()->withErrors([
-                'applicant_email' => 'An application from this email address has already been submitted for this position.',
-            ])->withInput();
+        $validated = $request->validate($rules);
+
+        // Safely determine email (an anonymous fallback if not requested)
+        $determinedEmail = $template->request_email ? $validated['applicant_email'] : 'no-email-'.uniqid().'@hireflow.example.com';
+
+        // Check duplicates if the email is actually known
+        if ($template->request_email) {
+            $alreadyApplied = Application::where('applicant_email', $determinedEmail)
+                ->where('job_position_id', $jobPosition->id)
+                ->exists();
+
+            if ($alreadyApplied) {
+                return back()->withErrors([
+                    'applicant_email' => 'An application from this email address has already been submitted for this position.',
+                ])->withInput();
+            }
         }
 
         $this->validateRequiredFields($template, $validated['answers'] ?? []);
@@ -80,25 +97,47 @@ class ApplicationController extends Controller
         $application = Application::create([
             'job_position_id' => $jobPosition->id,
             'template_id'     => $template->id,
-            'applicant_name'  => $validated['applicant_name'],
-            'applicant_email' => $validated['applicant_email'],
-            'applicant_phone' => $validated['applicant_phone'] ?? null,
+            'applicant_name'  => $template->request_name ? $validated['applicant_name'] : 'Anonymous Applicant',
+            'applicant_email' => $determinedEmail,
+            'applicant_phone' => $template->request_phone ? ($validated['applicant_phone'] ?? null) : null,
             'status'          => 'submitted',
         ]);
 
-        // Process Template Answers
+        // Process Template Answers (Including custom file fields)
         foreach ($template->fields as $field) {
-            if (isset($validated['answers'][$field->id])) {
-                $val = $validated['answers'][$field->id];
+            if ($request->has("answers.{$field->id}")) {
                 
-                $application->answers()->create([
-                    'template_field_id' => $field->id,
-                    'value'             => is_array($val) ? implode(', ', $val) : $val,
-                ]);
+                // If it is a custom file upload field
+                if ($field->isFileField()) {
+                    $file = $request->file("answers.{$field->id}");
+                    if ($file) {
+                        $path = $file->store("documents/{$application->id}", 'local');
+                        
+                        $doc = $application->documents()->create([
+                            'filename' => $file->getClientOriginalName(),
+                            'filepath' => $path,
+                            'mimetype' => $file->getMimeType(),
+                        ]);
+
+                        $application->answers()->create([
+                            'template_field_id' => $field->id,
+                            'value'             => $file->getClientOriginalName(),
+                            'document_id'       => $doc->id,
+                        ]);
+                    }
+                } else {
+                    $val = $validated['answers'][$field->id] ?? null;
+                    if ($val !== null) {
+                        $application->answers()->create([
+                            'template_field_id' => $field->id,
+                            'value'             => is_array($val) ? implode(', ', $val) : $val,
+                        ]);
+                    }
+                }
             }
         }
 
-        // Process File Upload
+        // Process standard generic resume upload
         if ($request->hasFile('document')) {
             $file = $request->file('document');
             $path = $file->store("documents/{$application->id}", 'local');
@@ -126,8 +165,9 @@ class ApplicationController extends Controller
             'jobPosition.organization',
             'template.fields',
             'answers.field',
+            'answers.document',
             'documents',
-            'interviews.interviewer',
+            'interviews.interviewers',
         ]);
 
         return view('applications.show', compact('application'));
@@ -157,8 +197,15 @@ class ApplicationController extends Controller
         $errors = [];
 
         foreach ($template->fields->where('required', true) as $field) {
-            if (empty($answers[$field->id])) {
-                $errors["answers.{$field->id}"] = "The field \"{$field->label}\" is required.";
+            // Because files upload to the $request differently, ensure we check the pure request specifically for files
+            if ($field->isFileField()) {
+                if (! request()->hasFile("answers.{$field->id}")) {
+                    $errors["answers.{$field->id}"] = "The field \"{$field->label}\" is required.";
+                }
+            } else {
+                if (empty($answers[$field->id])) {
+                    $errors["answers.{$field->id}"] = "The field \"{$field->label}\" is required.";
+                }
             }
         }
 

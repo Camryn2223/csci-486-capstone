@@ -16,6 +16,10 @@ return new class extends Migration
             $table->foreignId('organization_id')->constrained('organizations')->onDelete('cascade');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->string('name');
+            $table->boolean('request_name')->default(true);
+            $table->boolean('request_email')->default(true);
+            $table->boolean('request_phone')->default(true);
+            $table->boolean('request_resume')->default(true);
             $table->timestamps();
         });
     }

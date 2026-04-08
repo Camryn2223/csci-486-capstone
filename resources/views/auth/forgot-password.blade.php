@@ -1,24 +1,28 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Reset Password</h1>
+    <div class="centered-content">
+        <div class="form-box">
+            <h2>Reset Password</h2>
 
-    <p>Enter your email address and we will send you a link to reset your password.</p>
+            <p style="color: #bdbdbd; text-align: center; font-size: 14px;">Enter your email address and we will send you a link to reset your password.</p>
 
-    @if (session('status'))
-        <p style="color:green">{{ session('status') }}</p>
-    @endif
+            @if (session('status'))
+                <p style="color: #9dffb0; text-align: center;">{{ session('status') }}</p>
+            @endif
 
-    <form method="POST" action="{{ route('password.email') }}">
-        @csrf
+            <form method="POST" action="{{ route('password.email') }}">
+                @csrf
 
-        <label>Email<br>
-            <input type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username">
-        </label>
-        <br><br>
+                <label>Email</label>
+                <input type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username">
 
-        <button type="submit">Send Reset Link</button>
-    </form>
+                <button type="submit" class="btn">Send Reset Link</button>
+            </form>
 
-    <br><a href="{{ route('login') }}">Back to sign in</a>
+            <div class="form-link">
+                <a href="{{ route('login') }}">Back to sign in</a>
+            </div>
+        </div>
+    </div>
 @endsection

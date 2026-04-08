@@ -7,6 +7,8 @@ use App\Models\Interview;
 use App\Models\Organization;
 use App\Models\User;
 use App\Notifications\InterviewScheduledNotification;
+use App\Notifications\InterviewRescheduledNotification;
+use App\Notifications\InterviewCanceledNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,12 +34,12 @@ class InterviewController extends Controller
 
         $interviews = Gate::allows('viewAny', [Interview::class, $organization])
             ? Interview::whereHas('application.jobPosition', fn ($q) => $q->where('organization_id', $organization->id))
-                ->with(['application.jobPosition', 'interviewer'])
+                ->with(['application', 'application.jobPosition', 'interviewers'])
                 ->upcoming()
                 ->get()
             : $user->upcomingInterviews()
                 ->whereHas('application.jobPosition', fn ($q) => $q->where('organization_id', $organization->id))
-                ->with(['application.jobPosition'])
+                ->with(['application', 'application.jobPosition', 'interviewers'])
                 ->get();
 
         return view('interviews.index', compact('organization', 'interviews'));
@@ -62,45 +64,67 @@ class InterviewController extends Controller
     }
 
     /**
-     * Store a newly scheduled interview and notify the applicant.
+     * Store a newly scheduled interview and assign all selected interviewers to
+     * it. Notifies the applicant and every assigned interviewer.
      */
     public function store(Request $request, Application $application): RedirectResponse
     {
         $this->authorize('create', [Interview::class, $application]);
 
         $validated = $request->validate([
-            'interviewer_id' => ['required', 'exists:users,id'],
-            'scheduled_at'   => ['required', 'date', 'after:now'],
-            'email_subject'  => ['required', 'string', 'max:255'],
-            'email_body'     => ['required', 'string', 'max:5000'],
+            'interviewer_ids'   => ['required', 'array'],
+            'interviewer_ids.*' => ['exists:users,id'],
+            'scheduled_at'      => ['required', 'date', 'after:now'],
+            'email_subject'     => ['required', 'string', 'max:255'],
+            'email_body'        => ['required', 'string', 'max:5000'],
         ]);
 
-        $interviewer = User::findOrFail($validated['interviewer_id']);
-
-        if ($this->hasConflict($interviewer, $validated['scheduled_at'])) {
-            return back()->withErrors([
-                'scheduled_at' => 'The selected interviewer already has an interview scheduled at this time.',
-            ])->withInput();
+        // Verify conflicts for all selected interviewers before creating anything
+        foreach ($validated['interviewer_ids'] as $intId) {
+            $interviewer = User::findOrFail($intId);
+            if ($this->hasConflict($interviewer, $validated['scheduled_at'])) {
+                return back()->withErrors([
+                    'scheduled_at' => "Interviewer {$interviewer->name} already has an interview scheduled at this time.",
+                ])->withInput();
+            }
         }
 
         $interview = Interview::create([
             'application_id'  => $application->id,
-            'interviewer_id'  => $validated['interviewer_id'],
             'scheduled_at'    => $validated['scheduled_at'],
             'status'          => 'scheduled',
         ]);
+        
+        $interview->interviewers()->attach($validated['interviewer_ids']);
 
-        // Send notification to the applicant
-        Notification::route('mail', $application->applicant_email)
-            ->notify(new InterviewScheduledNotification(
-                $interview, 
-                $validated['email_subject'], 
-                $validated['email_body']
-            ));
+        // Load interviewers to iterate over for emails
+        $interview->load('interviewers');
+
+        $applicantEmail = $application->applicant_email;
+        
+        if (!str_contains($applicantEmail, 'no-email-')) {
+            Notification::route('mail', $applicantEmail)
+                ->notify(new InterviewScheduledNotification(
+                    $interview, 
+                    $validated['email_subject'], 
+                    $validated['email_body'],
+                    $application->applicant_name
+                ));
+        }
+
+        foreach ($interview->interviewers as $interviewer) {
+            Notification::route('mail', $interviewer->email)
+                ->notify(new InterviewScheduledNotification(
+                    $interview, 
+                    $validated['email_subject'], 
+                    $validated['email_body'],
+                    $interviewer->name
+                ));
+        }
 
         return redirect()
             ->route('applications.show', $application)
-            ->with('success', 'Interview scheduled and email sent to applicant.');
+            ->with('success', 'Interview scheduled successfully.');
     }
 
     /**
@@ -112,7 +136,7 @@ class InterviewController extends Controller
 
         $interview->load([
             'application.jobPosition.organization',
-            'interviewer',
+            'interviewers',
         ]);
 
         return view('interviews.show', compact('interview'));
@@ -125,7 +149,7 @@ class InterviewController extends Controller
     {
         $this->authorize('update', $interview);
 
-        $interview->load('application.jobPosition.organization');
+        $interview->load('application.jobPosition.organization', 'interviewers');
 
         $organization = $interview->application->jobPosition->organization;
 
@@ -137,37 +161,60 @@ class InterviewController extends Controller
     }
 
     /**
-     * Update a scheduled interview's time or assigned interviewer.
+     * Update a scheduled interview's time or assigned interviewers.
+     * Automatically notifies everyone involved.
      */
     public function update(Request $request, Interview $interview): RedirectResponse
     {
         $this->authorize('update', $interview);
 
         $validated = $request->validate([
-            'interviewer_id' => ['required', 'exists:users,id'],
-            'scheduled_at'   => ['required', 'date', 'after:now'],
+            'interviewer_ids'   => ['required', 'array'],
+            'interviewer_ids.*' => ['exists:users,id'],
+            'scheduled_at'      => ['required', 'date', 'after:now'],
         ]);
 
-        $interviewer = User::findOrFail($validated['interviewer_id']);
-
-        if ($this->hasConflict($interviewer, $validated['scheduled_at'], $interview->id)) {
-            return back()->withErrors([
-                'scheduled_at' => 'The selected interviewer already has an interview scheduled at this time.',
-            ]);
+        // Check conflicts for everyone
+        foreach ($validated['interviewer_ids'] as $intId) {
+            $interviewer = User::findOrFail($intId);
+            // Allow the interviewer to exclude the CURRENT interview ID to avoid self-conflict if they are already on it
+            $excludeId = $interview->interviewers->contains('id', $intId) ? $interview->id : null;
+            if ($this->hasConflict($interviewer, $validated['scheduled_at'], $excludeId)) {
+                return back()->withErrors([
+                    'scheduled_at' => "Interviewer {$interviewer->name} already has an interview scheduled at this time.",
+                ]);
+            }
         }
 
+        $oldScheduledAt = $interview->scheduled_at;
+
         $interview->update([
-            'interviewer_id' => $validated['interviewer_id'],
             'scheduled_at'   => $validated['scheduled_at'],
         ]);
 
+        $interview->interviewers()->sync($validated['interviewer_ids']);
+
+        // Reload to get fresh relations
+        $interview->load('interviewers', 'application.jobPosition.organization');
+
+        $applicantEmail = $interview->application->applicant_email;
+        if (!str_contains($applicantEmail, 'no-email-')) {
+            Notification::route('mail', $applicantEmail)
+                ->notify(new InterviewRescheduledNotification($interview, $oldScheduledAt, $interview->application->applicant_name));
+        }
+        
+        foreach ($interview->interviewers as $interviewer) {
+            Notification::route('mail', $interviewer->email)
+                ->notify(new InterviewRescheduledNotification($interview, $oldScheduledAt, $interviewer->name));
+        }
+
         return redirect()
             ->route('interviews.show', $interview)
-            ->with('success', 'Interview updated successfully.');
+            ->with('success', 'Interview updated and notifications sent.');
     }
 
     /**
-     * Cancel a scheduled interview.
+     * Cancel a scheduled interview. Notifies the applicant and interviewers.
      */
     public function cancel(Interview $interview): RedirectResponse
     {
@@ -178,12 +225,26 @@ class InterviewController extends Controller
         }
 
         $interview->update(['status' => 'canceled']);
+        
+        $interview->load('interviewers', 'application.jobPosition.organization');
+        
+        $applicantEmail = $interview->application->applicant_email;
+        if (!str_contains($applicantEmail, 'no-email-')) {
+            Notification::route('mail', $applicantEmail)
+                ->notify(new InterviewCanceledNotification($interview, $interview->application->applicant_name));
+        }
+        
+        foreach ($interview->interviewers as $interviewer) {
+            Notification::route('mail', $interviewer->email)
+                ->notify(new InterviewCanceledNotification($interview, $interviewer->name));
+        }
 
-        return back()->with('success', 'Interview canceled.');
+        return back()->with('success', 'Interview canceled and notifications sent.');
     }
 
     /**
-     * Submit feedback notes for a completed interview.
+     * Submit feedback notes for a completed interview. Evaluated and stored 
+     * purely on the specific acting interviewer's pivot row.
      */
     public function submitFeedback(Request $request, Interview $interview): RedirectResponse
     {
@@ -193,15 +254,15 @@ class InterviewController extends Controller
             return back()->withErrors(['interview' => 'Feedback can only be submitted for completed interviews.']);
         }
 
-        if ($interview->hasFeedback()) {
-            return back()->withErrors(['interview' => 'Feedback has already been submitted for this interview.']);
+        if ($interview->hasFeedbackFrom(Auth::user())) {
+            return back()->withErrors(['interview' => 'Feedback has already been submitted by you for this interview.']);
         }
 
         $validated = $request->validate([
             'notes' => ['required', 'string', 'max:5000'],
         ]);
 
-        $interview->update([
+        $interview->interviewers()->updateExistingPivot(Auth::id(), [
             'notes'                 => $validated['notes'],
             'feedback_submitted_at' => now(),
         ]);
@@ -235,7 +296,7 @@ class InterviewController extends Controller
 
         return $interviewer->interviews()
             ->where('status', 'scheduled')
-            ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
+            ->when($excludeId, fn ($q) => $q->where('interviews.id', '!=', $excludeId))
             ->whereBetween('scheduled_at', [
                 $proposedTime->copy()->subHour(),
                 $proposedTime->copy()->addHour(),

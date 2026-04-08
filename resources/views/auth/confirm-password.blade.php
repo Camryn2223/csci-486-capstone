@@ -1,18 +1,20 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Confirm Password</h1>
+    <div class="centered-content">
+        <div class="form-box">
+            <h2>Confirm Password</h2>
 
-    <p>Please confirm your password before continuing.</p>
+            <p style="color: #bdbdbd; text-align: center; font-size: 14px;">Please confirm your password before continuing.</p>
 
-    <form method="POST" action="{{ route('password.confirm') }}">
-        @csrf
+            <form method="POST" action="{{ route('password.confirm') }}">
+                @csrf
 
-        <label>Password<br>
-            <input type="password" name="password" required autofocus autocomplete="current-password">
-        </label>
-        <br><br>
+                <label>Password</label>
+                <input type="password" name="password" required autofocus autocomplete="current-password">
 
-        <button type="submit">Confirm</button>
-    </form>
+                <button type="submit" class="btn">Confirm</button>
+            </form>
+        </div>
+    </div>
 @endsection
