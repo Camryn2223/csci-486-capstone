@@ -1,1 +1,9 @@
 import './bootstrap';
+import './flash-messages';
+import './two-factor';
+import './calendar';
+import './mini-calendar';
+import './template-builder';
+import './job-preview';
+import './application-form';
+import './interviews-form';

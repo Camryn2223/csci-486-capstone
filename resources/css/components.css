@@ -1,0 +1,73 @@
+/* Cards */
+.card {
+    background: #24282d;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    border: 1px solid #2f343a;
+}
+.card-dashed-purple { border: 1px dashed #6d3fa9; background: #1a1d21; margin-top: 30px; }
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 12px 20px;
+    background: #6d3fa9;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+}
+.btn:hover { background: #593287; text-decoration: none; color: white; }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn-danger { background: #a33; }
+.btn-danger:hover { background: #822; }
+
+/* Exact Button Overrides */
+.btn-outline { background: #24282d; border: 1px solid #3a3f45; }
+.btn-purple-dark { background: #3a245a; }
+.btn-slate { background: #2f3a4a; }
+.btn-success { background: #0f3d1e; color: #9dffb0; }
+.btn-success-border { background: #0f3d1e; color: #9dffb0; border: 1px solid #1a5c30; }
+.btn-submit-large { background: #0f3d1e; color: #9dffb0; border: 1px solid #1a5c30; padding: 15px 30px; font-weight: bold; width: 100%; }
+.btn-submit-large-disabled { background: #0f3d1e; color: #9dffb0; border: 1px solid #1a5c30; padding: 15px 30px; font-weight: bold; width: 100%; opacity: 0.5; cursor: not-allowed; }
+.btn-tab-active { background: #6d3fa9; border: none; }
+.btn-tab-inactive { background: #24282d; border: 1px solid #3a3f45; }
+.btn-add-opt { background: #24282d; border: 1px dashed #6d3fa9; margin-top: 10px; }
+.btn-add-opt-alt { background: #1a1d21; border: 1px dashed #6d3fa9; margin-top: 10px; }
+
+/* Status Badges */
+.status { font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 14px; display: inline-block; }
+.status-needs-review { background: #004d5e; color: #7eeaff; }
+.status-schedule-interview { background: #3a245a; color: #c7a6ff; }
+.status-awaiting-interview { background: #2f3a4a; color: #b7c7d9; }
+.status-awaiting-feedback { background: #4a3d00; color: #ffe58a; }
+.status-complete { background: #0f3d1e; color: #9dffb0; }
+.status-danger { background: #3d0f0f; color: #ff9d9d; }
+
+/* Entries */
+.entry-box { margin-bottom: 10px; padding: 15px 20px; background: #1f2327; border: 1px solid #3a3f45; border-radius: 6px; }
+.entry-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.field-item-box { padding: 15px; margin-bottom: 10px; border: 1px solid #3a3f45; }
+
+/* Specific Components */
+.feedback-box { background: #1f2327; padding: 15px; border-radius: 6px; border: 1px solid #3a3f45; }
+.options-container-edit { margin-top: 15px; background: #1a1d21; padding: 15px; border-radius: 6px; border: 1px solid #2f343a; }
+.options-container-add { margin-top: 15px; background: #24282d; padding: 15px; border-radius: 6px; border: 1px solid #3a3f45; }
+.member-grid-box { background: #1f2327; padding: 10px; border-radius: 6px; border: 1px solid #3a3f45; }
+.qr-container { background: white; padding: 15px; display: inline-block; border-radius: 6px; margin: 15px 0; }
+.recovery-codes-box { background: #1f2327; padding: 20px; border-radius: 6px; border: 1px solid #3a3f45; font-family: monospace; font-size: 16px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Legends */
+.legend-box { width: 12px; height: 12px; display: inline-block; border-radius: 3px; }
+.legend-purple { background: #6d3fa9; }
+.legend-gray { background: #3a3f45; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #2f343a; }
+th { color: #a97dff; font-size: 14px; }
+td { font-size: 14px; }

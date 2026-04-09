@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * Represents a company or hiring organization owned by a chairman. An
@@ -63,6 +64,16 @@ class Organization extends Model
     public function jobPositions(): HasMany
     {
         return $this->hasMany(JobPosition::class);
+    }
+
+    /**
+     * All applications submitted across all job positions in this organization.
+     *
+     * @return HasManyThrough<Application>
+     */
+    public function applications(): HasManyThrough
+    {
+        return $this->hasManyThrough(Application::class, JobPosition::class);
     }
 
     /**

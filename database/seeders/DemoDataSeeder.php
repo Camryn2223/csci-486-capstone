@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class DemoDataSeeder extends Seeder
 {
-    private const PASSWORD = 'Password123!';
+    private const PASSWORD = 'test1234';
 
     public function run(): void
     {

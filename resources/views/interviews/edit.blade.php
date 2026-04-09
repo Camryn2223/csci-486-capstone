@@ -1,23 +1,14 @@
 @extends('layouts.app')
 
 @push('styles')
-    <!-- Flatpickr Styles -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <!-- TomSelect Styles (styled for dark mode) -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
-    <style>
-        .ts-control { background-color: #1f2327 !important; border: 1px solid #3a3f45 !important; border-radius: 6px !important; color: #e6e6e6 !important; padding: 10px !important; min-height: 40px; }
-        .ts-control input { color: #e6e6e6 !important; }
-        .ts-dropdown { background-color: #1f2327 !important; border: 1px solid #3a3f45 !important; color: #e6e6e6 !important; }
-        .ts-dropdown .option.active, .ts-dropdown .option:hover { background-color: #3a245a !important; color: white !important; }
-        .ts-control .item { background-color: #6d3fa9 !important; color: white !important; border: none !important; border-radius: 4px !important; padding: 2px 8px !important; }
-    </style>
 @endpush
 
 @section('content')
 <div class="container">
     <div class="card">
-        <h1 style="margin-top: 0;">Reschedule / Update Interview</h1>
+        <h1 class="mt-0">Reschedule / Update Interview</h1>
         <p><strong>Applicant:</strong> {{ $interview->application->applicant_name }}</p>
         <p><strong>Position:</strong> {{ $interview->application->jobPosition->title }}</p>
         <p><strong>Current time:</strong> {{ $interview->scheduled_at->format('M j, Y g:i A') }}</p>
@@ -38,35 +29,19 @@
                 @endforeach
             </select>
 
-            <label style="margin-top: 15px;">New Date and Time</label>
+            <label class="mt-15">New Date and Time</label>
             <input type="text" id="scheduled_at_picker" name="scheduled_at" value="{{ old('scheduled_at', $interview->scheduled_at->format('Y-m-d H:i')) }}" required>
 
-            <div style="margin-top: 15px;">
+            <div class="mt-15">
                 <button type="submit" class="btn">Save Changes</button>
-                <a href="{{ route('interviews.show', $interview) }}" class="btn" style="background: #24282d; border: 1px solid #3a3f45; margin-left: 10px;">Cancel</a>
+                <a href="{{ route('interviews.show', $interview) }}" class="btn btn-outline ml-10">Cancel</a>
             </div>
         </form>
     </div>
 </div>
+@endsection
 
-    <!-- Scripts -->
+@push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    <script>
-        flatpickr("#scheduled_at_picker", {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            minDate: "today",
-            time_24hr: false
-        });
-
-        new TomSelect("#interviewers-select", {
-            plugins: ['remove_button'],
-            create: false,
-            sortField: {
-                field: "text",
-                direction: "asc"
-            }
-        });
-    </script>
-@endsection
+@endpush

@@ -2,57 +2,55 @@
 
 @section('content')
 <div class="container">
-    <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-        <h1 style="margin: 0;">Members - {{ $organization->name }}</h1>
-        <a href="{{ route('organizations.show', $organization) }}" class="btn" style="background: #24282d; border: 1px solid #3a3f45;">Back to Organization</a>
+    <div class="card card-header-flex">
+        <h1 class="m-0">Members - {{ $organization->name }}</h1>
+        <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline">Back to Organization</a>
     </div>
 
     @can('manageMembers', $organization)
         <div class="card">
-            <h2 style="margin-top: 0;">Add Member</h2>
-            <form method="POST" action="{{ route('organizations.members.add', $organization) }}" style="display: flex; gap: 10px; align-items: flex-end;">
+            <h2 class="mt-0">Add Member</h2>
+            <label>Email address (existing users are added immediately; new emails get an invite)</label>
+            <form method="POST" action="{{ route('organizations.members.add', $organization) }}" class="d-flex items-center flex-gap-10" style="margin-top: 6px;">
                 @csrf
-                <div style="flex-grow: 1;">
-                    <label>Email address (existing users are added immediately; new emails get an invite)</label>
-                    <input type="email" name="email" required style="margin-bottom: 0;">
-                </div>
-                <button type="submit" class="btn">Add Member</button>
+                <input type="email" name="email" required class="mb-0 flex-grow-1 w-full" style="margin-top: 0;">
+                <button type="submit" class="btn" style="white-space: nowrap;">Add Member</button>
             </form>
         </div>
     @endcan
 
     <h2>Current Members</h2>
     @foreach ($organization->members as $member)
-        <div class="card entry-box" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="card entry-box card-header-flex">
             <div>
-                <strong style="font-size: 16px;">{{ $member->name }}</strong> 
-                <span style="color: #bdbdbd; font-size: 14px;">({{ $member->email }})</span>
-                <span class="status status-awaiting-interview" style="margin-left: 10px;">{{ ucfirst($member->role) }}</span>
+                <strong class="fs-16">{{ $member->name }}</strong> 
+                <span class="text-muted fs-14">({{ $member->email }})</span>
+                <span class="status status-awaiting-interview ml-10">{{ ucfirst($member->role) }}</span>
             </div>
             
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="flex-gap-10 items-center">
                 @if ($member->id !== $organization->chairman_id)
                     @can('update', $organization)
-                        <form method="POST" action="{{ route('organizations.members.role', [$organization, $member]) }}" style="display: flex; gap: 5px; align-items: center;">
+                        <form method="POST" action="{{ route('organizations.members.role', [$organization, $member]) }}" class="flex-gap-5 items-center m-0">
                             @csrf
                             @method('PATCH')
-                            <select name="role" style="margin: 0; padding: 6px; width: auto;">
+                            <select name="role" class="m-0 w-auto">
                                 <option value="interviewer" {{ $member->role === 'interviewer' ? 'selected' : '' }}>Interviewer</option>
                                 <option value="chairman" {{ $member->role === 'chairman' ? 'selected' : '' }}>Chairman</option>
                             </select>
-                            <button type="submit" class="btn btn-sm" style="background: #3a245a;">Update Role</button>
+                            <button type="submit" class="btn btn-sm btn-purple-dark">Update Role</button>
                         </form>
                     @endcan
 
                     @can('manageMembers', $organization)
-                        <form method="POST" action="{{ route('organizations.members.remove', [$organization, $member]) }}">
+                        <form method="POST" action="{{ route('organizations.members.remove', [$organization, $member]) }}" class="m-0">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Remove {{ $member->name }}?')">Remove</button>
                         </form>
                     @endcan
                 @else
-                    <span style="color: #a97dff; font-style: italic;">Chairman</span>
+                    <span class="text-primary text-italic">Chairman</span>
                 @endif
             </div>
         </div>

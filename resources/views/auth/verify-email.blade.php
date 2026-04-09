@@ -2,16 +2,16 @@
 
 @section('content')
     <div class="centered-content">
-        <div class="form-box" style="width: 500px;">
+        <div class="form-box form-box-verify">
             <h2>Verify Your Email Address</h2>
 
-            <p style="color: #bdbdbd; text-align: center; margin-bottom: 20px;">
+            <p class="text-muted text-center mb-20">
                 Thanks for signing up. Before getting started, please verify your
                 email address by clicking the link we sent to your inbox.
             </p>
 
             @if (session('status') === 'verification-link-sent')
-                <p style="color: #9dffb0; text-align: center;">A new verification link has been sent to your email address.</p>
+                <p class="text-success text-center">A new verification link has been sent to your email address.</p>
             @endif
 
             <form method="POST" action="{{ route('verification.send') }}">
@@ -19,9 +19,9 @@
                 <button type="submit" class="btn">Resend Verification Email</button>
             </form>
 
-            <form method="POST" action="{{ route('logout') }}" style="margin-top: 15px;">
+            <form method="POST" action="{{ route('logout') }}" class="mt-15">
                 @csrf
-                <button type="submit" class="btn" style="background: #24282d; border: 1px solid #3a3f45; width: 100%;">Sign Out</button>
+                <button type="submit" class="btn btn-outline w-full">Sign Out</button>
             </form>
         </div>
     </div>

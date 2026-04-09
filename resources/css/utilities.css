@@ -1,0 +1,97 @@
+/* Exact Layout Matching Utilities */
+.d-flex { display: flex; }
+.d-inline { display: inline; }
+.d-inline-block { display: inline-block; }
+.d-block { display: block; }
+.d-none { display: none !important; }
+
+/* Flexbox specific */
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-grow-1 { flex-grow: 1; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+
+/* Flex Combo Matchers */
+.flex-gap-5 { display: flex; gap: 5px; }
+.flex-gap-10 { display: flex; gap: 10px; }
+.flex-gap-12 { display: flex; gap: 12px; }
+.flex-gap-15 { display: flex; gap: 15px; }
+.flex-wrap-8 { display: flex; gap: 8px; flex-wrap: wrap; }
+.flex-wrap-10 { display: flex; gap: 10px; flex-wrap: wrap; }
+.flex-wrap-12 { display: flex; gap: 12px; flex-wrap: wrap; }
+.flex-wrap-15 { display: flex; gap: 15px; flex-wrap: wrap; }
+.flex-col-8 { display: flex; flex-direction: column; gap: 8px; }
+.flex-col-10 { display: flex; flex-direction: column; gap: 10px; }
+.flex-col-20 { display: flex; flex-direction: column; gap: 20px; }
+
+/* Headers/Containers */
+.card-header-flex { display: flex; justify-content: space-between; align-items: center; }
+.card-header-flex-start { display: flex; justify-content: space-between; align-items: flex-start; }
+.form-inline-end { display: flex; gap: 10px; align-items: flex-end; }
+.form-inline-start { display: flex; gap: 10px; align-items: flex-start; }
+.grid-members { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.grid-perms { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px; }
+
+/* Margins */
+.m-0 { margin: 0; }
+.mt-0 { margin-top: 0; }
+.mt-10 { margin-top: 10px; }
+.mt-15 { margin-top: 15px; }
+.mt-20 { margin-top: 20px; }
+.mt-25 { margin-top: 25px; }
+.mt-30 { margin-top: 30px; }
+.mt-40 { margin-top: 40px; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-5 { margin-bottom: 5px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-10 { margin-bottom: 10px; }
+.mb-15 { margin-bottom: 15px; }
+.mb-18 { margin-bottom: 18px; }
+.mb-20 { margin-bottom: 20px; }
+.mb-25 { margin-bottom: 25px; }
+.mb-30 { margin-bottom: 30px; }
+.mb-35 { margin-bottom: 35px; }
+
+.ml-5 { margin-left: 5px; }
+.ml-10 { margin-left: 10px; }
+.mr-5 { margin-right: 5px; }
+
+.pb-0 { padding-bottom: 0; }
+.pb-10 { padding-bottom: 10px; }
+.pb-15 { padding-bottom: 15px; }
+
+/* Widths */
+.w-full { width: 100%; max-width: 100%; }
+.w-auto { width: auto; }
+.max-w-300 { max-width: 300px; }
+.max-w-400 { max-width: 400px; }
+.min-w-150 { min-width: 150px; }
+.min-w-200 { min-width: 200px; }
+.min-w-250 { min-width: 250px; }
+
+/* Flex Overrides */
+.flex-1 { flex: 1; }
+
+/* Borders & Specifics */
+.border-divider { border-top: 1px solid #3a3f45; }
+.border-bottom-divider { border-bottom: 1px solid #3a3f45; }
+.border-bottom-none { border-bottom: none !important; }
+hr.divider { border: 0; border-top: 1px solid #3a3f45; margin: 25px 0; }
+hr.divider-20 { border: 0; border-top: 1px solid #3a3f45; margin: 20px 0; }
+hr.divider-30 { border: 0; border-top: 1px solid #3a3f45; margin: 30px 0; }
+
+.opacity-70 { opacity: 0.7; }
+.cursor-pointer { cursor: pointer; }
+.cursor-not-allowed { cursor: not-allowed; }
+.position-relative { position: relative; }
+
+/* Preview Inputs Fixes */
+.preview-input { max-width: 100%; opacity: 0.7; cursor: not-allowed; margin-bottom: 0; }
+.preview-input-file { display: block; opacity: 0.7; cursor: not-allowed; margin-top: 0; }
+.preview-input-file-mb30 { display: block; margin-bottom: 30px; opacity: 0.7; cursor: not-allowed; margin-top: 0; }

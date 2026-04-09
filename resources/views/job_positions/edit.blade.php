@@ -2,15 +2,14 @@
 
 @section('content')
 <div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1 style="margin: 0;">Edit Job Position: {{ $jobPosition->title }}</h1>
-        <a href="{{ route('organizations.job-positions.show', [$organization, $jobPosition]) }}" class="btn" style="background: #24282d; border: 1px solid #3a3f45;">Back to Position</a>
+    <div class="card-header-flex mb-20">
+        <h1 class="m-0">Edit Job Position: {{ $jobPosition->title }}</h1>
+        <a href="{{ route('organizations.job-positions.show', [$organization, $jobPosition]) }}" class="btn btn-outline">Back to Position</a>
     </div>
 
-    <!-- Live Preview QoL Tabs -->
-    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <button id="btn-tab-builder" class="btn" style="background: #6d3fa9; border: none;" onclick="switchTab('builder')">Builder</button>
-        <button id="btn-tab-preview" class="btn" style="background: #24282d; border: 1px solid #3a3f45;" onclick="switchTab('preview')">Preview Page</button>
+    <div class="flex-gap-10 mb-20">
+        <button id="btn-tab-builder" class="btn btn-tab-active" onclick="switchTab('builder')">Builder</button>
+        <button id="btn-tab-preview" class="btn btn-tab-inactive" onclick="switchTab('preview')">Preview Page</button>
     </div>
 
     <div id="tab-builder">
@@ -23,9 +22,9 @@
                 <input type="text" name="title" id="input-title" value="{{ old('title', $jobPosition->title) }}" required oninput="updatePreview()">
 
                 <label>Application Template</label>
-                <div style="display: flex; gap: 10px; margin-bottom: 18px; align-items: flex-start;">
-                    <div style="flex-grow: 1;">
-                        <select name="template_id" id="input-template" required onchange="updatePreview(); updateTemplateLink()" style="margin-bottom: 0;">
+                <div class="form-inline-start mb-18">
+                    <div class="flex-grow-1">
+                        <select name="template_id" id="input-template" required onchange="updatePreview(); updateTemplateLink()" class="mb-0">
                             @foreach ($templates as $template)
                                 <option value="{{ $template->id }}" {{ old('template_id', $jobPosition->template_id) == $template->id ? 'selected' : '' }}>
                                     {{ $template->name }} ({{ $template->fields_count }} fields)
@@ -33,7 +32,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <a href="#" id="edit-template-btn" class="btn" style="background: #2f3a4a; white-space: nowrap; display: none;">Edit Selected Template</a>
+                    <a href="#" id="edit-template-btn" class="btn btn-slate white-space-nowrap" style="display: none;">Edit Selected Template</a>
                 </div>
 
                 <label>Description</label>
@@ -48,7 +47,7 @@
                     <option value="closed" {{ old('status', $jobPosition->status) === 'closed' ? 'selected' : '' }}>Closed</option>
                 </select>
 
-                <div style="margin-top: 15px;">
+                <div class="mt-15">
                     <button type="submit" class="btn">Save Changes</button>
                 </div>
             </form>
@@ -56,118 +55,9 @@
     </div>
 
     <div id="tab-preview" style="display: none;">
-        <div class="card">
-            <h1 id="preview-title" style="margin-top: 0; color: #a97dff;">Apply for: <span></span></h1>
-            <p style="color: #a97dff; font-size: 18px; margin-bottom: 20px;"><strong>Organization:</strong> {{ $organization->name }}</p>
-            
-            <p id="preview-desc" style="white-space: pre-wrap; line-height: 1.5; color: #e6e6e6;"></p>
-            
-            <h3 style="margin-top: 25px;">Requirements:</h3>
-            <p id="preview-reqs" style="white-space: pre-wrap; line-height: 1.5; color: #e6e6e6;"></p>
-            
-            <hr style="border-color: #3a3f45; margin: 30px 0;">
-            
-            <!-- Dynamic Template Forms Rendered Here -->
-            <div id="preview-form-container"></div>
-        </div>
+        @include('job_positions.partials.preview', ['jobPosition' => $jobPosition, 'organization' => $organization, 'templates' => $templates, 'isBuilder' => true])
     </div>
 </div>
 
-<script>
-    const templatesData = @json($templates);
-    const orgId = {{ $organization->id }};
-
-    document.addEventListener("DOMContentLoaded", function() {
-        updateTemplateLink(); // Initialize the edit template link button on load
-    });
-
-    function switchTab(tab) {
-        document.getElementById('tab-builder').style.display = tab === 'builder' ? 'block' : 'none';
-        document.getElementById('tab-preview').style.display = tab === 'preview' ? 'block' : 'none';
-        
-        document.getElementById('btn-tab-builder').style.background = tab === 'builder' ? '#6d3fa9' : '#24282d';
-        document.getElementById('btn-tab-builder').style.border = tab === 'builder' ? 'none' : '1px solid #3a3f45';
-        
-        document.getElementById('btn-tab-preview').style.background = tab === 'preview' ? '#6d3fa9' : '#24282d';
-        document.getElementById('btn-tab-preview').style.border = tab === 'preview' ? 'none' : '1px solid #3a3f45';
-        
-        if (tab === 'preview') updatePreview();
-    }
-
-    function updateTemplateLink() {
-        const templateId = document.getElementById('input-template').value;
-        const btn = document.getElementById('edit-template-btn');
-        if (templateId) {
-            btn.style.display = 'inline-block';
-            btn.href = `/organizations/${orgId}/application-templates/${templateId}/edit`;
-        } else {
-            btn.style.display = 'none';
-        }
-    }
-
-    function updatePreview() {
-        const title = document.getElementById('input-title').value || 'Untitled Position';
-        const desc = document.getElementById('input-desc').value || 'No description provided.';
-        const reqs = document.getElementById('input-reqs').value || 'No requirements provided.';
-        const templateId = document.getElementById('input-template').value;
-
-        document.querySelector('#preview-title span').textContent = title;
-        document.getElementById('preview-desc').textContent = desc;
-        document.getElementById('preview-reqs').textContent = reqs;
-
-        const template = templatesData.find(t => t.id == templateId);
-        let html = '';
-
-        if (template) {
-            if (template.request_name || template.request_email || template.request_phone) {
-                html += '<h2 style="margin-top: 0; border-bottom: 1px solid #3a3f45; padding-bottom: 10px;">Your Information</h2><div style="margin-bottom: 25px;">';
-                if(template.request_name) html += '<label style="color: #e6e6e6; font-size: 16px; margin-top: 15px; margin-bottom: 8px;">Full Name <span style="color: #ff9d9d;">*</span></label><input type="text" disabled style="max-width: 100%; opacity: 0.7; cursor: not-allowed; margin-bottom: 0;">';
-                if(template.request_email) html += '<label style="color: #e6e6e6; font-size: 16px; margin-top: 15px; margin-bottom: 8px;">Email Address <span style="color: #ff9d9d;">*</span></label><input type="email" disabled style="max-width: 100%; opacity: 0.7; cursor: not-allowed; margin-bottom: 0;">';
-                if(template.request_phone) html += '<label style="color: #e6e6e6; font-size: 16px; margin-top: 15px; margin-bottom: 8px;">Phone Number (optional)</label><input type="text" disabled style="max-width: 100%; opacity: 0.7; cursor: not-allowed; margin-bottom: 0;">';
-                html += '</div>';
-            }
-
-            if (template.fields && template.fields.length > 0) {
-                html += '<h2 style="margin-top: 30px; border-bottom: 1px solid #3a3f45; padding-bottom: 10px;">Application Questions</h2>';
-                template.fields.forEach(f => {
-                    html += `<div style="margin-bottom: 25px;">
-                        <label style="color: #e6e6e6; font-size: 16px; margin-top: 15px; margin-bottom: 8px;">${f.label} ${f.required ? '<span style="color: #ff9d9d;">*</span>' : ''}</label>`;
-                    
-                    // JSON parsing safeguard for dynamic array formatting from the DB
-                    let opts = f.options;
-                    if (typeof opts === 'string') {
-                        try { opts = JSON.parse(opts); } catch(e) { opts = []; }
-                    }
-
-                    if(f.type === 'text') html += '<input type="text" disabled style="max-width: 100%; opacity: 0.7; cursor: not-allowed; margin-bottom: 0;">';
-                    if(f.type === 'textarea') html += '<textarea rows="4" disabled style="opacity: 0.7; cursor: not-allowed; margin-bottom: 0;"></textarea>';
-                    if(f.type === 'date') html += '<input type="date" disabled style="opacity: 0.7; cursor: not-allowed; margin-bottom: 0;">';
-                    if(f.type === 'select') {
-                        html += '<select disabled style="opacity: 0.7; cursor: not-allowed; margin-bottom: 0;"><option>-- Select --</option>';
-                        if(opts) opts.forEach(o => html += `<option>${o}</option>`);
-                        html += '</select>';
-                    }
-                    if(f.type === 'radio' || f.type === 'checkbox') {
-                        html += '<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">';
-                        if(opts) opts.forEach(o => {
-                            html += `<label style="color: #bdbdbd; cursor: not-allowed; opacity: 0.7;"><input type="${f.type}" disabled> ${o}</label>`;
-                        });
-                        html += '</div>';
-                    }
-                    if(f.type === 'file') html += '<input type="file" disabled style="display: block; margin-top: 10px; margin-bottom: 0; opacity: 0.7; cursor: not-allowed;">';
-                    html += '</div>';
-                });
-            }
-
-            if(template.request_resume) {
-                html += '<h2 style="margin-top: 30px; border-bottom: 1px solid #3a3f45; padding-bottom: 10px;">Upload Documents</h2><p style="color: #bdbdbd; margin-bottom: 15px;">You may upload a resume or other supporting documents (PDF, DOC, DOCX, JPG, PNG).</p><input type="file" disabled style="display: block; margin-bottom: 30px; opacity: 0.7; cursor: not-allowed;">';
-            }
-            
-            html += '<div style="margin-top: 30px; border-top: 1px solid #3a3f45; padding-top: 20px;"><button type="button" class="btn" style="background: #0f3d1e; color: #9dffb0; border: 1px solid #1a5c30; padding: 15px 30px; font-weight: bold; width: 100%; opacity: 0.5; cursor: not-allowed;">Submit Application</button></div>';
-        } else {
-            html = '<p style="color: #bdbdbd; font-style: italic;">Select an application template to preview the form.</p>';
-        }
-        document.getElementById('preview-form-container').innerHTML = html;
-    }
-</script>
+<div id="preview-config" data-org-id="{{ $organization->id }}" class="d-none"></div>
 @endsection

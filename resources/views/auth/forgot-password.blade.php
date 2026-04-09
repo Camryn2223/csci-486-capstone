@@ -5,10 +5,10 @@
         <div class="form-box">
             <h2>Reset Password</h2>
 
-            <p style="color: #bdbdbd; text-align: center; font-size: 14px;">Enter your email address and we will send you a link to reset your password.</p>
+            <p class="text-muted text-center fs-14">Enter your email address and we will send you a link to reset your password.</p>
 
             @if (session('status'))
-                <p style="color: #9dffb0; text-align: center;">{{ session('status') }}</p>
+                <p class="text-success text-center">{{ session('status') }}</p>
             @endif
 
             <form method="POST" action="{{ route('password.email') }}">

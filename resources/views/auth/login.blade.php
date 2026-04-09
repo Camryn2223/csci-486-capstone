@@ -8,7 +8,7 @@
             <h2>Sign In</h2>
 
             @if (session('status'))
-                <p style="color: #9dffb0; text-align: center;">{{ session('status') }}</p>
+                <p class="text-success text-center">{{ session('status') }}</p>
             @endif
 
             <form method="POST" action="{{ route('login') }}">
@@ -20,7 +20,7 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
 
-                <label style="display: flex; align-items: center; margin-bottom: 18px; color: #bdbdbd; cursor: pointer;">
+                <label class="items-center d-flex mb-18 text-muted cursor-pointer">
                     <input type="checkbox" name="remember"> Remember me
                 </label>
 

@@ -231,4 +231,19 @@ class OrganizationController extends Controller
 
         return back()->with('success', "{$userName} has been removed, their account has been deleted, and they have been logged out.");
     }
+
+    /**
+     * Show a paginated list of all applications across all jobs for the organization.
+     */
+    public function applications(Organization $organization): View
+    {
+        $this->authorize('review-applications', $organization);
+
+        $applications = $organization->applications()
+            ->with(['jobPosition', 'interviews'])
+            ->latest()
+            ->paginate(15);
+
+        return view('organizations.applications', compact('organization', 'applications'));
+    }
 }

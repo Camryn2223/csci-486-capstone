@@ -5,7 +5,7 @@
         <div class="form-box">
             <h2>Confirm Password</h2>
 
-            <p style="color: #bdbdbd; text-align: center; font-size: 14px;">Please confirm your password before continuing.</p>
+            <p class="text-muted text-center fs-14">Please confirm your password before continuing.</p>
 
             <form method="POST" action="{{ route('password.confirm') }}">
                 @csrf

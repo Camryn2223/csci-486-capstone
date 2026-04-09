@@ -112,6 +112,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         [ApplicationController::class, 'index']
     )->name('applications.index');
 
+    Route::get(
+        '/organizations/{organization}/applications', 
+        [\App\Http\Controllers\OrganizationController::class, 'applications']
+    )->name('organizations.applications');
+
     Route::get('applications/{application}', [ApplicationController::class, 'show'])->name('applications.show');
     Route::patch('applications/{application}/status', [ApplicationController::class, 'updateStatus'])->name('applications.status');
     Route::get('documents/{document}', [DocumentController::class, 'show'])->name('documents.show');

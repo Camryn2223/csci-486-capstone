@@ -8,19 +8,19 @@
             <h2>Create an Account</h2>
 
             @if ($isFirstUser)
-                <p style="color: #9dffb0; text-align: center; font-size: 14px;">
+                <p class="text-success text-center fs-14">
                     You are creating the first account. You will be registered as the chairman.
                 </p>
             @elseif ($inviteCode && $inviteValid)
-                <p style="color: #9dffb0; text-align: center; font-size: 14px;">
+                <p class="text-success text-center fs-14">
                     Your invite link is valid. Fill in your details below to join.
                 </p>
             @elseif ($inviteCode && ! $inviteValid)
-                <p style="color: #ff9d9d; text-align: center; font-size: 14px;">
+                <p class="text-danger text-center fs-14">
                     This invite link is invalid or has already been used. Enter a valid invite code below.
                 </p>
             @else
-                <p style="color: #bdbdbd; text-align: center; font-size: 14px;">
+                <p class="text-muted text-center fs-14">
                     Enter the invite code provided by your organization to register.
                 </p>
             @endif
@@ -50,11 +50,11 @@
                         placeholder="Enter your invite code"
                         required
                         autocomplete="off"
-                        style="text-transform: uppercase;"
+                        class="uppercase"
                         {{ ($inviteCode && $inviteValid) ? 'readonly' : '' }}
                     >
                     @if ($inviteCode && $inviteValid)
-                        <small style="color: #9dffb0; display: block; margin-top: -12px; margin-bottom: 18px;">
+                        <small class="text-success d-block mb-18" style="margin-top: -12px;">
                             Pre-filled from your invite link.
                         </small>
                     @endif
