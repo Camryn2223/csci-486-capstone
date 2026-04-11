@@ -6,7 +6,7 @@
 @endpush
 
 @section('content')
-<div class="container">
+<div class="container container-wide">
     <div class="card">
         <h1 class="mt-0">Schedule Interview</h1>
         <p><strong>Applicant:</strong> {{ $application->applicant_name }}</p>
@@ -18,24 +18,13 @@
         <form method="POST" action="{{ route('interviews.store', $application) }}">
             @csrf
 
-            <div class="flex-wrap-15">
-                <div class="flex-1 min-w-250">
-                    <label><strong>1. Select Interviewer(s)</strong></label>
-                    <select id="interviewers-select" name="interviewer_ids[]" multiple required autocomplete="off">
-                        <option value="">Search or select interviewers...</option>
-                        @foreach ($interviewers as $interviewer)
-                            <option value="{{ $interviewer->id }}" {{ is_array(old('interviewer_ids')) && in_array($interviewer->id, old('interviewer_ids')) ? 'selected' : '' }}>
-                                {{ $interviewer->name }} ({{ $interviewer->role }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="flex-1 min-w-250">
-                    <label><strong>2. Date and Time</strong></label>
-                    <input type="text" id="scheduled_at_picker" name="scheduled_at" value="{{ old('scheduled_at') }}" placeholder="Select Date & Time.." required>
-                </div>
-            </div>
+            @include('interviews.partials.form-fields', [
+                'step1Label' => '1. Select Interviewer(s)',
+                'step2Label' => '2. Select Time (Click an open slot)',
+                'interview' => null,
+                'application' => $application,
+                'schedules' => $schedules
+            ])
 
             <hr class="divider-20">
 
@@ -58,6 +47,9 @@
 @endsection
 
 @push('scripts')
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
 @endpush

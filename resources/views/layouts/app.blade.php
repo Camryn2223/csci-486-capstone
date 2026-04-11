@@ -49,21 +49,24 @@
     @endif
 
     @if (session('error'))
-        <div class="flash-error">{{ session('error') }}</div>
-    @endif
-
-    @if ($errors->any())
-        <div class="flash-error">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
+        <div class="flash-error toast">{{ session('error') }}</div>
     @endif
 
     <!-- Page Content -->
     <div class="page-content">
+        @if ($errors->any())
+            <div class="container container-wide pb-0" style="padding-top: 30px; margin-bottom: -10px;">
+                <div class="static-error-box">
+                    <strong class="text-danger d-block mb-10">Please correct the following errors:</strong>
+                    <ul class="m-0 pl-20 text-danger fs-14">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
+        
         @yield('content')
     </div>
 

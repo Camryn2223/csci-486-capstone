@@ -90,13 +90,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('job-positions/{jobPosition}', [JobPositionController::class, 'update'])->name('job-positions.update');
         Route::delete('job-positions/{jobPosition}', [JobPositionController::class, 'destroy'])->name('job-positions.destroy');
 
+        Route::post('application-templates/preview', [ApplicationTemplateController::class, 'preview'])->name('application-templates.preview');
         Route::resource('application-templates', ApplicationTemplateController::class);
 
         Route::prefix('application-templates/{applicationTemplate}')->name('application-templates.fields.')->group(function () {
             Route::post('fields', [TemplateFieldController::class, 'store'])->name('store');
+            
+            Route::patch('fields/reorder', [TemplateFieldController::class, 'reorder'])->name('reorder');
+            
             Route::patch('fields/{templateField}', [TemplateFieldController::class, 'update'])->name('update');
             Route::delete('fields/{templateField}', [TemplateFieldController::class, 'destroy'])->name('destroy');
-            Route::post('fields/reorder', [TemplateFieldController::class, 'reorder'])->name('reorder');
         });
 
         Route::get('interviews', [InterviewController::class, 'index'])->name('interviews.index');

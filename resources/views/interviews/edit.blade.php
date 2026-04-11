@@ -6,7 +6,7 @@
 @endpush
 
 @section('content')
-<div class="container">
+<div class="container container-wide">
     <div class="card">
         <h1 class="mt-0">Reschedule / Update Interview</h1>
         <p><strong>Applicant:</strong> {{ $interview->application->applicant_name }}</p>
@@ -19,18 +19,13 @@
             @csrf
             @method('PATCH')
 
-            <label>Interviewer(s)</label>
-            <select id="interviewers-select" name="interviewer_ids[]" multiple required autocomplete="off">
-                @foreach ($interviewers as $interviewer)
-                    <option value="{{ $interviewer->id }}"
-                        {{ (is_array(old('interviewer_ids')) && in_array($interviewer->id, old('interviewer_ids'))) || (!old('interviewer_ids') && $interview->interviewers->contains('id', $interviewer->id)) ? 'selected' : '' }}>
-                        {{ $interviewer->name }} ({{ $interviewer->role }})
-                    </option>
-                @endforeach
-            </select>
-
-            <label class="mt-15">New Date and Time</label>
-            <input type="text" id="scheduled_at_picker" name="scheduled_at" value="{{ old('scheduled_at', $interview->scheduled_at->format('Y-m-d H:i')) }}" required>
+            @include('interviews.partials.form-fields', [
+                'step1Label' => 'Interviewer(s)',
+                'step2Label' => 'New Date and Time (Click an open slot)',
+                'interview' => $interview,
+                'application' => $interview->application,
+                'schedules' => $schedules
+            ])
 
             <div class="mt-15">
                 <button type="submit" class="btn">Save Changes</button>
@@ -42,6 +37,9 @@
 @endsection
 
 @push('scripts')
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
 @endpush

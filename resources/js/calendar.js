@@ -16,9 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
             right: 'dayGridMonth,timeGridWeek,listWeek' 
         },
         events: eventsData,
-        eventClick: function(info) {
-            info.jsEvent.preventDefault();
-        },
         eventDidMount: function(info) {
             let actionButtons = `<div class="mt-15 flex-wrap-8">`;
             actionButtons += `<a href="${info.event.url}" class="btn btn-sm">View Details</a>`;

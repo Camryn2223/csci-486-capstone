@@ -13,18 +13,18 @@
     </div>
 
     @php
-        $canManageMembers = Auth::user()->can('manageMembers', $organization);
-        $canCreateInvites = Auth::user()->can('create', [App\Models\OrganizationInvite::class, $organization]);
+        $canManageMembers = Auth::user()->hasPermissionIn($organization, 'manage_members');
+        $canCreateInvites = Auth::user()->hasPermissionIn($organization, 'create_invites');
         $showTeamAccess = $canManageMembers || $canCreateInvites;
 
-        $canViewPositions = Auth::user()->can('viewAny', [App\Models\JobPosition::class, $organization]);
-        $canCreatePositions = Auth::user()->can('create', [App\Models\JobPosition::class, $organization]);
-        $canViewTemplates = Auth::user()->can('viewAny', [App\Models\ApplicationTemplate::class, $organization]);
-        $canCreateTemplates = Auth::user()->can('create', [App\Models\ApplicationTemplate::class, $organization]);
+        $canViewPositions = Auth::user()->hasPermissionIn($organization, 'review_applications') || Auth::user()->hasPermissionIn($organization, 'create_positions'); 
+        $canCreatePositions = Auth::user()->hasPermissionIn($organization, 'create_positions');
+        $canViewTemplates = Auth::user()->hasPermissionIn($organization, 'manage_templates') || Auth::user()->hasPermissionIn($organization, 'review_applications');
+        $canCreateTemplates = Auth::user()->hasPermissionIn($organization, 'manage_templates');
         $showHiringSetup = $canViewPositions || $canCreatePositions || $canViewTemplates || $canCreateTemplates;
 
         $canReviewApps = Auth::user()->hasPermissionIn($organization, 'review_applications');
-        $canViewInterviews = Auth::user()->can('viewAny', [App\Models\Interview::class, $organization]);
+        $canViewInterviews = Auth::user()->hasPermissionIn($organization, 'review_applications') || Auth::user()->hasPermissionIn($organization, 'schedule_interviews');
         $showInterviewsApps = $canReviewApps || $canViewInterviews;
     @endphp
 

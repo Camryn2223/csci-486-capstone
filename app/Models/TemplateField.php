@@ -15,8 +15,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int         $template_id
  * @property string      $label
  * @property string      $type       text | textarea | select | checkbox | radio | file | date
- * @property array|null  $options    JSON-decoded list of choices for select/radio/checkbox fields
+ * @property array|null  $options    JSON-decoded list of choices for select/radio/checkbox fields or MIME types for file
  * @property bool        $required
+ * @property bool        $file_multiple
+ * @property int|null    $file_max
+ * @property int|null    $char_max
+ * @property int|null    $file_size_max
  * @property int         $order
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
@@ -29,6 +33,10 @@ class TemplateField extends Model
         'type',
         'options',
         'required',
+        'file_multiple',
+        'file_max',
+        'char_max',
+        'file_size_max',
         'order',
     ];
 
@@ -37,6 +45,10 @@ class TemplateField extends Model
         return [
             'options'  => 'array',
             'required' => 'boolean',
+            'file_multiple' => 'boolean',
+            'file_max' => 'integer',
+            'char_max' => 'integer',
+            'file_size_max' => 'integer',
             'order'    => 'integer',
         ];
     }

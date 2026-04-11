@@ -71,10 +71,46 @@ class ApplicationController extends Controller
         if ($template->request_phone) {
             $rules['applicant_phone'] = ['nullable', 'string', 'max:50'];
         }
-        
-        $rules['document'] = [$template->request_resume ? 'required' : 'nullable', 'file', 'max:7500', 'mimetypes:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png'];
 
-        $validated = $request->validate($rules);
+        $messages = [];
+
+        // Dynamically enforce rules and friendly error messages for custom file upload fields
+        foreach ($template->fields as $field) {
+            if ($field->isFileField()) {
+                $mimes = implode(',', empty($field->options) ? [
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'image/jpeg',
+                    'image/png'
+                ] : $field->options);
+
+                $friendlyMimes = $this->getFriendlyMimes(empty($field->options) ? null : $field->options);
+                $maxMB = $field->file_size_max ?? 7;
+                $maxKB = $maxMB * 1024;
+
+                if ($field->file_multiple) {
+                    $maxFiles = $field->file_max ?? 5;
+                    $rules["answers.{$field->id}"] = [$field->required ? 'required' : 'nullable', 'array', "max:{$maxFiles}"];
+                    $rules["answers.{$field->id}.*"] = ['file', "max:{$maxKB}", 'mimetypes:' . $mimes];
+                    
+                    $messages["answers.{$field->id}.*.mimetypes"] = "Each file for {$field->label} must be a file of type: {$friendlyMimes}.";
+                    $messages["answers.{$field->id}.*.max"] = "Each file for {$field->label} must not be larger than {$maxMB}MB.";
+                    $messages["answers.{$field->id}.max"] = "You cannot upload more than {$maxFiles} files for {$field->label}.";
+                } else {
+                    $rules["answers.{$field->id}"] = [$field->required ? 'required' : 'nullable', 'file', "max:{$maxKB}", 'mimetypes:' . $mimes];
+                    
+                    $messages["answers.{$field->id}.mimetypes"] = "The {$field->label} must be a file of type: {$friendlyMimes}.";
+                    $messages["answers.{$field->id}.max"] = "The {$field->label} must not be larger than {$maxMB}MB.";
+                }
+            } elseif ($field->type === 'text' || $field->type === 'textarea') {
+                $maxChar = $field->char_max ?? ($field->type === 'textarea' ? 1024 : 128);
+                $rules["answers.{$field->id}"] = [$field->required ? 'required' : 'nullable', 'string', "max:{$maxChar}"];
+                $messages["answers.{$field->id}.max"] = "The {$field->label} must not exceed {$maxChar} characters.";
+            }
+        }
+
+        $validated = $request->validate($rules, $messages);
 
         // Safely determine email (an anonymous fallback if not requested)
         $determinedEmail = $template->request_email ? $validated['applicant_email'] : 'no-email-'.uniqid().'@hireflow.example.com';
@@ -105,25 +141,33 @@ class ApplicationController extends Controller
 
         // Process Template Answers (Including custom file fields)
         foreach ($template->fields as $field) {
-            if ($request->has("answers.{$field->id}")) {
+            if ($request->has("answers.{$field->id}") || $request->hasFile("answers.{$field->id}")) {
                 
                 // If it is a custom file upload field
                 if ($field->isFileField()) {
-                    $file = $request->file("answers.{$field->id}");
-                    if ($file) {
-                        $path = $file->store("documents/{$application->id}", 'local');
+                    $files = $request->file("answers.{$field->id}");
+                    if (!empty($files)) {
+                        if (!is_array($files)) {
+                            $files = [$files];
+                        }
                         
-                        $doc = $application->documents()->create([
-                            'filename' => $file->getClientOriginalName(),
-                            'filepath' => $path,
-                            'mimetype' => $file->getMimeType(),
-                        ]);
+                        foreach ($files as $file) {
+                            if ($file && $file->isValid()) {
+                                $path = $file->store("documents/{$application->id}", 'local');
+                                
+                                $doc = $application->documents()->create([
+                                    'filename' => $file->getClientOriginalName(),
+                                    'filepath' => $path,
+                                    'mimetype' => $file->getMimeType(),
+                                ]);
 
-                        $application->answers()->create([
-                            'template_field_id' => $field->id,
-                            'value'             => $file->getClientOriginalName(),
-                            'document_id'       => $doc->id,
-                        ]);
+                                $application->answers()->create([
+                                    'template_field_id' => $field->id,
+                                    'value'             => $file->getClientOriginalName(),
+                                    'document_id'       => $doc->id,
+                                ]);
+                            }
+                        }
                     }
                 } else {
                     $val = $validated['answers'][$field->id] ?? null;
@@ -135,18 +179,6 @@ class ApplicationController extends Controller
                     }
                 }
             }
-        }
-
-        // Process standard generic resume upload
-        if ($request->hasFile('document')) {
-            $file = $request->file('document');
-            $path = $file->store("documents/{$application->id}", 'local');
-
-            $application->documents()->create([
-                'filename' => $file->getClientOriginalName(),
-                'filepath' => $path,
-                'mimetype' => $file->getMimeType(),
-            ]);
         }
 
         return redirect()
@@ -191,6 +223,7 @@ class ApplicationController extends Controller
 
     /**
      * Validates that all required template fields have a non-empty answer.
+     * (File validation is handled by Laravel's built-in validator above).
      */
     private function validateRequiredFields($template, array $answers): void
     {
@@ -199,7 +232,18 @@ class ApplicationController extends Controller
         foreach ($template->fields->where('required', true) as $field) {
             // Because files upload to the $request differently, ensure we check the pure request specifically for files
             if ($field->isFileField()) {
-                if (! request()->hasFile("answers.{$field->id}")) {
+                $files = request()->file("answers.{$field->id}");
+                $hasAnyFile = false;
+                
+                if (is_array($files)) {
+                    foreach ($files as $f) {
+                        if ($f && $f->isValid()) { $hasAnyFile = true; break; }
+                    }
+                } else {
+                    if ($files && $files->isValid()) { $hasAnyFile = true; }
+                }
+                
+                if (! $hasAnyFile) {
                     $errors["answers.{$field->id}"] = "The field \"{$field->label}\" is required.";
                 }
             } else {
@@ -212,5 +256,26 @@ class ApplicationController extends Controller
         if (! empty($errors)) {
             redirect()->back()->withErrors($errors)->withInput()->throwResponse();
         }
+    }
+    
+    /**
+     * Maps standard MIME types to user-friendly file format strings.
+     */
+    private function getFriendlyMimes(?array $mimes): string
+    {
+        if (empty($mimes)) {
+            return 'PDF, DOC, DOCX, JPEG, PNG';
+        }
+        
+        $map = [
+            'application/pdf' => 'PDF',
+            'application/msword' => 'DOC',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'DOCX',
+            'image/jpeg' => 'JPEG',
+            'image/png' => 'PNG',
+        ];
+        
+        $friendly = array_map(fn($mime) => $map[$mime] ?? $mime, $mimes);
+        return implode(', ', $friendly);
     }
 }

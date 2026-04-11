@@ -18,6 +18,10 @@ return new class extends Migration
             $table->enum('type', ['text', 'textarea', 'select', 'checkbox', 'radio', 'file', 'date']);
             $table->json('options')->nullable();
             $table->boolean('required')->default(false);
+            $table->boolean('file_multiple')->default(false);
+            $table->integer('file_max')->nullable();
+            $table->integer('char_max')->nullable();
+            $table->integer('file_size_max')->nullable();
             $table->unsignedInteger('order')->default(0);
             $table->timestamps();
         });

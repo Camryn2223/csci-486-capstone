@@ -19,7 +19,6 @@ return new class extends Migration
             $table->boolean('request_name')->default(true);
             $table->boolean('request_email')->default(true);
             $table->boolean('request_phone')->default(true);
-            $table->boolean('request_resume')->default(true);
             $table->timestamps();
         });
     }

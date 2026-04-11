@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\ApplicationTemplate;
 use App\Models\Organization;
+use App\Models\TemplateField;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -44,8 +46,54 @@ class ApplicationTemplateController extends Controller
     }
 
     /**
-     * Store a newly created application template in the database. The template
-     * is created with no fields; fields are added via the TemplateFieldController.
+     * Generates a live HTML preview of the template fields by instantiating 
+     * non-persisted Eloquent models and passing them to the Blade partial.
+     */
+    public function preview(Request $request, Organization $organization)
+    {
+        $this->authorize('viewAny', [ApplicationTemplate::class, $organization]);
+
+        $template = new ApplicationTemplate([
+            'name' => $request->input('name', 'Untitled Template'),
+            'request_name' => filter_var($request->input('request_name', true), FILTER_VALIDATE_BOOLEAN),
+            'request_email' => filter_var($request->input('request_email', true), FILTER_VALIDATE_BOOLEAN),
+            'request_phone' => filter_var($request->input('request_phone', true), FILTER_VALIDATE_BOOLEAN),
+        ]);
+
+        $fields = collect();
+        if ($request->has('fields')) {
+            foreach ($request->input('fields') as $fieldData) {
+                $options = $fieldData['options'] ?? [];
+                if (is_string($options)) {
+                    $options = array_values(array_filter(array_map('trim', explode(',', $options))));
+                }
+                
+                $fields->push(new TemplateField([
+                    'id' => $fieldData['id'] ?? rand(10000, 99999),
+                    'label' => $fieldData['label'] ?? 'Untitled Field',
+                    'type' => $fieldData['type'] ?? 'text',
+                    'required' => filter_var($fieldData['required'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                    'file_multiple' => filter_var($fieldData['file_multiple'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                    'file_max' => !empty($fieldData['file_max']) ? (int)$fieldData['file_max'] : null,
+                    'char_max' => !empty($fieldData['char_max']) ? (int)$fieldData['char_max'] : null,
+                    'file_size_max' => !empty($fieldData['file_size_max']) ? (int)$fieldData['file_size_max'] : null,
+                    'options' => $options,
+                ]));
+            }
+        }
+        
+        $template->setRelation('fields', $fields);
+
+        return view('applications.partials.form-fields', [
+            'template' => $template,
+            'isPreview' => true,
+            'isBuilder' => true,
+        ])->render();
+    }
+
+    /**
+     * Store a newly created application template and any custom fields added
+     * during the initial creation process in a single DB transaction.
      */
     public function store(Request $request, Organization $organization): RedirectResponse
     {
@@ -56,24 +104,46 @@ class ApplicationTemplateController extends Controller
             'request_name'   => ['nullable', 'boolean'],
             'request_email'  => ['nullable', 'boolean'],
             'request_phone'  => ['nullable', 'boolean'],
-            'request_resume' => ['nullable', 'boolean'],
+            'fields'         => ['nullable', 'array'],
+            'fields.*.label' => ['required', 'string', 'max:255'],
+            'fields.*.type'  => ['required', 'in:text,textarea,select,checkbox,radio,file,date'],
+            'fields.*.required' => ['nullable', 'boolean'],
+            'fields.*.file_multiple' => ['nullable', 'boolean'],
+            'fields.*.file_max' => ['nullable', 'integer', 'min:2', 'max:10'],
+            'fields.*.char_max' => ['nullable', 'integer', 'min:1', 'max:5000'],
+            'fields.*.file_size_max' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'fields.*.options'  => ['nullable', 'array'],
         ]);
 
-        /** @var User $user */
-        $user = Auth::user();
+        DB::transaction(function () use ($validated, $organization, $request) {
+            $template = $organization->templates()->create([
+                'name'           => $validated['name'],
+                'created_by'     => Auth::id(),
+                'request_name'   => $request->boolean('request_name', false),
+                'request_email'  => $request->boolean('request_email', false),
+                'request_phone'  => $request->boolean('request_phone', false),
+            ]);
 
-        $template = $organization->templates()->create([
-            'name'           => $validated['name'],
-            'created_by'     => $user->id,
-            'request_name'   => $request->boolean('request_name', true),
-            'request_email'  => $request->boolean('request_email', true),
-            'request_phone'  => $request->boolean('request_phone', true),
-            'request_resume' => $request->boolean('request_resume', true),
-        ]);
+            if (isset($validated['fields'])) {
+                foreach (array_values($validated['fields']) as $index => $fieldData) {
+                    $template->fields()->create([
+                        'label'    => $fieldData['label'],
+                        'type'     => $fieldData['type'],
+                        'required' => filter_var($fieldData['required'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                        'file_multiple' => filter_var($fieldData['file_multiple'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                        'file_max' => $fieldData['file_max'] ?? null,
+                        'char_max' => $fieldData['char_max'] ?? null,
+                        'file_size_max' => $fieldData['file_size_max'] ?? null,
+                        'options'  => $fieldData['options'] ?? null,
+                        'order'    => $index + 1,
+                    ]);
+                }
+            }
+        });
 
         return redirect()
-            ->route('organizations.application-templates.edit', [$organization, $template])
-            ->with('success', 'Template created. Add fields below.');
+            ->route('organizations.application-templates.index', $organization)
+            ->with('success', 'Template created successfully.');
     }
 
     /**
@@ -119,7 +189,6 @@ class ApplicationTemplateController extends Controller
             'request_name'   => ['nullable', 'boolean'],
             'request_email'  => ['nullable', 'boolean'],
             'request_phone'  => ['nullable', 'boolean'],
-            'request_resume' => ['nullable', 'boolean'],
         ]);
 
         $applicationTemplate->update([
@@ -127,7 +196,6 @@ class ApplicationTemplateController extends Controller
             'request_name'   => $request->boolean('request_name', false),
             'request_email'  => $request->boolean('request_email', false),
             'request_phone'  => $request->boolean('request_phone', false),
-            'request_resume' => $request->boolean('request_resume', false),
         ]);
 
         return redirect()

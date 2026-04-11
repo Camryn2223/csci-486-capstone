@@ -130,7 +130,6 @@ class DemoDataSeeder extends Seeder
             'request_name' => true,
             'request_email' => true,
             'request_phone' => true,
-            'request_resume' => true,
             'created_at' => $now,
             'updated_at' => $now,
         ]);
@@ -142,7 +141,6 @@ class DemoDataSeeder extends Seeder
             'request_name' => true,
             'request_email' => true,
             'request_phone' => false,
-            'request_resume' => false,
             'created_at' => $now,
             'updated_at' => $now,
         ]);
@@ -154,7 +152,6 @@ class DemoDataSeeder extends Seeder
             'request_name' => true,
             'request_email' => true,
             'request_phone' => true,
-            'request_resume' => true,
             'created_at' => $now,
             'updated_at' => $now,
         ]);
@@ -167,6 +164,7 @@ class DemoDataSeeder extends Seeder
                 'options' => null,
                 'required' => true,
                 'order' => 1,
+                'char_max' => 128,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]),
@@ -177,6 +175,7 @@ class DemoDataSeeder extends Seeder
                 'options' => null,
                 'required' => true,
                 'order' => 2,
+                'char_max' => 5000,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]),
@@ -214,8 +213,10 @@ class DemoDataSeeder extends Seeder
                 'template_id' => $facultyTemplateId,
                 'label' => 'Curriculum Vitae',
                 'type' => 'file',
-                'options' => null,
+                'options' => json_encode(['application/pdf']),
                 'required' => true,
+                'file_multiple' => false,
+                'file_size_max' => 5,
                 'order' => 6,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -240,6 +241,7 @@ class DemoDataSeeder extends Seeder
                 'options' => null,
                 'required' => true,
                 'order' => 1,
+                'char_max' => 10,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]),
@@ -250,6 +252,7 @@ class DemoDataSeeder extends Seeder
                 'options' => null,
                 'required' => true,
                 'order' => 2,
+                'char_max' => 1024,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]),
@@ -263,6 +266,17 @@ class DemoDataSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ]),
+            'resume' => DB::table('template_fields')->insertGetId([
+                'template_id' => $staffTemplateId,
+                'label' => 'Resume',
+                'type' => 'file',
+                'options' => json_encode(['application/pdf', 'application/msword']),
+                'required' => true,
+                'file_size_max' => 7,
+                'order' => 4,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]),
         ];
 
         $researchFieldIds = [
@@ -273,6 +287,7 @@ class DemoDataSeeder extends Seeder
                 'options' => null,
                 'required' => true,
                 'order' => 1,
+                'char_max' => 128,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]),
@@ -283,6 +298,7 @@ class DemoDataSeeder extends Seeder
                 'options' => null,
                 'required' => true,
                 'order' => 2,
+                'char_max' => 2000,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]),
@@ -310,8 +326,9 @@ class DemoDataSeeder extends Seeder
                 'template_id' => $researchTemplateId,
                 'label' => 'Transcript',
                 'type' => 'file',
-                'options' => null,
+                'options' => json_encode(['application/pdf']),
                 'required' => true,
+                'file_size_max' => 10,
                 'order' => 5,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -427,26 +444,10 @@ class DemoDataSeeder extends Seeder
             $now
         );
 
-        $this->createDocument(
-            $sofiaApplicationId,
-            'sofia-martinez-teaching-statement.pdf',
-            'documents/applications/sofia-martinez-teaching-statement.pdf',
-            'application/pdf',
-            $now
-        );
-
         $danielCvDocumentId = $this->createDocument(
             $danielApplicationId,
             'daniel-kim-cv.pdf',
             'documents/applications/daniel-kim-cv.pdf',
-            'application/pdf',
-            $now
-        );
-
-        $this->createDocument(
-            $danielApplicationId,
-            'daniel-kim-research-statement.pdf',
-            'documents/applications/daniel-kim-research-statement.pdf',
             'application/pdf',
             $now
         );
@@ -459,7 +460,7 @@ class DemoDataSeeder extends Seeder
             $now
         );
 
-        $this->createDocument(
+        $omarResumeDocumentId = $this->createDocument(
             $omarApplicationId,
             'omar-patel-resume.pdf',
             'documents/applications/omar-patel-resume.pdf',
@@ -471,14 +472,6 @@ class DemoDataSeeder extends Seeder
             $ethanApplicationId,
             'ethan-brooks-transcript.pdf',
             'documents/applications/ethan-brooks-transcript.pdf',
-            'application/pdf',
-            $now
-        );
-
-        $this->createDocument(
-            $ethanApplicationId,
-            'ethan-brooks-resume.pdf',
-            'documents/applications/ethan-brooks-resume.pdf',
             'application/pdf',
             $now
         );
@@ -500,7 +493,7 @@ class DemoDataSeeder extends Seeder
                 'value' => 'Authorized to work',
             ],
             $facultyFieldIds['cv'] => [
-                'value' => 'documents/applications/sofia-martinez-cv.pdf',
+                'value' => 'sofia-martinez-cv.pdf',
                 'document_id' => $sofiaCvDocumentId,
             ],
             $facultyFieldIds['start_date'] => [
@@ -525,7 +518,7 @@ class DemoDataSeeder extends Seeder
                 'value' => 'Requires sponsorship',
             ],
             $facultyFieldIds['cv'] => [
-                'value' => 'documents/applications/daniel-kim-cv.pdf',
+                'value' => 'daniel-kim-cv.pdf',
                 'document_id' => $danielCvDocumentId,
             ],
             $facultyFieldIds['start_date'] => [
@@ -550,7 +543,7 @@ class DemoDataSeeder extends Seeder
                 'value' => 'Authorized to work',
             ],
             $facultyFieldIds['cv'] => [
-                'value' => 'documents/applications/rebecca-stone-cv.pdf',
+                'value' => 'rebecca-stone-cv.pdf',
                 'document_id' => $rebeccaCvDocumentId,
             ],
             $facultyFieldIds['start_date'] => [
@@ -568,6 +561,10 @@ class DemoDataSeeder extends Seeder
             $staffFieldIds['class_standing'] => [
                 'value' => 'Junior',
             ],
+            $staffFieldIds['resume'] => [
+                'value' => 'omar-patel-resume.pdf',
+                'document_id' => $omarResumeDocumentId,
+            ],
         ], $now);
 
         $this->insertApplicationAnswers($ethanApplicationId, [
@@ -584,7 +581,7 @@ class DemoDataSeeder extends Seeder
                 'value' => 'Yes',
             ],
             $researchFieldIds['transcript'] => [
-                'value' => 'documents/applications/ethan-brooks-transcript.pdf',
+                'value' => 'ethan-brooks-transcript.pdf',
                 'document_id' => $ethanTranscriptDocumentId,
             ],
             $researchFieldIds['start_date'] => [

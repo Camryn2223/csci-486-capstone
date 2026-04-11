@@ -7,8 +7,8 @@
 
         <form method="POST" action="{{ route('organizations.store') }}">
             @csrf
-            <label>Name</label>
-            <input type="text" name="name" value="{{ old('name') }}" required>
+            
+            @include('organizations.partials.form-fields', ['organization' => null])
             
             <div class="mt-15">
                 <button type="submit" class="btn">Create Organization</button>

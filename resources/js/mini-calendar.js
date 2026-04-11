@@ -16,9 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
             right: 'prev,next' 
         },
         events: eventsData,
-        eventClick: function(info) {
-            info.jsEvent.preventDefault();
-        },
         eventDidMount: function(info) {
             let actionButtons = `<div class="mt-15 flex-wrap-8">`;
             actionButtons += `<a href="${info.event.url}" class="btn btn-sm">View Details</a>`;

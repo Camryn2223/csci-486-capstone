@@ -58,9 +58,14 @@ class InterviewController extends Controller
 
         $interviewers = $organization->members()
             ->whereIn('role', ['interviewer', 'chairman'])
+            ->with(['interviews' => function($q) {
+                $q->scheduled()->with('application.jobPosition', 'interviewers');
+            }])
             ->get();
 
-        return view('interviews.create', compact('application', 'organization', 'interviewers'));
+        $schedules = $this->buildSchedulesJson($interviewers);
+
+        return view('interviews.create', compact('application', 'organization', 'interviewers', 'schedules'));
     }
 
     /**
@@ -155,9 +160,16 @@ class InterviewController extends Controller
 
         $interviewers = $organization->members()
             ->whereIn('role', ['interviewer', 'chairman'])
+            ->with(['interviews' => function($q) use ($interview) {
+                $q->scheduled()
+                  ->where('interviews.id', '!=', $interview->id)
+                  ->with('application.jobPosition', 'interviewers');
+            }])
             ->get();
+            
+        $schedules = $this->buildSchedulesJson($interviewers);
 
-        return view('interviews.edit', compact('interview', 'organization', 'interviewers'));
+        return view('interviews.edit', compact('interview', 'organization', 'interviewers', 'schedules'));
     }
 
     /**
@@ -302,5 +314,40 @@ class InterviewController extends Controller
                 $proposedTime->copy()->addHour(),
             ])
             ->exists();
+    }
+    
+    /**
+     * Helper to map out all scheduled interviews of the given users into an array
+     * structured cleanly for the FullCalendar JS integration.
+     */
+    private function buildSchedulesJson($interviewers): array
+    {
+        $schedules = [];
+        foreach ($interviewers as $interviewer) {
+            foreach ($interviewer->interviews as $inv) {
+                if (!isset($schedules[$inv->id])) {
+                    $interviewerNames = $inv->interviewers->pluck('name')->implode(', ');
+                    
+                    $schedules[$inv->id] = [
+                        'id' => 'inv_'.$inv->id,
+                        'title' => "{$inv->application->applicant_name} (with: {$interviewerNames})",
+                        'start' => $inv->scheduled_at->toIso8601String(),
+                        'end' => $inv->scheduled_at->copy()->addHour()->toIso8601String(),
+                        'interviewer_ids' => [],
+                        'color' => '#3a3f45',
+                        'url' => route('interviews.show', $inv->id),
+                        'extendedProps' => [
+                            'position' => $inv->application->jobPosition->title,
+                            'interviewer' => $interviewerNames,
+                            'status' => $inv->status,
+                            'canUpdate' => Auth::user()->can('update', $inv)
+                        ]
+                    ];
+                }
+                $schedules[$inv->id]['interviewer_ids'][] = $interviewer->id;
+            }
+        }
+        
+        return array_values($schedules);
     }
 }

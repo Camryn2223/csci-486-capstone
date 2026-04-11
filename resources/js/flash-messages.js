@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const flashMessages = document.querySelectorAll('.flash-success, .flash-error');
+    const flashMessages = document.querySelectorAll('.flash-success, .toast.flash-error');
     flashMessages.forEach(function(msg) {
         setTimeout(function() {
             msg.style.opacity = '0';

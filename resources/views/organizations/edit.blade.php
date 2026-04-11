@@ -9,8 +9,7 @@
             @csrf
             @method('PUT')
             
-            <label>Name</label>
-            <input type="text" name="name" value="{{ old('name', $organization->name) }}" required>
+            @include('organizations.partials.form-fields', ['organization' => $organization])
             
             <div class="mt-15">
                 <button type="submit" class="btn">Save Changes</button>

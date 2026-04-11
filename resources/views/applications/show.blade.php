@@ -42,22 +42,7 @@
                     <strong class="d-block mb-5 text-primary">{{ $answer->field->label }}:</strong>
                     
                     @if($answer->document)
-                        <div class="card-header-flex bg-dark-2 p-10 rounded border-dark mt-10">
-                            <span class="font-mono fs-14">{{ $answer->value }}</span>
-                            
-                            <div class="flex-gap-10">
-                                <a href="{{ route('documents.show', $answer->document) }}" class="btn btn-sm btn-slate" target="_blank">View</a>
-                                <a href="{{ route('documents.show', ['document' => $answer->document, 'download' => 1]) }}" class="btn btn-sm btn-purple-dark">Download</a>
-                                
-                                @can('delete', $answer->document)
-                                    <form method="POST" action="{{ route('documents.destroy', $answer->document) }}" class="m-0">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this document?')">Delete</button>
-                                    </form>
-                                @endcan
-                            </div>
-                        </div>
+                        @include('applications.partials.document-card', ['document' => $answer->document])
                     @else
                         <span class="white-space-pre">{{ $answer->value ?? 'No answer provided' }}</span>
                     @endif
@@ -65,30 +50,6 @@
             @endforeach
         </div>
     @endif
-
-    <div class="card">
-        <h2 class="mt-0">Generic Documents ({{ $application->documents()->whereDoesntHave('answer')->count() }})</h2>
-        @forelse ($application->documents()->whereDoesntHave('answer')->get() as $document)
-            <div class="entry-box card-header-flex">
-                <span class="font-mono fs-16">{{ $document->filename }} <span class="text-muted fs-13">({{ $document->mimetype }})</span></span>
-                
-                <div class="flex-gap-10">
-                    <a href="{{ route('documents.show', $document) }}" class="btn btn-sm btn-slate" target="_blank">View</a>
-                    <a href="{{ route('documents.show', ['document' => $document, 'download' => 1]) }}" class="btn btn-sm btn-purple-dark">Download</a>
-                    
-                    @can('delete', $document)
-                        <form method="POST" action="{{ route('documents.destroy', $document) }}" class="m-0">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this document?')">Delete</button>
-                        </form>
-                    @endcan
-                </div>
-            </div>
-        @empty
-            <p>No extra documents uploaded.</p>
-        @endforelse
-    </div>
 
     <div class="card">
         <div class="card-header-flex mb-20">

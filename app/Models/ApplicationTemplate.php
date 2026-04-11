@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $request_name
  * @property bool $request_email
  * @property bool $request_phone
- * @property bool $request_resume
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
@@ -31,7 +30,6 @@ class ApplicationTemplate extends Model
         'request_name',
         'request_email',
         'request_phone',
-        'request_resume',
     ];
 
     protected function casts(): array
@@ -40,7 +38,6 @@ class ApplicationTemplate extends Model
             'request_name' => 'boolean',
             'request_email' => 'boolean',
             'request_phone' => 'boolean',
-            'request_resume' => 'boolean',
         ];
     }
 

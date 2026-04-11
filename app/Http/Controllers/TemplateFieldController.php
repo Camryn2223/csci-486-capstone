@@ -38,6 +38,10 @@ class TemplateFieldController extends Controller
             'type'     => $validated['type'],
             'options'  => $validated['options'] ?? null,
             'required' => $validated['required'] ?? false,
+            'file_multiple' => $validated['file_multiple'] ?? false,
+            'file_max' => $validated['file_max'] ?? null,
+            'char_max' => $validated['char_max'] ?? null,
+            'file_size_max' => $validated['file_size_max'] ?? null,
             'order'    => $nextOrder,
         ]);
 
@@ -63,6 +67,10 @@ class TemplateFieldController extends Controller
             'type'     => $validated['type'],
             'options'  => $validated['options'] ?? null,
             'required' => $validated['required'] ?? false,
+            'file_multiple' => $validated['file_multiple'] ?? false,
+            'file_max' => $validated['file_max'] ?? null,
+            'char_max' => $validated['char_max'] ?? null,
+            'file_size_max' => $validated['file_size_max'] ?? null,
         ]);
 
         return redirect()
@@ -138,16 +146,23 @@ class TemplateFieldController extends Controller
      */
     private function prepareOptions(Request $request): void
     {
-        if (in_array($request->input('type'), ['select', 'checkbox', 'radio'])) {
+        $type = $request->input('type');
+
+        if (in_array($type, ['select', 'checkbox', 'radio'])) {
             $options = $request->input('options');
             if (is_string($options)) {
                 $optionsArray = array_values(array_filter(array_map('trim', explode(',', $options))));
                 // If it's empty, set to null so the required_if validation catches it.
                 $request->merge(['options' => empty($optionsArray) ? null : $optionsArray]);
             }
+        } elseif ($type === 'file') {
+            $options = $request->input('file_options');
+            $request->merge(['options' => empty($options) ? null : $options]);
         } else {
             $request->merge(['options' => null]);
         }
+        
+        $request->merge(['file_multiple' => $request->boolean('file_multiple')]);
     }
 
     /**
@@ -158,9 +173,13 @@ class TemplateFieldController extends Controller
         return [
             'label'     => ['required', 'string', 'max:255'],
             'type'      => ['required', 'in:text,textarea,select,checkbox,radio,file,date'],
-            'options'   => ['required_if:type,select,checkbox,radio', 'nullable', 'array', 'min:1'],
+            'options'   => ['required_if:type,select,checkbox,radio,file', 'nullable', 'array', 'min:1'],
             'options.*' => ['string', 'max:255'],
             'required'  => ['boolean'],
+            'file_multiple' => ['boolean'],
+            'file_max'  => ['nullable', 'integer', 'min:2', 'max:10'],
+            'char_max'  => ['nullable', 'integer', 'min:1', 'max:5000'],
+            'file_size_max' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }
 
@@ -170,7 +189,7 @@ class TemplateFieldController extends Controller
     private function validationMessages(): array
     {
         return [
-            'options.required_if' => 'You must provide at least one valid option (comma-separated) for this field type.',
+            'options.required_if' => 'You must provide at least one valid option (or allowed file type) for this field type.',
         ];
     }
 }

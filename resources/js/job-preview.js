@@ -4,24 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const orgId = configEl.getAttribute('data-org-id');
 
-    window.switchTab = function(tab) {
-        document.getElementById('tab-builder').style.display = tab === 'builder' ? 'block' : 'none';
-        document.getElementById('tab-preview').style.display = tab === 'preview' ? 'block' : 'none';
-        
-        const btnBuilder = document.getElementById('btn-tab-builder');
-        const btnPreview = document.getElementById('btn-tab-preview');
-        
-        if (tab === 'builder') {
-            btnBuilder.className = 'btn btn-tab-active';
-            btnPreview.className = 'btn btn-tab-inactive';
-        } else {
-            btnBuilder.className = 'btn btn-tab-inactive';
-            btnPreview.className = 'btn btn-tab-active';
-        }
-        
-        if (tab === 'preview') window.updatePreview();
-    };
-
     window.updateTemplateLink = function() {
         const templateId = document.getElementById('input-template')?.value;
         const btn = document.getElementById('edit-template-btn');
