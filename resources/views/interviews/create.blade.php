@@ -29,7 +29,6 @@
             <hr class="divider-20">
 
             <h3>Email Notification</h3>
-            <p class="text-muted mb-15">The applicant will receive exactly one email regardless of how many interviewers are assigned to this block.</p>
 
             <label><strong>Email Subject</strong></label>
             <input type="text" name="email_subject" value="{{ old('email_subject', 'Interview Scheduled: ' . $application->jobPosition->title) }}" required>

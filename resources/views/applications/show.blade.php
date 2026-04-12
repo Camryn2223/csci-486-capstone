@@ -36,7 +36,7 @@
 
     @if ($application->answers->isNotEmpty())
         <div class="card">
-            <h2 class="mt-0">Questionnaire Answers</h2>
+            <h2 class="mt-0">Application Answers</h2>
             @foreach ($application->answers as $answer)
                 <div class="mb-15 pb-15 border-bottom-divider">
                     <strong class="d-block mb-5 text-primary">{{ $answer->field->label }}:</strong>
