@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('organization_id')->constrained('organizations')->onDelete('cascade');
             $table->foreignId('template_id')->constrained('application_templates');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->string('title');
-            $table->string('description');
-            $table->string('requirements');
+            $table->text('title');
+            $table->text('description');
+            $table->text('requirements');
             $table->enum('status', ['open', 'closed'])->default('open');
             $table->timestamps();
         });

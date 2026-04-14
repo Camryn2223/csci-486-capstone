@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             PermissionSeeder::class,
-            DemoDataSeeder::class,
+            GenericDataSeeder::class,
         ]);
     }
 }
