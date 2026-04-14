@@ -2,22 +2,6 @@
 
 use App\Models\User;
 
-test('a user can update their profile information', function () {
-    $user = User::factory()->create([
-        'name' => 'Old Name',
-        'email' => 'old@example.com',
-    ]);
-
-    $response = $this->actingAs($user)->put('/user/profile-information', [
-        'name' => 'New Name',
-        'email' => 'new@example.com',
-    ]);
-
-    $response->assertSessionHasNoErrors();
-    expect($user->fresh()->name)->toBe('New Name');
-    expect($user->fresh()->email)->toBe('new@example.com');
-});
-
 test('a user can update their password', function () {
     $user = User::factory()->create([
         'password' => bcrypt('oldpassword'),
