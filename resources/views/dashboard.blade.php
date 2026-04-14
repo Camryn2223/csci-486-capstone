@@ -3,15 +3,6 @@
 @section('title', 'Dashboard')
 
 @section('content')
-    @php
-        $user = auth()->user();
-        $orgs = $user->isChairman() ? $user->ownedOrganizations() : $user->organizations();
-        if ($orgs->count() === 1) {
-            header("Location: " . route('organizations.show', $orgs->first()));
-            exit;
-        }
-    @endphp
-
     <div class="container">
         <div class="card">
             <h2 class="mb-5">Welcome, {{ auth()->user()->name }}</h2>

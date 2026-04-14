@@ -15,6 +15,8 @@ A Laravel application running in Docker with MySQL, structured using the **Model
 - [Running the Container](#running-the-container)
 - [Stopping the Container](#stopping-the-container)
 - [Syncing with Git](#syncing-with-git)
+- [Testing](#testing)
+- [Running the Test Suite](#running-the-test-suite)
 
 ### Tools & Interfaces
 - [phpMyAdmin](#phpmyadmin)
@@ -23,6 +25,7 @@ A Laravel application running in Docker with MySQL, structured using the **Model
 ### Container Management
 - [Resetting the Container](#resetting-the-container)
 - [Resetting the MySQL Database](#resetting-the-mysql-database)
+- [Preparing or Resetting the Test Database](#preparing-or-resetting-the-test-database)
 
 ### Code Reference
 - [MVC Architecture Overview](#mvc-architecture-overview)
@@ -127,9 +130,78 @@ Never commit `.env` - it is git-ignored. Use `.env.example` with placeholder val
 
 ---
 
+## Testing
+
+This project uses **two different Laravel environments**:
+
+- `.env` - your normal local development app and database
+- `.env.testing` - the isolated environment used by automated tests
+
+In practice, this means:
+
+- normal app commands use `.env`
+- `php artisan test`, `vendor/bin/pest`, and Artisan commands run with `--env=testing` use `.env.testing`
+
+Do **not** start the container in a special testing mode. Docker starts the same containers either way. What changes is which Laravel environment a command uses.
+
+### Normal environment commands
+
+Use these for day-to-day development:
+
+```bash
+docker compose up -d
+docker compose exec app php artisan migrate
+docker compose exec app php artisan db:seed
+```
+
+These commands target the database from your normal `.env` file.
+
+### Testing environment commands
+
+Use these when you want to inspect, rebuild, or debug the **test** database manually:
+
+```bash
+docker compose exec app php artisan migrate --env=testing
+docker compose exec app php artisan db:seed --env=testing
+```
+
+If you want a completely fresh testing database:
+
+```bash
+docker compose exec app php artisan migrate:fresh --seed --env=testing
+```
+
+If your tests use `RefreshDatabase`, you usually do **not** need to run those commands before every test run. They are mainly useful when debugging or checking the test database in phpMyAdmin.
+
+---
+
+## Running the Test Suite
+
+Run the full test suite inside the container:
+
+```bash
+docker compose exec app php artisan test
+```
+
+If configuration seems stale, clear it first:
+
+```bash
+docker compose exec app php artisan config:clear
+```
+
+### Common testing notes
+
+- If tests are supposed to use MySQL, make sure `phpunit.xml` is **not** overriding the database connection to SQLite.
+- If tests depend on seeded permissions, make sure the test suite reseeds them after database refreshes.
+- If phpMyAdmin shows your normal database but not your test tables, you may have migrated the normal environment and not the testing environment.
+
+---
+
 ## phpMyAdmin
 
 Available at [http://localhost:8081](http://localhost:8081) whenever containers are running. Auto-logs in using your `.env` credentials.
+
+If you are using a separate `laravel_testing` database, you can switch to it from the phpMyAdmin sidebar after you have created and migrated it.
 
 ---
 
@@ -177,7 +249,7 @@ Rebuilds the image from scratch. Database is preserved.
 
 ## Resetting the MySQL Database
 
-> ⚠️ Permanently deletes all local data.
+> ⚠️ Permanently deletes all local development data.
 
 ```bash
 docker compose down -v
@@ -185,6 +257,31 @@ docker compose up -d
 docker compose exec app php artisan migrate
 docker compose exec app php artisan db:seed
 ```
+
+This resets your **normal** local database from `.env`.
+
+---
+
+## Preparing or Resetting the Test Database
+
+If your `.env.testing` points to a separate MySQL database such as `laravel_testing`, that database must exist and the Laravel MySQL user must have privileges on it.
+
+A fresh Docker reset usually recreates only the database defined by the Compose startup variables, which is often your normal development database. If the testing database is missing or inaccessible, create it and grant privileges manually:
+
+```bash
+docker compose exec mysql mysql -uroot -psecret -e "CREATE DATABASE IF NOT EXISTS laravel_testing; GRANT ALL PRIVILEGES ON laravel_testing.* TO 'laravel'@'%'; FLUSH PRIVILEGES;"
+```
+
+Then migrate and seed the testing database:
+
+```bash
+docker compose exec app php artisan migrate:fresh --seed --env=testing
+```
+
+Use phpMyAdmin to confirm both databases exist:
+
+- `laravel` for normal development
+- `laravel_testing` for automated tests
 
 ---
 

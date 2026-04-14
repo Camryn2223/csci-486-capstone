@@ -7,10 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Fortify;
+use App\Actions\Fortify\CreateNewUser;
+use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Actions\Fortify\UpdateUserPassword;
+use App\Actions\Fortify\ResetUserPassword;
 
 /**
  * Registers Laravel Fortify's view callbacks so that each auth route renders
- * the correct Blade template. Also configures login rate limiting.
+ * the correct Blade template. Binds action classes and configures rate limiting.
  */
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -18,6 +22,11 @@ class FortifyServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Fortify::createUsersUsing(CreateNewUser::class);
+        Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
+        Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
+        Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
+
         Fortify::loginView(fn () => view('auth.login'));
 
         Fortify::twoFactorChallengeView(fn () => view('auth.two-factor-challenge'));

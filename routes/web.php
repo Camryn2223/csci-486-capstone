@@ -55,7 +55,18 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+        $orgs = $user->isChairman()
+            ? $user->ownedOrganizations()
+            : $user->organizations();
+
+        if ($orgs->count() === 1) {
+            return redirect()->route('organizations.show', $orgs->first());
+        }
+
+        return view('dashboard');
+    })->name('dashboard');
     Route::redirect('/home', '/dashboard');
 
     /*

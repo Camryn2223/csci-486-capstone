@@ -37,7 +37,7 @@
             <textarea name="email_body" rows="6" required>{{ old('email_body', "We are pleased to invite you to an interview for the {$application->jobPosition->title} position. Please find the details below.") }}</textarea>
 
             <div class="mt-15">
-                <button type="submit" class="btn">Schedule Interview(s) & Send Email</button>
+                <button type="submit" class="btn">Schedule Interview</button>
                 <a href="{{ route('applications.show', $application) }}" class="btn btn-outline ml-10">Cancel</a>
             </div>
         </form>

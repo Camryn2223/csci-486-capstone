@@ -1,15 +1,23 @@
-FROM php:8.4-fpm-alpine
+FROM php:8.4-fpm-bookworm
 
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     nginx \
     curl \
     unzip \
     git \
-    oniguruma-dev \
+    ca-certificates \
+    gnupg \
+    libonig-dev \
     libxml2-dev \
-    && docker-php-ext-install pdo pdo_mysql mbstring xml bcmath
+    && docker-php-ext-install pdo pdo_mysql mbstring xml bcmath sockets pcntl \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get update \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
 

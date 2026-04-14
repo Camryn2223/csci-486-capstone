@@ -5,13 +5,14 @@ services:
       dockerfile: Dockerfile
     container_name: laravel_app
     restart: unless-stopped
+    init: true
+    ipc: host
     ports:
       - "8080:80"
     volumes:
       - .:/var/www/html
       - /var/www/html/vendor
-    environment:
-      - APP_ENV=local
+      - /var/www/html/node_modules
     depends_on:
       mysql:
         condition: service_healthy

@@ -173,7 +173,7 @@ class TemplateFieldController extends Controller
         return [
             'label'     => ['required', 'string', 'max:255'],
             'type'      => ['required', 'in:text,textarea,select,checkbox,radio,file,date'],
-            'options'   => ['required_if:type,select,checkbox,radio,file', 'nullable', 'array', 'min:1'],
+            'options'   => ['required_if:type,select,checkbox,radio', 'nullable', 'array', 'min:1'],
             'options.*' => ['string', 'max:255'],
             'required'  => ['boolean'],
             'file_multiple' => ['boolean'],
@@ -189,7 +189,7 @@ class TemplateFieldController extends Controller
     private function validationMessages(): array
     {
         return [
-            'options.required_if' => 'You must provide at least one valid option (or allowed file type) for this field type.',
+            'options.required_if' => 'You must provide at least one valid option for this field type.',
         ];
     }
 }

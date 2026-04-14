@@ -55,7 +55,7 @@
         <div class="card-header-flex mb-20">
             <h2 class="m-0">Interviews ({{ $application->interviews->count() }})</h2>
             @can('create', [App\Models\Interview::class, $application])
-                <a href="{{ route('interviews.create', $application) }}" class="btn btn-sm">+ Schedule Interview(s)</a>
+                <a href="{{ route('interviews.create', $application) }}" class="btn btn-sm">+ Schedule Interview</a>
             @endcan
         </div>
 
