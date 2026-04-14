@@ -262,29 +262,6 @@ This resets your **normal** local database from `.env`.
 
 ---
 
-## Preparing or Resetting the Test Database
-
-If your `.env.testing` points to a separate MySQL database such as `laravel_testing`, that database must exist and the Laravel MySQL user must have privileges on it.
-
-A fresh Docker reset usually recreates only the database defined by the Compose startup variables, which is often your normal development database. If the testing database is missing or inaccessible, create it and grant privileges manually:
-
-```bash
-docker compose exec mysql mysql -uroot -psecret -e "CREATE DATABASE IF NOT EXISTS laravel_testing; GRANT ALL PRIVILEGES ON laravel_testing.* TO 'laravel'@'%'; FLUSH PRIVILEGES;"
-```
-
-Then migrate and seed the testing database:
-
-```bash
-docker compose exec app php artisan migrate:fresh --seed --env=testing
-```
-
-Use phpMyAdmin to confirm both databases exist:
-
-- `laravel` for normal development
-- `laravel_testing` for automated tests
-
----
-
 ## MVC Architecture Overview
 
 ```
