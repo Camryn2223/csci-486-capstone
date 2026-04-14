@@ -31,7 +31,7 @@
             return [
                 'id' => $inv->id,
                 'title' => 'Interview: ' . $inv->application->applicant_name,
-                'start' => $inv->scheduled_at->toIso8601String(),
+                'start' => $inv->scheduled_at->format('Y-m-d\TH:i:s'),
                 'url' => route('interviews.show', $inv),
                 'color' => $isMine ? '#6d3fa9' : '#3a3f45',
                 'extendedProps' => [

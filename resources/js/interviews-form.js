@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div style="text-align:left; padding:5px;">
                         <strong class="text-primary fs-16">${info.event.title}</strong><br>
                         <div>
+                            <strong>Date & Time:</strong> ${info.event.start.toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}<br>
                             <strong>Position:</strong> ${info.event.extendedProps.position}<br>
                             <strong>Interviewer(s):</strong> ${info.event.extendedProps.interviewer}<br>
                             <strong>Status:</strong> ${info.event.extendedProps.status.toUpperCase()}

@@ -331,8 +331,8 @@ class InterviewController extends Controller
                     $schedules[$inv->id] = [
                         'id' => 'inv_'.$inv->id,
                         'title' => "{$inv->application->applicant_name} (with: {$interviewerNames})",
-                        'start' => $inv->scheduled_at->toIso8601String(),
-                        'end' => $inv->scheduled_at->copy()->addHour()->toIso8601String(),
+                        'start' => $inv->scheduled_at->format('Y-m-d\TH:i:s'),
+                        'end' => $inv->scheduled_at->copy()->addHour()->format('Y-m-d\TH:i:s'),
                         'interviewer_ids' => [],
                         'color' => '#3a3f45',
                         'url' => route('interviews.show', $inv->id),
