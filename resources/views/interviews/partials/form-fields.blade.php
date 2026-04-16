@@ -24,10 +24,10 @@
     </div>
     
     <div id="availability-calendar" 
-         data-applicant="{{ $application->applicant_name }}" 
-         data-position="{{ $application->jobPosition->title }}" 
-         class="mt-10 mb-10" style="background: #1a1d21; padding: 15px; border-radius: 6px; border: 1px solid #3a3f45; min-height: 400px;"></div>
-    
+        data-applicant="{{ $application->applicant_name }}" 
+        data-position="{{ $application->jobPosition->title }}" 
+        class="availability-calendar-shell mt-10 mb-10"></div>
+        
     <input type="hidden" id="scheduled_at_hidden" name="scheduled_at" value="{{ old('scheduled_at', isset($interview) ? $interview->scheduled_at->format('Y-m-d H:i') : '') }}" required>
     
     @error('scheduled_at')

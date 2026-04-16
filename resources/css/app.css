@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -6,13 +6,126 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Map Custom Variables to Tailwind Utilities */
+  --color-bg-page: var(--bg-page);
+  --color-bg-card: var(--bg-card);
+  --color-bg-input: var(--bg-input);
+  --color-bg-entry: var(--bg-entry);
+  --color-bg-hover: var(--bg-hover);
+
+  --color-border-default: var(--border-default);
+  --color-border-subtle: var(--border-subtle);
+
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-text-heading: var(--text-heading);
+  --color-text-primary: var(--text-primary);
+
+  --color-brand-base: var(--brand-base);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-border: var(--brand-border);
 }
 
-@import './layout.css';
-@import './components.css';
-@import './forms.css';
-@import './typography.css';
-@import './utilities.css';
-@import './calendar-overrides.css';
+:root {
+  /* LIGHT MODE (DEFAULTS) */
+  --bg-page: #f3f4f6;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --bg-entry: #f9fafb;
+  --bg-hover: #f3f4f6;
+
+  --border-default: #d1d5db;
+  --border-subtle: #e5e7eb;
+
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --text-heading: #111827;
+  --text-primary: #6d3fa9;
+
+  --brand-base: #6d3fa9;
+  --brand-hover: #593287;
+  --brand-border: #8e5ee0;
+
+  --btn-secondary-bg: #f3e8ff;
+  --btn-secondary-text: #6d3fa9;
+  --btn-slate-bg: #e2e8f0;
+  --btn-slate-text: #334155;
+
+  --success-bg: #ecfdf5;
+  --success-text: #065f46;
+  --success-border: #a7f3d0;
+
+  --danger-bg: #fef2f2;
+  --danger-text: #991b1b;
+  --danger-border: #fecaca;
+  --danger-btn: #ef4444;
+  --danger-btn-hover: #dc2626;
+
+  --status-review-bg: #e0f2fe;
+  --status-review-text: #0369a1;
+  --status-feedback-bg: #fef9c3;
+  --status-feedback-text: #854d0e;
+  --status-slate-bg: #e2e8f0;
+  --status-slate-text: #334155;
+  --status-gray-bg: #f3f4f6;
+  --status-gray-text: #6b7280;
+
+  --icon-select: url("data:image/svg+xml;utf8,<svg fill='%236b7280' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}
+
+:root.dark {
+  /* DARK MODE (OVERRIDES) */
+  --bg-page: #1a1d21;
+  --bg-card: #24282d;
+  --bg-input: #1f2327;
+  --bg-entry: #1f2327;
+  --bg-hover: #2f3a4a;
+
+  --border-default: #3a3f45;
+  --border-subtle: #2f343a;
+
+  --text-main: #e6e6e6;
+  --text-muted: #bdbdbd;
+  --text-heading: #cfcfcf;
+  --text-primary: #a97dff;
+
+  --brand-base: #6d3fa9;
+  --brand-hover: #593287;
+  --brand-border: #3e215c;
+
+  --btn-secondary-bg: #3a245a;
+  --btn-secondary-text: #e9d6ff;
+  --btn-slate-bg: #2f3a4a;
+  --btn-slate-text: #e6e6e6;
+
+  --success-bg: #0f3d1e;
+  --success-text: #9dffb0;
+  --success-border: #1a5c30;
+
+  --danger-bg: #3d0f0f;
+  --danger-text: #ff9d9d;
+  --danger-border: #5c1a1a;
+  --danger-btn: #a33;
+  --danger-btn-hover: #822;
+
+  --status-review-bg: #004d5e;
+  --status-review-text: #7eeaff;
+  --status-feedback-bg: #4a3d00;
+  --status-feedback-text: #ffe58a;
+  --status-slate-bg: #2f3a4a;
+  --status-slate-text: #b7c7d9;
+  --status-gray-bg: #3a3f45;
+  --status-gray-text: #bdbdbd;
+
+  --icon-select: url("data:image/svg+xml;utf8,<svg fill='%23bdbdbd' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}
+
+@import "./layout.css";
+@import "./components.css";
+@import "./forms.css";
+@import "./typography.css";
+@import "./utilities.css";
+@import "./calendar-overrides.css";

@@ -12,7 +12,7 @@
             
             <div class="mt-15">
                 <button type="submit" class="btn">Create Organization</button>
-                <a href="{{ route('organizations.index') }}" class="btn btn-outline ml-10">Cancel</a>
+                <a href="{{ route('dashboard') }}" class="btn btn-outline ml-10">Cancel</a>
             </div>
         </form>
     </div>

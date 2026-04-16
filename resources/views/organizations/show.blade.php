@@ -122,7 +122,7 @@
                     <label id="filter-container" class="d-none cursor-pointer text-primary fw-bold fs-14 m-0">
                         <input type="checkbox" id="filter-mine"> My Interviews Only
                     </label>
-                    <button id="toggle-expand" class="btn btn-sm btn-purple-dark">⛶ Expand Calendar</button>
+                    <button id="toggle-expand" class="btn btn-sm">⛶ Expand Calendar</button>
                 </div>
             </div>
             

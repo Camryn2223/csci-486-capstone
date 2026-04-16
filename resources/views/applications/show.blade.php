@@ -10,7 +10,7 @@
             <p class="m-0 mt-5"><strong>Email:</strong> @if(!str_contains($application->applicant_email, 'no-email-')) <a href="mailto:{{ $application->applicant_email }}">{{ $application->applicant_email }}</a> @else <em>No Email Provided</em> @endif</p>
             <p class="m-0 mt-5"><strong>Phone:</strong> {{ $application->applicant_phone ?? 'Not provided' }}</p>
             <p class="m-0 mt-5"><strong>Submitted:</strong> {{ $application->created_at->format('M j, Y g:i A') }}</p>
-            <p class="m-0 mt-15"><strong>Status:</strong> <span class="status status-needs-review">{{ str_replace('_', ' ', Str::title($application->status)) }}</span></p>
+            <p class="m-0 mt-15"><strong>Status:</strong> <span class="status status-{{ str_replace('_', '-', $application->status) }}">{{ str_replace('_', ' ', Str::title($application->status)) }}</span></p>
         </div>
         
         <a href="{{ route('applications.index', [$application->jobPosition->organization, $application->jobPosition]) }}" class="btn btn-outline">Back to Applications</a>
@@ -23,7 +23,7 @@
                 @csrf
                 @method('PATCH')
                 <select name="status" class="max-w-300 mb-0">
-                    @foreach (['submitted', 'under_review', 'no_longer_under_consideration', 'withdrawn'] as $status)
+                    @foreach (['submitted', 'under_review', 'needs_chairman_review', 'no_longer_under_consideration', 'withdrawn'] as $status)
                         <option value="{{ $status }}" {{ $application->status === $status ? 'selected' : '' }}>
                             {{ str_replace('_', ' ', Str::title($status)) }}
                         </option>

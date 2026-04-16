@@ -6,6 +6,17 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'HireFlow')</title>
     
+    <script>
+        (() => {
+            const stored = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Prioritize stored preference, fallback to system preference
+            const useDark = stored === 'dark' || (!stored && prefersDark);
+            document.documentElement.classList.toggle('dark', useDark);
+        })();
+    </script>
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
@@ -69,6 +80,10 @@
         
         @yield('content')
     </div>
+
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">
+        🌓
+    </button>
 
     @stack('scripts')
 </body>

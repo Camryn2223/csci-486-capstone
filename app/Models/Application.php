@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $applicant_name
  * @property string $applicant_email
  * @property string|null $applicant_phone
- * @property string $status submitted | under_review | no_longer_under_consideration | withdrawn
+ * @property string $status submitted | under_review | needs_chairman_review | no_longer_under_consideration | withdrawn
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */

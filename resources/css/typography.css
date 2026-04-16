@@ -1,36 +1,95 @@
 h2 {
-    color: #e6e6e6;
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 20px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+  color: var(--text-heading);
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-.text-center { text-align: center; }
-.text-muted { color: #bdbdbd; }
-.text-primary { color: #a97dff; }
-.text-danger { color: #ff9d9d; }
-.text-success { color: #9dffb0; }
-.text-light { color: #e6e6e6; }
-.text-italic { font-style: italic; }
+.text-center {
+  text-align: center;
+}
+.text-muted {
+  color: var(--text-muted);
+}
+.text-primary {
+  color: var(--text-primary);
+}
+.text-danger {
+  color: var(--danger-text);
+}
+.text-success {
+  color: var(--success-text);
+}
+.text-light {
+  color: var(--text-main);
+}
+.text-italic {
+  font-style: italic;
+}
 
-.fw-bold { font-weight: bold; }
-.font-mono { font-family: monospace; }
-.uppercase { text-transform: uppercase; }
-.white-space-pre { white-space: pre-wrap; line-height: 1.5; }
-.white-space-nowrap { white-space: nowrap; }
+.fw-bold {
+  font-weight: bold;
+}
+.font-mono {
+  font-family: monospace;
+}
+.uppercase {
+  text-transform: uppercase;
+}
+.white-space-pre {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+.white-space-nowrap {
+  white-space: nowrap;
+}
 
 /* Exact Typography Matchers */
-.fs-13 { font-size: 13px; }
-.fs-14 { font-size: 14px; }
-.fs-15 { font-size: 15px; }
-.fs-16 { font-size: 16px; }
-.fs-18 { font-size: 18px; }
-.fs-20 { font-size: 20px; }
-.fs-24 { font-size: 24px; }
+.fs-13 {
+  font-size: 13px;
+}
+.fs-14 {
+  font-size: 14px;
+}
+.fs-15 {
+  font-size: 15px;
+}
+.fs-16 {
+  font-size: 16px;
+}
+.fs-18 {
+  font-size: 18px;
+}
+.fs-20 {
+  font-size: 20px;
+}
+.fs-24 {
+  font-size: 24px;
+}
 
-.h3-primary { font-size: 16px; margin-bottom: 10px; color: #a97dff; margin-top: 0; }
-.invite-code-strong { font-size: 18px; font-family: monospace; color: #a97dff; }
-.preview-label { color: #e6e6e6; font-size: 16px; margin-top: 15px; margin-bottom: 8px; display: block; }
-.drag-handle-icon { cursor: grab; color: #a97dff; font-size: 24px; line-height: 1; }
+.h3-primary {
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+  margin-top: 0;
+}
+.invite-code-strong {
+  font-size: 18px;
+  font-family: monospace;
+  color: var(--text-primary);
+}
+.preview-label {
+  color: var(--text-main);
+  font-size: 16px;
+  margin-top: 15px;
+  margin-bottom: 8px;
+  display: block;
+}
+.drag-handle-icon {
+  cursor: grab;
+  color: var(--text-primary);
+  font-size: 24px;
+  line-height: 1;
+}

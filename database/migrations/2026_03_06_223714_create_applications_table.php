@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('applicant_name');
             $table->string('applicant_email');
             $table->string('applicant_phone')->nullable();
-            $table->enum('status', ['submitted', 'under_review', 'no_longer_under_consideration', 'withdrawn'])->default('submitted');
+            $table->enum('status', ['submitted', 'under_review', 'needs_chairman_review', 'no_longer_under_consideration', 'withdrawn'])->default('submitted');
             $table->timestamps();
         });
     }

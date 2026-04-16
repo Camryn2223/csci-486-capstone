@@ -52,7 +52,7 @@
                             </div>
                         </div>
 
-                        <div id="edit-form-{{ $field->id }}" style="display: {{ $errors->has('label') && old('type') !== null ? 'block' : 'none' }}; margin-top: 20px; padding-top: 20px; border-top: 1px solid #2f343a;">
+                        <div id="edit-form-{{ $field->id }}" class="field-edit-panel" style="display: {{ $errors->has('label') && old('type') !== null ? 'block' : 'none' }};">
                             <form method="POST" action="{{ route('organizations.application-templates.fields.update', [$organization, $applicationTemplate, $field]) }}">
                                 @csrf
                                 @method('PATCH')

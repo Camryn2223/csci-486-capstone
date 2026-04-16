@@ -213,7 +213,7 @@ class ApplicationController extends Controller
         $this->authorize('updateStatus', $application);
 
         $validated = $request->validate([
-            'status' => ['required', 'in:submitted,under_review,no_longer_under_consideration,withdrawn'],
+            'status' => ['required', 'in:submitted,under_review,needs_chairman_review,no_longer_under_consideration,withdrawn'],
         ]);
 
         $application->update(['status' => $validated['status']]);
