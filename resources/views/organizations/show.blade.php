@@ -26,7 +26,36 @@
         $canReviewApps = Auth::user()->hasPermissionIn($organization, 'review_applications');
         $canViewInterviews = Auth::user()->hasPermissionIn($organization, 'review_applications') || Auth::user()->hasPermissionIn($organization, 'schedule_interviews');
         $showInterviewsApps = $canReviewApps || $canViewInterviews;
+        
+        $isChairman = Auth::user()->isChairmanOf($organization);
+        $needsReviewApps = collect();
+        if ($isChairman) {
+            $needsReviewApps = \App\Models\Application::where('status', 'needs_chairman_review')
+                ->whereHas('jobPosition', fn($q) => $q->where('organization_id', $organization->id))
+                ->with('jobPosition')
+                ->latest()
+                ->get();
+        }
     @endphp
+
+    @if($isChairman && $needsReviewApps->isNotEmpty())
+        <div class="card border-warning bg-warning-light">
+            <h2 class="mt-0 text-warning d-flex items-center flex-gap-10">
+                ⚠️ Applications Flagged for Chairman Review
+            </h2>
+            <div class="flex-col-10">
+                @foreach($needsReviewApps as $app)
+                    <div class="entry-box card-header-flex m-0 bg-warning-darker">
+                        <div>
+                            <strong class="fs-16">{{ $app->applicant_name }}</strong>
+                            <span class="text-muted ml-5">({{ $app->jobPosition->title }})</span>
+                        </div>
+                        <a href="{{ route('applications.show', $app) }}" class="btn btn-sm btn-slate">Review</a>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     @if($showTeamAccess || $showHiringSetup || $showInterviewsApps)
         <div class="card">
@@ -54,6 +83,7 @@
                         <div class="flex-wrap-12">
                             @if($canViewPositions)
                                 <a href="{{ route('organizations.job-positions.index', $organization) }}" class="btn btn-sm btn-slate">View Job Positions</a>
+                                <a href="{{ route('organizations.job-positions.index', ['organization' => $organization, 'public' => 1]) }}" class="btn btn-sm btn-outline">Public Job Board</a>
                             @endif
                             @if($canCreatePositions)
                                 <a href="{{ route('organizations.job-positions.create', $organization) }}" class="btn btn-sm">Create Job Position</a>
@@ -122,7 +152,7 @@
                     <label id="filter-container" class="d-none cursor-pointer text-primary fw-bold fs-14 m-0">
                         <input type="checkbox" id="filter-mine"> My Interviews Only
                     </label>
-                    <button id="toggle-expand" class="btn btn-sm">⛶ Expand Calendar</button>
+                    <button id="toggle-expand" class="btn btn-sm btn-purple-dark">⛶ Expand Calendar</button>
                 </div>
             </div>
             

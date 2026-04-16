@@ -20,16 +20,17 @@ class JobPositionController extends Controller
     /**
      * Display all job positions for an organization.
      */
-    public function index(Organization $organization): View
+    public function index(Request $request, Organization $organization): View
     {
         $this->authorize('viewAny', [JobPosition::class, $organization]);
 
         /** @var User|null $user */
         $user = Auth::user();
 
+        $isPublicView = $request->boolean('public');
         $query = $organization->jobPositions();
 
-        $isStaff = $user && ($user->isChairmanOf($organization) || $user->hasPermissionIn($organization, 'review_applications'));
+        $isStaff = $user && ($user->isChairmanOf($organization) || $user->hasPermissionIn($organization, 'review_applications')) && !$isPublicView;
 
         if ($isStaff) {
             $query->withCount('applications');
@@ -39,7 +40,7 @@ class JobPositionController extends Controller
 
         $positions = $query->latest()->get();
 
-        return view('job_positions.index', compact('organization', 'positions'));
+        return view('job_positions.index', compact('organization', 'positions', 'isPublicView'));
     }
 
     /**
