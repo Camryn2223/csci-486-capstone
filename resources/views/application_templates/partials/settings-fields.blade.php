@@ -3,8 +3,8 @@
     <input type="text" name="name" value="{{ old('name', $template->name ?? '') }}" class="w-full mb-0" required>
 </div>
 
-<h3 class="fs-16 mt-0 mb-10 text-primary">Standard Sections</h3>
-<p class="text-muted mt-0 mb-15 fs-14">Choose which standard information to collect from the applicant.</p>
+<h3 class="fs-16 mt-0 mb-10 text-primary">Applicant Information Fields</h3>
+<p class="text-muted mt-0 mb-15 fs-14">Choose which applicant information to collect.</p>
 
 <div class="grid-perms mb-0">
     <label class="text-light cursor-pointer items-center flex-gap-10">

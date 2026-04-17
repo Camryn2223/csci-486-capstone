@@ -6,14 +6,12 @@ use App\Models\Organization;
 use App\Models\OrganizationInvite;
 use App\Models\User;
 use App\Models\Interview;
-use App\Notifications\OrganizationInviteNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 /**
@@ -109,7 +107,18 @@ class OrganizationController extends Controller
                 ->with(['application', 'application.jobPosition', 'interviewers'])
                 ->get();
 
-        return view('organizations.show', compact('organization', 'interviews'));
+        // Fetch applications that have not been scheduled yet
+        $unscheduledApplications = collect();
+        if ($user->hasPermissionIn($organization, 'schedule_interviews')) {
+            $unscheduledApplications = $organization->applications()
+                ->active()
+                ->doesntHave('interviews')
+                ->with('jobPosition')
+                ->orderBy('applications.created_at', 'desc')
+                ->get();
+        }
+
+        return view('organizations.show', compact('organization', 'interviews', 'unscheduledApplications'));
     }
 
     /**
@@ -156,60 +165,29 @@ class OrganizationController extends Controller
     }
 
     /**
-     * Show the member management page listing all members.
+     * Show the team management page listing all members and existing invites.
      */
     public function members(Organization $organization): View
     {
-        $this->authorize('manage-members', $organization);
+        /** @var User $user */
+        $user = Auth::user();
+
+        // Check if the user has permission to manage members OR create invites
+        if (!$user->hasPermissionIn($organization, 'manage_members') && !$user->hasPermissionIn($organization, 'create_invites')) {
+            abort(403, 'This action is unauthorized.');
+        }
 
         $organization->load(['members']);
-
-        return view('organizations.members', compact('organization'));
-    }
-
-    /**
-     * Add an existing user by email, or create/send an invite if the user has
-     * not registered yet.
-     */
-    public function addMember(Request $request, Organization $organization): RedirectResponse
-    {
-        $this->authorize('manage-members', $organization);
-
-        $validated = $request->validate([
-            'email' => ['required', 'email', 'max:255'],
-        ]);
-
-        $user = User::where('email', $validated['email'])->first();
-
-        if (! $user) {
-            if ($request->user()->cannot('create', [OrganizationInvite::class, $organization])) {
-                return back()->withErrors(['email' => 'You do not have permission to invite users to this organization.']);
-            }
-
-            /** @var User $actor */
-            $actor = Auth::user();
-
-            $invite = OrganizationInvite::create([
-                'organization_id' => $organization->id,
-                'created_by'      => $actor->id,
-                'code'            => OrganizationInvite::generateCode(),
-                'email'           => $validated['email'],
-                'used'            => false,
-            ]);
-
-            Notification::route('mail', $invite->email)
-                ->notify(new OrganizationInviteNotification($invite));
-
-            return back()->with('success', "No account was found for {$validated['email']}. An invite was created and emailed.");
+        
+        $invites = [];
+        if ($user->hasPermissionIn($organization, 'create_invites')) {
+            $invites = OrganizationInvite::where('organization_id', $organization->id)
+                ->with('creator')
+                ->latest()
+                ->get();
         }
 
-        if ($organization->hasMember($user)) {
-            return back()->withErrors(['email' => 'This user is already a member of this organization.']);
-        }
-
-        $organization->members()->attach($user->id);
-
-        return back()->with('success', "{$user->name} has been added to the organization.");
+        return view('organizations.members', compact('organization', 'invites'));
     }
 
     /**
@@ -218,7 +196,7 @@ class OrganizationController extends Controller
      */
     public function removeMember(Organization $organization, User $user): RedirectResponse
     {
-        $this->authorize('manage-members', $organization);
+        $this->authorize('manageMembers', $organization);
 
         if ($organization->chairman_id === $user->id) {
             return back()->withErrors(['user' => 'The chairman cannot be removed from the organization.']);
@@ -241,7 +219,7 @@ class OrganizationController extends Controller
 
         $applications = $organization->applications()
             ->with(['jobPosition', 'interviews'])
-            ->latest()
+            ->orderBy('applications.created_at', 'desc')
             ->paginate(15);
 
         return view('organizations.applications', compact('organization', 'applications'));

@@ -33,7 +33,7 @@
                 <strong class="fs-18">{{ $position->title }}</strong>
                 <div class="flex-gap-5">
                     @if(isset($isPublicView) && $isPublicView)
-                        <a href="{{ route('organizations.job-positions.show', [$organization, $position]) }}" class="btn btn-sm btn-success-border">Apply</a>
+                        <a href="{{ route('applications.create', [$organization, $position]) }}" class="btn btn-sm btn-success-border">Apply</a>
                     @else
                         <a href="{{ route('organizations.job-positions.show', [$organization, $position]) }}" class="btn btn-sm">View</a>
                         

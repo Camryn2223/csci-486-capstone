@@ -27,7 +27,7 @@ class ApplicationTemplateController extends Controller
         $this->authorize('viewAny', [ApplicationTemplate::class, $organization]);
 
         $templates = $organization->templates()
-            ->withCount('fields', 'applications')
+            ->withCount('fields')
             ->with('creator')
             ->latest()
             ->get();

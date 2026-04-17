@@ -27,7 +27,8 @@ class JobPositionController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
 
-        $isPublicView = $request->boolean('public');
+        // A guest is always viewing the public board.
+        $isPublicView = $request->boolean('public') || !$user;
         $query = $organization->jobPositions();
 
         $isStaff = $user && ($user->isChairmanOf($organization) || $user->hasPermissionIn($organization, 'review_applications')) && !$isPublicView;

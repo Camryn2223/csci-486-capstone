@@ -28,7 +28,7 @@
                 </div>
             </div>
             <p class="m-0 mt-5 text-muted">
-                {{ $template->fields_count }} field(s) &bull; {{ $template->applications_count }} application(s) &bull; Created by {{ $template->creator->name }}
+                {{ $template->fields_count }} field(s) &bull; Created by {{ $template->creator->name }}
             </p>
         </div>
     @empty

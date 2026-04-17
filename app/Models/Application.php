@@ -94,13 +94,14 @@ class Application extends Model
     /**
      * Scope to applications that are still in an active review state -
      * excludes withdrawn and no longer under consideration.
+     * (Prefixed with applications table to prevent ambiguous column errors during HasManyThrough queries)
      *
      * @param  Builder<Application> $query
      * @return Builder<Application>
      */
     public function scopeActive(Builder $query): Builder
     {
-        return $query->whereNotIn('status', ['withdrawn', 'no_longer_under_consideration']);
+        return $query->whereNotIn('applications.status', ['withdrawn', 'no_longer_under_consideration']);
     }
 
     /**
@@ -111,7 +112,7 @@ class Application extends Model
      */
     public function scopeWithdrawn(Builder $query): Builder
     {
-        return $query->where('status', 'withdrawn');
+        return $query->where('applications.status', 'withdrawn');
     }
 
     /**
@@ -122,7 +123,7 @@ class Application extends Model
      */
     public function scopeUnderReview(Builder $query): Builder
     {
-        return $query->where('status', 'under_review');
+        return $query->where('applications.status', 'under_review');
     }
 
     /**

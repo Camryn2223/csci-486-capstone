@@ -88,8 +88,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const typeInput = addCard.querySelector('[name="add_type"]');
         const reqInput = addCard.querySelector('[name="add_required"]');
-        const multInput = addCard.querySelector('.file-multiple-checkbox');
-        const maxInput = addCard.querySelector('.file-max-select');
+        const multInput = addCard.querySelector('[name="add_file_multiple"]') || addCard.querySelector('.file-multiple-checkbox');
+        const maxInput = addCard.querySelector('[name="add_file_max"]') || addCard.querySelector('.file-max-select');
         const charMaxInput = addCard.querySelector('[name="add_char_max"]');
         const fileSizeMaxInput = addCard.querySelector('[name="add_file_size_max"]');
         
@@ -112,43 +112,107 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="flex-gap-15 items-center">
                         <span class="drag-handle-icon" title="Drag to reorder">☰</span>
                         <div>
-                            <strong class="fs-16">${labelInput.value}</strong>
-                            <span class="status status-awaiting-interview ml-10">${typeInput.value}</span>
-                            ${reqInput.checked ? '<span class="status status-needs-review ml-5">Required</span>' : ''}
-                            ${isMultiple ? `<span class="status status-complete ml-5">Max ${maxInput ? maxInput.value : 5} files</span>` : ''}
+                            <strong class="fs-16 field-display-label">${labelInput.value.replace(/</g, '&lt;')}</strong>
+                            <span class="status status-awaiting-interview ml-10 field-display-type">${typeInput.value}</span>
+                            <span class="status status-needs-review ml-5 field-display-req" style="display:${reqInput.checked ? 'inline-block' : 'none'}">Required</span>
                         </div>
                     </div>
                     <div class="flex-gap-10">
-                        <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.field-item-box').remove(); updateLivePreview();">Remove</button>
+                        <button type="button" class="btn btn-sm btn-purple-dark" onclick="toggleEdit('new_${fieldCounter}')">Edit</button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.field-item-box').remove(); if(window.updateLivePreview) window.updateLivePreview();">Remove</button>
                     </div>
                 </div>
                 
-                <div style="display:none;">
-                    <input type="hidden" name="fields[${fieldCounter}][label]" value="${labelInput.value}">
-                    <input type="hidden" name="fields[${fieldCounter}][type]" value="${typeInput.value}">
-                    <input type="hidden" name="fields[${fieldCounter}][required]" value="${reqInput.checked ? 1 : 0}">
-                    ${isMultiple ? `<input type="hidden" name="fields[${fieldCounter}][file_multiple]" value="1"><input type="hidden" name="fields[${fieldCounter}][file_max]" value="${maxInput ? maxInput.value : 5}">` : ''}
-                    <input type="hidden" name="fields[${fieldCounter}][char_max]" value="${charMaxInput ? charMaxInput.value : ''}">
-                    <input type="hidden" name="fields[${fieldCounter}][file_size_max]" value="${fileSizeMaxInput ? fileSizeMaxInput.value : ''}">
+                <div id="edit-form-new_${fieldCounter}" class="field-edit-panel" style="display:none;">
+                    <div class="field-form-wrapper">
+                        <label>Question Label</label>
+                        <input type="text" name="fields[${fieldCounter}][label]" value="${labelInput.value.replace(/"/g, '&quot;')}" class="w-full" required oninput="this.closest('.field-item-box').querySelector('.field-display-label').textContent = this.value;">
+
+                        <div class="flex-wrap-15">
+                            <div class="flex-1 min-w-200">
+                                <label>Type</label>
+                                <select name="fields[${fieldCounter}][type]" class="field-type-select" onchange="toggleFieldType(this); this.closest('.field-item-box').querySelector('.field-display-type').textContent = this.value;">
+                                    ${['text','textarea','select','checkbox','radio','file','date'].map(t => `<option value="${t}" ${typeInput.value===t?'selected':''}>${t.charAt(0).toUpperCase() + t.slice(1)}</option>`).join('')}
+                                </select>
+                            </div>
+                            
+                            <div class="flex-1 d-flex items-center min-w-150 pt-2 flex-wrap-15">
+                                <label class="text-light cursor-pointer items-center flex-gap-10 mb-0">
+                                    <input type="checkbox" name="fields[${fieldCounter}][required]" value="1" ${reqInput.checked?'checked':''} onchange="this.closest('.field-item-box').querySelector('.field-display-req').style.display = this.checked ? 'inline-block' : 'none';"> Required
+                                </label>
+                                
+                                <div class="file-multiple-wrapper items-center flex-gap-15" style="display: ${typeInput.value==='file'?'flex':'none'};">
+                                    <label class="text-light cursor-pointer items-center flex-gap-10 mb-0">
+                                        <input type="checkbox" name="fields[${fieldCounter}][file_multiple]" class="file-multiple-checkbox" value="1" ${isMultiple?'checked':''} onchange="this.closest('.file-multiple-wrapper').querySelector('.file-max-wrapper').style.display = this.checked ? 'block' : 'none';"> Allow Multiple
+                                    </label>
+                                    
+                                    <div class="file-max-wrapper" style="display: ${isMultiple?'block':'none'};">
+                                        <label class="d-inline text-muted mr-5 mb-0">Max Files:</label>
+                                        <select name="fields[${fieldCounter}][file_max]" class="d-inline w-auto mb-0 file-max-select" style="padding: 5px 30px 5px 10px;">
+                                            ${[2,3,4,5,6,7,8,9,10].map(i => `<option value="${i}" ${maxInput && maxInput.value==i ? 'selected' : ''}>${i}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="char-max-wrapper flex-gap-10 items-center mt-15" style="display: ${['text','textarea'].includes(typeInput.value)?'flex':'none'};">
+                            <label class="mb-0 text-light">Max Characters:</label>
+                            <input type="number" name="fields[${fieldCounter}][char_max]" value="${charMaxInput ? charMaxInput.value : (typeInput.value==='textarea'?1024:128)}" class="m-0 w-auto" min="1" max="5000">
+                        </div>
+
+                        <div class="file-size-max-wrapper flex-gap-10 items-center mt-15" style="display: ${typeInput.value==='file'?'flex':'none'};">
+                            <label class="mb-0 text-light">Max File Size (MB):</label>
+                            <input type="number" name="fields[${fieldCounter}][file_size_max]" value="${fileSizeMaxInput ? fileSizeMaxInput.value : 7}" class="m-0 w-auto" min="1" max="100">
+                        </div>
+
+                        <div class="options-container-block options-container-edit" style="display: ${['select','checkbox','radio'].includes(typeInput.value)?'block':'none'};">
+                            <label class="text-primary mb-10">Multiple Choice Options</label>
+                            <div class="options-list" id="new_${fieldCounter}-options-list">
+                                ${opts.filter(o => !o.startsWith('application/') && !o.startsWith('image/')).map(opt => `
+                                    <div class="option-item">
+                                        <span class="text-muted">&bull;</span>
+                                        <input type="text" name="fields[${fieldCounter}][options][]" value="${opt.replace(/"/g, '&quot;')}" class="m-0 flex-grow-1" required placeholder="Option value">
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove(); if(window.updateLivePreview) window.updateLivePreview();">X</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button type="button" class="btn btn-sm btn-add-opt-trigger btn-add-opt" onclick="addOption('new_${fieldCounter}-options-list', 'fields[${fieldCounter}][options][]')">+ Add New Option</button>
+                        </div>
+
+                        <div class="file-options-container options-container-edit" style="display: ${typeInput.value==='file'?'block':'none'};">
+                            <label class="text-primary mb-10">Allowed File Types</label>
+                            <select name="fields[${fieldCounter}][options][]" class="file-type-select w-full" multiple autocomplete="off">
+                                <option value="application/pdf" ${opts.includes('application/pdf')?'selected':''}>PDF (.pdf)</option>
+                                <option value="application/msword" ${opts.includes('application/msword')?'selected':''}>Word Document (.doc)</option>
+                                <option value="application/vnd.openxmlformats-officedocument.wordprocessingml.document" ${opts.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document')?'selected':''}>Word Document (.docx)</option>
+                                <option value="image/jpeg" ${opts.includes('image/jpeg')?'selected':''}>JPEG Image (.jpg, .jpeg)</option>
+                                <option value="image/png" ${opts.includes('image/png')?'selected':''}>PNG Image (.png)</option>
+                            </select>
+                        </div>
+
+                        <div class="mt-15">
+                            <button type="button" class="btn btn-sm btn-outline" onclick="toggleEdit('new_${fieldCounter}')">Done</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         `;
-        opts.forEach(opt => {
-            html += `<input type="hidden" name="fields[${fieldCounter}][options][]" value="${opt}">`;
-        });
-        html += `</div></div>`;
         
         fieldsList.insertAdjacentHTML('beforeend', html);
+        initTomSelects();
         fieldCounter++;
         
         // Reset add form safely
-        labelInput.value = '';
-        reqInput.checked = false;
-        if(multInput) multInput.checked = false;
-        if(maxInput) maxInput.value = "5";
-        typeInput.value = 'text';
-        if(charMaxInput) charMaxInput.value = '128';
-        if(fileSizeMaxInput) fileSizeMaxInput.value = '7';
+        if (labelInput) labelInput.value = '';
+        if (reqInput) reqInput.checked = false;
+        if (multInput) multInput.checked = false;
+        if (maxInput) maxInput.value = "5";
+        if (typeInput) typeInput.value = 'text';
+        if (charMaxInput) charMaxInput.value = '128';
+        if (fileSizeMaxInput) fileSizeMaxInput.value = '7';
         
-        window.toggleFieldType(typeInput);
+        if (typeInput) window.toggleFieldType(typeInput);
         
         const optsList = addCard.querySelector('.options-list');
         if(optsList) optsList.innerHTML = '';

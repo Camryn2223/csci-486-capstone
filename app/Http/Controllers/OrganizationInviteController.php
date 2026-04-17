@@ -9,30 +9,22 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\View\View;
 
 /**
- * Handles creation, listing, and deletion of organization invites.
+ * Handles creation and deletion of organization invites.
  * Authorized users can generate single-use invite codes and optionally
- * send them to a specific email address. Invites that have not yet been
- * used can be revoked (deleted).
+ * send them to a specific email address. Both unused (revoked) and used
+ * invites can be deleted if no longer needed.
  */
 class OrganizationInviteController extends Controller
 {
     /**
-     * Display all invites for an organization, showing which have been used
-     * and which are still available.
+     * Redirect any old requests targeting the separate invites index page 
+     * back to the newly consolidated members view.
      */
-    public function index(Organization $organization): View
+    public function index(Organization $organization): RedirectResponse
     {
-        $this->authorize('viewAny', [OrganizationInvite::class, $organization]);
-
-        $invites = OrganizationInvite::where('organization_id', $organization->id)
-            ->with('creator')
-            ->latest()
-            ->get();
-
-        return view('invites.index', compact('organization', 'invites'));
+        return redirect()->route('organizations.members', $organization);
     }
 
     /**
@@ -69,19 +61,16 @@ class OrganizationInviteController extends Controller
     }
 
     /**
-     * Delete (revoke) an unused invite. Already-used invites cannot be
-     * deleted since they are a record of who joined.
+     * Delete an invite. Unused invites are "revoked", used invites are purely
+     * deleted to clean up records.
      */
     public function destroy(Organization $organization, OrganizationInvite $invite): RedirectResponse
     {
         $this->authorize('delete', $invite);
 
-        if ($invite->used) {
-            return back()->withErrors(['invite' => 'Used invites cannot be deleted.']);
-        }
-
+        $wasUsed = $invite->used;
         $invite->delete();
 
-        return back()->with('success', 'Invite revoked.');
+        return back()->with('success', $wasUsed ? 'Used invite deleted.' : 'Invite revoked.');
     }
 }

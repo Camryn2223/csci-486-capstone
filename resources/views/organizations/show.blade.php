@@ -66,12 +66,11 @@
                     <div>
                         <h3 class="fs-14 text-primary mb-10 mt-10">Team & Access</h3>
                         <div class="flex-wrap-12">
-                            @if($canManageMembers)
-                                <a href="{{ route('organizations.members', $organization) }}" class="btn btn-sm">Manage Members</a>
-                                <a href="{{ route('organizations.permissions.index', $organization) }}" class="btn btn-sm">Manage Permissions</a>
+                            @if($canManageMembers || $canCreateInvites)
+                                <a href="{{ route('organizations.members', $organization) }}" class="btn btn-sm">Manage Team</a>
                             @endif
-                            @if($canCreateInvites)
-                                <a href="{{ route('organizations.invites.index', $organization) }}" class="btn btn-sm">Manage Invites</a>
+                            @if($canManageMembers)
+                                <a href="{{ route('organizations.permissions.index', $organization) }}" class="btn btn-sm">Manage Permissions</a>
                             @endif
                         </div>
                     </div>
@@ -83,7 +82,6 @@
                         <div class="flex-wrap-12">
                             @if($canViewPositions)
                                 <a href="{{ route('organizations.job-positions.index', $organization) }}" class="btn btn-sm btn-slate">View Job Positions</a>
-                                <a href="{{ route('organizations.job-positions.index', ['organization' => $organization, 'public' => 1]) }}" class="btn btn-sm btn-outline">Public Job Board</a>
                             @endif
                             @if($canCreatePositions)
                                 <a href="{{ route('organizations.job-positions.create', $organization) }}" class="btn btn-sm">Create Job Position</a>
@@ -112,6 +110,27 @@
                     </div>
                 @endif
             </div>
+        </div>
+    @endif
+
+    @if(Auth::user()->hasPermissionIn($organization, 'schedule_interviews'))
+        <h2 class="mt-0">Unscheduled Applications ({{ $unscheduledApplications->count() }})</h2>
+        <div class="card mb-35" style="max-height: 400px; overflow-y: auto;">
+            @forelse ($unscheduledApplications as $app)
+                <div class="entry-box card-header-flex m-0 mb-10 p-3">
+                    <div>
+                        <strong class="fs-16">{{ $app->applicant_name }}</strong>
+                        <span class="text-muted ml-5">({{ $app->jobPosition->title }})</span>
+                        <span class="status status-{{ str_replace('_', '-', $app->status) }} ml-10">{{ str_replace('_', ' ', Str::title($app->status)) }}</span>
+                    </div>
+                    <div class="flex-gap-10 items-center">
+                        <a href="{{ route('applications.show', $app) }}" class="btn btn-sm btn-slate">View App</a>
+                        <a href="{{ route('interviews.create', $app) }}" class="btn btn-sm btn-purple-dark">Schedule Interview</a>
+                    </div>
+                </div>
+            @empty
+                <p class="m-0 text-muted">All active applications have been scheduled for an interview.</p>
+            @endforelse
         </div>
     @endif
 
