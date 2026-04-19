@@ -148,10 +148,17 @@
     <div class="card mb-35">
         <div class="grid-members">
             @foreach ($organization->members as $member)
-                <div class="member-grid-box">
-                    <strong class="d-block">{{ $member->name }}</strong>
-                    <span class="text-muted fs-13">{{ ucfirst($member->role) }}</span>
-                </div>
+                @if($canManageMembers)
+                    <a href="{{ route('organizations.permissions.show', [$organization, $member]) }}" class="member-grid-box text-decoration-none">
+                        <strong class="d-block">{{ $member->name }}</strong>
+                        <span class="text-muted fs-13">{{ ucfirst($member->role) }}</span>
+                    </a>
+                @else
+                    <div class="member-grid-box">
+                        <strong class="d-block">{{ $member->name }}</strong>
+                        <span class="text-muted fs-13">{{ ucfirst($member->role) }}</span>
+                    </div>
+                @endif
             @endforeach
         </div>
     </div>

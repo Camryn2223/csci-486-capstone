@@ -47,6 +47,28 @@ class OrganizationUserPermissionController extends Controller
     }
 
     /**
+     * Display the permissions for a single member within an organization.
+     */
+    public function show(Organization $organization, User $user): View
+    {
+        $this->authorize('viewAny', [OrganizationUserPermission::class, $organization]);
+
+        if (! $organization->hasMember($user)) {
+            abort(404);
+        }
+
+        // Use the Enum directly so checkboxes ALWAYS show up, even if the database wasn't seeded yet.
+        $allPermissions = PermissionEnum::cases();
+
+        /** @var User $actingUser */
+        $actingUser = Auth::user();
+        $actingUserPerms = $actingUser->permissionNamesIn($organization);
+        $granted = $user->permissionNamesIn($organization);
+
+        return view('organization_permissions.show', compact('organization', 'user', 'allPermissions', 'actingUserPerms', 'granted'));
+    }
+
+    /**
      * Sync permissions for a user based on an array of requested permissions.
      * Enforces that the acting user can only grant or revoke permissions they
      * hold themselves.

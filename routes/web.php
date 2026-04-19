@@ -83,6 +83,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('members/{user}', [OrganizationController::class, 'removeMember'])->name('members.remove');
 
         Route::get('permissions', [OrganizationUserPermissionController::class, 'index'])->name('permissions.index');
+        Route::get('permissions/{user}', [OrganizationUserPermissionController::class, 'show'])->name('permissions.show');
         Route::put('permissions/{user}', [OrganizationUserPermissionController::class, 'sync'])->name('permissions.sync');
         Route::patch('members/{user}/role', [OrganizationUserPermissionController::class, 'updateRole'])->name('members.role');
 
