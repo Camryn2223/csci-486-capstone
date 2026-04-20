@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                     <div class="flex-gap-10">
-                        <button type="button" class="btn btn-sm btn-purple-dark" onclick="toggleEdit('new_${fieldCounter}')">Edit</button>
+                        <button type="button" class="btn btn-sm" onclick="toggleEdit('new_${fieldCounter}')">Edit</button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.field-item-box').remove(); if(window.updateLivePreview) window.updateLivePreview();">Remove</button>
                     </div>
                 </div>

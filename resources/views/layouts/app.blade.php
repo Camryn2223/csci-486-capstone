@@ -27,7 +27,7 @@
         @auth
             <h1>
                 HireFlow
-                <span class="subtag">({{ auth()->user()->role }})</span>
+                <span class="subtag">({{ auth()->user()->name }} - {{ auth()->user()->role }})</span>
             </h1>
 
             <div class="nav-right">

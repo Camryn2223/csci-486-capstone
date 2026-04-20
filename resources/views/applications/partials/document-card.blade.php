@@ -3,7 +3,7 @@
     
     <div class="flex-gap-10">
         <a href="{{ route('documents.show', $document) }}" class="btn btn-sm btn-slate" target="_blank">View</a>
-        <a href="{{ route('documents.show', ['document' => $document, 'download' => 1]) }}" class="btn btn-sm btn-purple-dark">Download</a>
+        <a href="{{ route('documents.show', ['document' => $document, 'download' => 1]) }}" class="btn btn-sm">Download</a>
         
         @can('delete', $document)
             <form method="POST" action="{{ route('documents.destroy', $document) }}" class="m-0">

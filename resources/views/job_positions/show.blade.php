@@ -19,7 +19,7 @@
                 @endcan
                 
                 @can('update', $jobPosition)
-                    <a href="{{ route('organizations.job-positions.edit', [$organization, $jobPosition]) }}" class="btn btn-purple-dark">Edit Position</a>
+                    <a href="{{ route('organizations.job-positions.edit', [$organization, $jobPosition]) }}" class="btn">Edit Position</a>
                 @endcan
             @endauth
         </div>

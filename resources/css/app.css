@@ -41,28 +41,34 @@
   --border-subtle: #e5e7eb;
 
   --text-main: #1f2937;
-  --text-muted: #6b7280;
+  --text-muted: #16171b;
   --text-heading: #111827;
   --text-primary: #6d3fa9;
 
-  --brand-base: #6d3fa9;
-  --brand-hover: #593287;
-  --brand-border: #8e5ee0;
+  --brand-base: #8e5ee0;
+  --brand-hover: #6d3fa9;
+  --brand-border: #a881ef;
 
   --btn-secondary-bg: #f3e8ff;
   --btn-secondary-text: #6d3fa9;
   --btn-slate-bg: #e2e8f0;
+  --btn-slate-hover: #cbd5e1;
   --btn-slate-text: #334155;
 
-  --success-bg: #ecfdf5;
+  --success-bg: #baf9d8;
+  --success-bg-hover: #13592e;
   --success-text: #065f46;
   --success-border: #a7f3d0;
 
-  --danger-bg: #fef2f2;
-  --danger-text: #991b1b;
+  --danger-bg: #ff9999;
+  --danger-bg-hover: #f48a8a;
+  --danger-text: #8b0a0a;
   --danger-border: #fecaca;
-  --danger-btn: #ef4444;
-  --danger-btn-hover: #dc2626;
+
+  --scrollbar-track: #e5e7eb;
+  --scrollbar-thumb: #a881ef;
+  --scrollbar-thumb-hover: #8e5ee0;
+  --scrollbar-thumb-active: #6d3fa9;
 
   --status-review-bg: #e0f2fe;
   --status-review-text: #0369a1;
@@ -82,7 +88,7 @@
   --bg-card: #24282d;
   --bg-input: #1f2327;
   --bg-entry: #1f2327;
-  --bg-hover: #2f3a4a;
+  --bg-hover: #1a1d21;
 
   --border-default: #3a3f45;
   --border-subtle: #2f343a;
@@ -99,17 +105,23 @@
   --btn-secondary-bg: #3a245a;
   --btn-secondary-text: #e9d6ff;
   --btn-slate-bg: #2f3a4a;
+  --btn-slate-hover: #293341;
   --btn-slate-text: #e6e6e6;
 
-  --success-bg: #0f3d1e;
+  --success-bg: #1a5c30;
+  --success-bg-hover: #166534;
   --success-text: #9dffb0;
-  --success-border: #1a5c30;
+  --success-border: #0f3d1e;
 
-  --danger-bg: #3d0f0f;
-  --danger-text: #ff9d9d;
+  --danger-bg: #aa3333;
+  --danger-bg-hover: #882222;
+  --danger-text: #ffbcbc;
   --danger-border: #5c1a1a;
-  --danger-btn: #a33;
-  --danger-btn-hover: #822;
+
+  --scrollbar-track: #2f343a;
+  --scrollbar-thumb: #593287;
+  --scrollbar-thumb-hover: #6d3fa9;
+  --scrollbar-thumb-active: #7c52b8;
 
   --status-review-bg: #004d5e;
   --status-review-text: #7eeaff;

@@ -16,7 +16,7 @@
             <div class="flex-wrap-12">
                 <a href="{{ route('organizations.index') }}" class="btn">My Organizations</a>
                 @can('create', App\Models\Organization::class)
-                    <a href="{{ route('organizations.create') }}" class="btn btn-purple-dark">Create Organization</a>
+                    <a href="{{ route('organizations.create') }}" class="btn">Create Organization</a>
                 @endcan
                 <a href="{{ route('two-factor.show') }}" class="btn btn-slate">Two-Factor Settings</a>
             </div>

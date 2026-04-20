@@ -16,7 +16,7 @@
                 <div>
                     <a href="{{ route('organizations.application-templates.show', [$organization, $template]) }}" class="btn btn-sm">Preview</a>
                     @can('update', $template)
-                        <a href="{{ route('organizations.application-templates.edit', [$organization, $template]) }}" class="btn btn-sm btn-purple-dark ml-5">Edit Fields</a>
+                        <a href="{{ route('organizations.application-templates.edit', [$organization, $template]) }}" class="btn btn-sm ml-5">Edit Fields</a>
                     @endcan
                     @can('delete', $template)
                         <form method="POST" action="{{ route('organizations.application-templates.destroy', [$organization, $template]) }}" class="d-inline ml-5 m-0">

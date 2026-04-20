@@ -33,7 +33,7 @@
                 'title' => 'Interview: ' . $inv->application->applicant_name,
                 'start' => $inv->scheduled_at->format('Y-m-d\TH:i:s'),
                 'url' => route('interviews.show', $inv),
-                'color' => $isMine ? '#6d3fa9' : '#3a3f45',
+                'color' => $isMine ? 'var(--brand-base)' : 'var(--text-muted)',
                 'extendedProps' => [
                     'isMine' => $isMine,
                     'position' => $inv->application->jobPosition->title,

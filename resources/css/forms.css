@@ -34,8 +34,7 @@ input[type="date"] {
 
 select {
   width: 100%;
-  padding: 10px 35px 10px 10px;
-  margin-top: 6px;
+  padding: 13px 35px 12px 10px;
   margin-bottom: 18px;
   border-radius: 6px;
   border: 1px solid var(--border-default);
@@ -50,6 +49,21 @@ select {
   -webkit-appearance: none;
   -moz-appearance: none;
   cursor: pointer;
+}
+select option {
+  color: var(--text-main);
+  background-color: var(--bg-input);
+}
+
+select option:checked {
+  color: #fff;
+  background-color: var(--brand-base);
+}
+
+select option:hover,
+select option:focus {
+  color: #fff;
+  background-color: var(--brand-hover);
 }
 
 textarea {

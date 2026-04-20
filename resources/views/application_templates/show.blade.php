@@ -9,7 +9,7 @@
         </div>
         <div>
             @can('update', $applicationTemplate)
-                <a href="{{ route('organizations.application-templates.edit', [$organization, $applicationTemplate]) }}" class="btn btn-purple-dark mr-5">Edit Fields</a>
+                <a href="{{ route('organizations.application-templates.edit', [$organization, $applicationTemplate]) }}" class="btn mr-5">Edit Fields</a>
             @endcan
             <a href="{{ route('organizations.application-templates.index', $organization) }}" class="btn btn-outline">Back</a>
         </div>

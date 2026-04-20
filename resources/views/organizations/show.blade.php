@@ -8,7 +8,7 @@
             <p class="text-muted m-0 mt-5">Chairman: {{ $organization->chairman->name }}</p>
         </div>
         @can('update', $organization)
-            <a href="{{ route('organizations.edit', $organization) }}" class="btn btn-purple-dark">Edit Organization</a>
+            <a href="{{ route('organizations.edit', $organization) }}" class="btn">Edit Organization</a>
         @endcan
     </div>
 
@@ -64,7 +64,7 @@
             <div class="flex-col-20">
                 @if($showTeamAccess)
                     <div>
-                        <h3 class="fs-14 text-primary mb-10 mt-10">Team & Access</h3>
+                        <h2 class="fs-14 text-primary mb-10 mt-10">Team & Access</h2>
                         <div class="flex-wrap-12">
                             @if($canManageMembers || $canCreateInvites)
                                 <a href="{{ route('organizations.members', $organization) }}" class="btn btn-sm">Manage Team</a>
@@ -78,7 +78,7 @@
 
                 @if($showHiringSetup)
                     <div>
-                        <h3 class="fs-14 text-primary mb-10 mt-0">Hiring Setup</h3>
+                        <h2 class="fs-14 text-primary mb-10 mt-0">Hiring Setup</h2>
                         <div class="flex-wrap-12">
                             @if($canViewPositions)
                                 <a href="{{ route('organizations.job-positions.index', $organization) }}" class="btn btn-sm btn-slate">View Job Positions</a>
@@ -98,7 +98,7 @@
 
                 @if($showInterviewsApps)
                     <div>
-                        <h3 class="fs-14 text-primary mb-10 mt-0">Interviews & Applications</h3>
+                        <h2 class="fs-14 text-primary mb-10 mt-0">Interviews & Applications</h2>
                         <div class="flex-wrap-12">
                             @if($canReviewApps)
                                 <a href="{{ route('organizations.applications', $organization) }}" class="btn btn-sm btn-slate">View All Applications</a>
@@ -125,7 +125,7 @@
                     </div>
                     <div class="flex-gap-10 items-center">
                         <a href="{{ route('applications.show', $app) }}" class="btn btn-sm btn-slate">View App</a>
-                        <a href="{{ route('interviews.create', $app) }}" class="btn btn-sm btn-purple-dark">Schedule Interview</a>
+                        <a href="{{ route('interviews.create', $app) }}" class="btn btn-sm">Schedule Interview</a>
                     </div>
                 </div>
             @empty
@@ -178,7 +178,7 @@
                     <label id="filter-container" class="d-none cursor-pointer text-primary fw-bold fs-14 m-0">
                         <input type="checkbox" id="filter-mine"> My Interviews Only
                     </label>
-                    <button id="toggle-expand" class="btn btn-sm btn-purple-dark">⛶ Expand Calendar</button>
+                    <button id="toggle-expand" class="btn btn-sm">⛶ Expand Calendar</button>
                 </div>
             </div>
             
@@ -194,7 +194,7 @@
                     'title' => 'Interview: ' . $inv->application->applicant_name,
                     'start' => $inv->scheduled_at->format('Y-m-d\TH:i:s'),
                     'url' => route('interviews.show', $inv),
-                    'color' => $isMine ? '#6d3fa9' : '#3a3f45',
+                    'color' => $isMine ? 'var(--brand-base)' : 'var(--text-muted)',
                     'extendedProps' => [
                         'isMine' => $isMine,
                         'position' => $inv->application->jobPosition->title,

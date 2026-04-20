@@ -43,7 +43,7 @@
                                 </div>
                             </div>
                             <div class="flex-gap-10">
-                                <button type="button" class="btn btn-sm btn-purple-dark" onclick="toggleEdit('{{ $field->id }}')">Edit</button>
+                                <button type="button" class="btn btn-sm" onclick="toggleEdit('{{ $field->id }}')">Edit</button>
                                 <form method="POST" action="{{ route('organizations.application-templates.fields.destroy', [$organization, $applicationTemplate, $field]) }}" class="m-0 d-inline">
                                     @csrf
                                     @method('DELETE')

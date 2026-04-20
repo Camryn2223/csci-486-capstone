@@ -38,7 +38,7 @@
                         <a href="{{ route('organizations.job-positions.show', [$organization, $position]) }}" class="btn btn-sm">View</a>
                         
                         @can('update', $position)
-                            <a href="{{ route('organizations.job-positions.edit', [$organization, $position]) }}" class="btn btn-sm btn-purple-dark">Edit</a>
+                            <a href="{{ route('organizations.job-positions.edit', [$organization, $position]) }}" class="btn btn-sm">Edit</a>
                         @endcan
                         
                         @can('delete', $position)

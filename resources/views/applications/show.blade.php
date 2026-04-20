@@ -72,7 +72,7 @@
 
                     @can('update', $interview)
                         @if ($interview->status === 'scheduled')
-                            <a href="{{ route('interviews.edit', $interview) }}" class="btn btn-sm btn-purple-dark">Reschedule</a>
+                            <a href="{{ route('interviews.edit', $interview) }}" class="btn btn-sm">Reschedule</a>
 
                             <form method="POST" action="{{ route('interviews.complete', $interview) }}" class="m-0">
                                 @csrf

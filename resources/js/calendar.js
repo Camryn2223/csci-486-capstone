@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (info.event.extendedProps.canUpdate && info.event.extendedProps.status === 'scheduled') {
                 actionButtons += `
-                    <a href="/interviews/${info.event.id}/edit" class="btn btn-sm btn-purple-dark">Reschedule</a>
+                    <a href="/interviews/${info.event.id}/edit" class="btn btn-sm">Reschedule</a>
                     <form method="POST" action="/interviews/${info.event.id}/complete" class="m-0">
                         <input type="hidden" name="_token" value="${csrfToken}">
                         <input type="hidden" name="_method" value="PATCH">

@@ -16,7 +16,7 @@
                 <div>
                     <a href="{{ route('organizations.show', $organization) }}" class="btn btn-sm">View Dashboard</a>
                     @can('update', $organization)
-                        <a href="{{ route('organizations.edit', $organization) }}" class="btn btn-sm btn-purple-dark ml-5">Edit</a>
+                        <a href="{{ route('organizations.edit', $organization) }}" class="btn btn-sm ml-5">Edit</a>
                     @endcan
                     @can('delete', $organization)
                         <form method="POST" action="{{ route('organizations.destroy', $organization) }}" class="d-inline ml-5 m-0">

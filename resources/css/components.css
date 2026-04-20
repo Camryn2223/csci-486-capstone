@@ -44,12 +44,12 @@
 
 /* Danger Button */
 .btn-danger {
-  background: var(--danger-btn);
-  color: white;
+  background: var(--danger-bg);
+  color: var(--danger-text);
 }
 .btn-danger:hover {
-  background: var(--danger-btn-hover);
-  color: white;
+  background: var(--danger-bg-hover);
+  color: var(--danger-text);
 }
 
 /* Exact Button Overrides */
@@ -64,21 +64,12 @@
   border-color: var(--border-subtle);
 }
 
-.btn-purple-dark {
-  background: var(--btn-secondary-bg);
-  color: var(--btn-secondary-text);
-}
-.btn-purple-dark:hover {
-  background: var(--brand-base);
-  color: white;
-}
-
 .btn-slate {
   background: var(--btn-slate-bg);
   color: var(--btn-slate-text);
 }
 .btn-slate:hover {
-  background: var(--border-default);
+  background: var(--btn-slate-hover);
   color: var(--text-heading);
 }
 
@@ -290,7 +281,7 @@
   background: var(--brand-base);
 }
 .legend-gray {
-  background: var(--border-default);
+  background: var(--text-muted);
 }
 
 table {

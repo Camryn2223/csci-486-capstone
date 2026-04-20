@@ -32,7 +32,7 @@
                                         <option value="interviewer" {{ $member->role === 'interviewer' ? 'selected' : '' }}>Interviewer</option>
                                         <option value="chairman" {{ $member->role === 'chairman' ? 'selected' : '' }}>Chairman</option>
                                     </select>
-                                    <button type="submit" class="btn btn-sm btn-purple-dark">Update Role</button>
+                                    <button type="submit" class="btn btn-sm">Update Role</button>
                                 </form>
                             @endcan
 
