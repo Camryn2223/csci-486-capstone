@@ -30,10 +30,10 @@
 
             <h3>Email Notification</h3>
 
-            <label><strong>Email Subject</strong></label>
+            <label class="mt-15"><strong>Email Subject</strong></label>
             <input type="text" name="email_subject" value="{{ old('email_subject', 'Interview Scheduled: ' . $application->jobPosition->title) }}" required>
 
-            <label><strong>Email Body</strong></label>
+            <label class="mt-15"><strong>Email Body</strong></label>
             <textarea name="email_body" rows="6" required>{{ old('email_body', "We are pleased to invite you to an interview for the {$application->jobPosition->title} position. Please find the details below.") }}</textarea>
 
             <div class="mt-15">
