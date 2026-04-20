@@ -41,7 +41,7 @@
     @if($isChairman && $needsReviewApps->isNotEmpty())
         <div class="card border-warning bg-warning-light">
             <h2 class="mt-0 text-warning d-flex items-center flex-gap-10">
-                ⚠️ Applications Flagged for Chairman Review
+                Applications Flagged for Chairman Review
             </h2>
             <div class="flex-col-10">
                 @foreach($needsReviewApps as $app)
