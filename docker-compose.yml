@@ -11,6 +11,7 @@ services:
       - "8080:80"
     volumes:
       - .:/var/www/html
+      - laravel_storage:/var/www/html/storage
       - /var/www/html/vendor
       - /var/www/html/node_modules
     depends_on:
@@ -69,6 +70,7 @@ services:
 
 volumes:
   mysql_data:
+  laravel_storage:
 
 networks:
   laravel:

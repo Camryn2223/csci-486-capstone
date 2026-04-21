@@ -13,11 +13,19 @@ if ! grep -q '^APP_KEY=.\+' /var/www/html/.env; then
     php artisan key:generate
 fi
 
+mkdir -p /var/www/html/storage/app/private
+mkdir -p /var/www/html/storage/app/private/documents
+mkdir -p /var/www/html/storage/app/private/seed_documents
+mkdir -p /var/www/html/storage/framework/cache
+mkdir -p /var/www/html/storage/framework/sessions
+mkdir -p /var/www/html/storage/framework/views
+mkdir -p /var/www/html/storage/logs
 mkdir -p /var/www/html/bootstrap/cache
-mkdir -p /var/www/html/storage
 
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R ug+rwX /var/www/html/storage /var/www/html/bootstrap/cache
+
+php artisan optimize:clear || true
 
 if [ "$(grep '^APP_ENV=' /var/www/html/.env | cut -d '=' -f2)" = "local" ]; then
     echo "Waiting for MySQL to be ready..."
@@ -41,10 +49,9 @@ PHPEOF
         sleep 2
     done
 
+    echo "MySQL is ready."
     php artisan migrate --force
 fi
-
-php artisan optimize:clear || true
 
 php-fpm -D
 nginx -g "daemon off;"
