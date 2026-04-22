@@ -14,6 +14,7 @@ if ! grep -q '^APP_KEY=.\+' /var/www/html/.env; then
 fi
 
 mkdir -p \
+    /var/www/html/storage/app/private \
     /var/www/html/storage/framework/cache/data \
     /var/www/html/storage/framework/sessions \
     /var/www/html/storage/framework/views \
