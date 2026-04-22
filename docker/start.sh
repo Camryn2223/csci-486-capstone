@@ -31,6 +31,6 @@ PHPEOF
   php artisan migrate --force
 fi
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 php-fpm -D
 nginx -g "daemon off;"

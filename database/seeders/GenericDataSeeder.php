@@ -387,8 +387,8 @@ class GenericDataSeeder extends Seeder
 
         // Force OS permissions so the web server can fetch it over HTTP
         try {
-            @chmod(Storage::disk('local')->path('documents'), 0755);
-            @chmod(Storage::disk('local')->path($dirPath), 0755);
+            @chmod(Storage::disk('local')->path('documents'), 0777);
+            @chmod(Storage::disk('local')->path($dirPath), 0777);
             @chmod(Storage::disk('local')->path($relativePath), 0644);
         } catch (\Throwable $e) {
             // Ignore if OS does not support chmod (e.g., Windows)
