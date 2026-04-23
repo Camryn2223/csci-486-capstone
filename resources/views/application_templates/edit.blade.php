@@ -13,83 +13,55 @@
 
     <div class="split-layout">
         <div class="split-builder">
-            <div class="card">
-                <h2 class="mt-0 border-bottom-none">Template Settings</h2>
-                <form id="template-settings-form" method="POST" action="{{ route('organizations.application-templates.update', [$organization, $applicationTemplate]) }}">
-                    @csrf
-                    @method('PUT')
-                    
+            <form id="template-settings-form" method="POST" action="{{ route('organizations.application-templates.update', [$organization, $applicationTemplate]) }}">
+                @csrf
+                @method('PUT')
+                
+                <div class="card">
+                    <h2 class="mt-0 border-bottom-none">Template Settings</h2>
                     @include('application_templates.partials.settings-fields', ['template' => $applicationTemplate])
+                </div>
 
-                    <button type="submit" class="btn btn-sm mt-10">Save Settings</button>
-                </form>
-            </div>
+                <div class="card-header-flex mt-30 mb-10">
+                    <h2 class="m-0 border-bottom-none pb-0">Custom Fields</h2>
+                    <span class="text-muted fs-13">Drag the ☰ icon to reorder fields automatically.</span>
+                </div>
+                
+                <div id="fields-list">
+                    @forelse ($applicationTemplate->fields as $field)
+                        @include('application_templates.partials.builder-field-item', ['field' => $field])
+                    @empty
+                    @endforelse
+                </div>
 
-            <div class="card-header-flex mt-30 mb-10">
-                <h2 class="m-0 border-bottom-none pb-0">Custom Fields</h2>
-                <span class="text-muted fs-13">Drag the ☰ icon to reorder fields automatically.</span>
-            </div>
-            
-            <div id="fields-list" data-reorder-url="{{ route('organizations.application-templates.fields.reorder', [$organization, $applicationTemplate]) }}">
-                @forelse ($applicationTemplate->fields as $field)
-                    <div class="card field-item-box" data-id="{{ $field->id }}">
-                        <div class="card-header-flex">
-                            <div class="flex-gap-15 items-center">
-                                <span class="drag-handle-icon" title="Drag to reorder">☰</span>
-                                <div>
-                                    <strong class="fs-16">{{ $field->label }}</strong>
-                                    <span class="status status-awaiting-interview ml-10">{{ ucfirst($field->type) }}</span>
-                                    @if($field->required) <span class="status status-needs-review ml-5">Required</span> @endif
-                                </div>
-                            </div>
-                            <div class="flex-gap-10">
-                                <button type="button" class="btn btn-sm" onclick="toggleEdit('{{ $field->id }}')">Edit</button>
-                                <form method="POST" action="{{ route('organizations.application-templates.fields.destroy', [$organization, $applicationTemplate, $field]) }}" class="m-0 d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this field?')">Delete</button>
-                                </form>
-                            </div>
-                        </div>
-
-                        <div id="edit-form-{{ $field->id }}" class="field-edit-panel" style="display: {{ $errors->has('label') && old('type') !== null ? 'block' : 'none' }};">
-                            <form method="POST" action="{{ route('organizations.application-templates.fields.update', [$organization, $applicationTemplate, $field]) }}">
-                                @csrf
-                                @method('PATCH')
-
-                                @include('application_templates.partials.field-form-inputs', [
-                                    'idPrefix' => 'edit-' . $field->id,
-                                    'field' => $field
-                                ])
-                                
-                                <div class="mt-15">
-                                    <button type="submit" class="btn btn-sm">Update Field</button>
-                                    <button type="button" class="btn btn-sm btn-outline ml-10" onclick="toggleEdit('{{ $field->id }}')">Cancel</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                @empty
-                    <div class="card"><p>No custom fields added yet.</p></div>
-                @endforelse
-            </div>
-
-            <div class="card card-dashed-purple" id="add-field-card">
-                <h2 class="mt-0 border-bottom-none">Add New Field</h2>
-                <form method="POST" action="{{ route('organizations.application-templates.fields.store', [$organization, $applicationTemplate]) }}">
-                    @csrf
-
+                <div class="card card-dashed-purple" id="add-field-card">
+                    <h2 class="mt-0 border-bottom-none">Add New Field</h2>
+                    
                     @include('application_templates.partials.field-form-inputs', [
                         'idPrefix' => 'add',
+                        'labelName' => 'add_label',
+                        'typeName' => 'add_type',
+                        'reqName' => 'add_required',
+                        'fileMultName' => 'add_file_multiple',
+                        'fileMaxName' => 'add_file_max',
+                        'charMaxName' => 'add_char_max',
+                        'fileSizeMaxName' => 'add_file_size_max',
+                        'optionsName' => 'add_options',
+                        'optionsNameArray' => 'add_options[]',
+                        'fileOptionsNameArray' => 'add_file_options[]',
                         'field' => null,
                         'isAdd' => true
                     ])
                     
                     <div class="mt-15">
-                        <button type="submit" class="btn">Add Field</button>
+                        <button type="button" class="btn btn-outline" onclick="addFieldToCreateForm()">Add Field</button>
                     </div>
-                </form>
-            </div>
+                </div>
+
+                <div class="mt-30">
+                    <button type="submit" class="btn">Update Application Template</button>
+                </div>
+            </form>
         </div>
 
         <div class="split-preview">

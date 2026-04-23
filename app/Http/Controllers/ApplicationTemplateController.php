@@ -135,7 +135,7 @@ class ApplicationTemplateController extends Controller
                         'char_max' => $fieldData['char_max'] ?? null,
                         'file_size_max' => $fieldData['file_size_max'] ?? null,
                         'options'  => $fieldData['options'] ?? null,
-                        'order'    => $index + 1,
+                        'order'    => $index + 1, // Sort order implicitly set by DOM position!
                     ]);
                 }
             }
@@ -173,7 +173,7 @@ class ApplicationTemplateController extends Controller
     }
 
     /**
-     * Update the template's configuration and standard fields toggles.
+     * Update the template's configuration and fields in a single transaction.
      */
     public function update(Request $request, Organization $organization, ApplicationTemplate $applicationTemplate): RedirectResponse
     {
@@ -189,18 +189,86 @@ class ApplicationTemplateController extends Controller
             'request_name'   => ['nullable', 'boolean'],
             'request_email'  => ['nullable', 'boolean'],
             'request_phone'  => ['nullable', 'boolean'],
+            'fields'         => ['nullable', 'array'],
+            'fields.*.id'    => ['nullable'],
+            'fields.*.label' => ['required', 'string', 'max:255'],
+            'fields.*.type'  => ['required', 'in:text,textarea,rich_text,select,checkbox,radio,file,date'],
+            'fields.*.required' => ['nullable', 'boolean'],
+            'fields.*.file_multiple' => ['nullable', 'boolean'],
+            'fields.*.file_max' => ['nullable', 'integer', 'min:2', 'max:10'],
+            'fields.*.char_max' => ['nullable', 'integer', 'min:1', 'max:5000'],
+            'fields.*.file_size_max' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'fields.*.options'  => ['nullable', 'array'],
         ]);
 
-        $applicationTemplate->update([
-            'name'           => $validated['name'],
-            'request_name'   => $request->boolean('request_name', false),
-            'request_email'  => $request->boolean('request_email', false),
-            'request_phone'  => $request->boolean('request_phone', false),
-        ]);
+        DB::transaction(function () use ($validated, $organization, $request, $applicationTemplate) {
+            $applicationTemplate->update([
+                'name'           => $validated['name'],
+                'request_name'   => $request->boolean('request_name', false),
+                'request_email'  => $request->boolean('request_email', false),
+                'request_phone'  => $request->boolean('request_phone', false),
+            ]);
+
+            $existingFieldIds = $applicationTemplate->fields()->pluck('id')->toArray();
+            $submittedFieldIds = [];
+
+            if (isset($validated['fields'])) {
+                foreach (array_values($validated['fields']) as $index => $fieldData) {
+                    $fieldId = $fieldData['id'] ?? null;
+                    
+                    // Discard the ID if it's our JS "new_XXXX" unique string marker
+                    if (is_string($fieldId) && str_starts_with($fieldId, 'new_')) {
+                        $fieldId = null;
+                    }
+
+                    if ($fieldId && in_array($fieldId, $existingFieldIds)) {
+                        $field = $applicationTemplate->fields()->find($fieldId);
+                        $field->update([
+                            'label'    => $fieldData['label'],
+                            'type'     => $fieldData['type'],
+                            'required' => filter_var($fieldData['required'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                            'file_multiple' => filter_var($fieldData['file_multiple'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                            'file_max' => $fieldData['file_max'] ?? null,
+                            'char_max' => $fieldData['char_max'] ?? null,
+                            'file_size_max' => $fieldData['file_size_max'] ?? null,
+                            'options'  => $fieldData['options'] ?? null,
+                            'order'    => $index + 1, // Sort order implicitly set by DOM position!
+                        ]);
+                        $submittedFieldIds[] = $fieldId;
+                    } else {
+                        $applicationTemplate->fields()->create([
+                            'label'    => $fieldData['label'],
+                            'type'     => $fieldData['type'],
+                            'required' => filter_var($fieldData['required'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                            'file_multiple' => filter_var($fieldData['file_multiple'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                            'file_max' => $fieldData['file_max'] ?? null,
+                            'char_max' => $fieldData['char_max'] ?? null,
+                            'file_size_max' => $fieldData['file_size_max'] ?? null,
+                            'options'  => $fieldData['options'] ?? null,
+                            'order'    => $index + 1,
+                        ]);
+                    }
+                }
+            }
+
+            // Any ID not submitted means it was removed from the DOM
+            $toDelete = array_diff($existingFieldIds, $submittedFieldIds);
+            foreach ($toDelete as $delId) {
+                $field = $applicationTemplate->fields()->find($delId);
+                
+                if ($field && $field->answers()->exists()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'template' => "Field '{$field->label}' cannot be deleted because answers have already been submitted for it."
+                    ]);
+                }
+                
+                $field?->delete();
+            }
+        });
 
         return redirect()
             ->route('organizations.application-templates.edit', [$organization, $applicationTemplate])
-            ->with('success', 'Template settings updated successfully.');
+            ->with('success', 'Template settings and fields updated successfully.');
     }
 
     /**

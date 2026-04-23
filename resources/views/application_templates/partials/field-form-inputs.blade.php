@@ -20,12 +20,12 @@
 
 <div class="field-form-wrapper">
     <label>Question Label</label>
-    <input type="text" name="{{ $labelName }}" value="{{ old($labelName, $field->label ?? '') }}" class="w-full" {{ !$isAdd ? 'required' : '' }}>
+    <input type="text" name="{{ $labelName }}" value="{{ old($labelName, $field->label ?? '') }}" class="w-full" {{ !$isAdd ? 'required' : '' }} oninput="let lbl = this.closest('.field-item-box')?.querySelector('.field-display-label'); if(lbl) lbl.textContent = this.value; if(window.updateLivePreview) window.updateLivePreview();">
 
     <div class="flex-wrap-15">
         <div class="flex-1 min-w-200">
             <label>Type</label>
-            <select name="{{ $typeName }}" class="field-type-select" onchange="toggleFieldType(this)">
+            <select name="{{ $typeName }}" class="field-type-select" onchange="toggleFieldType(this); let tlbl = this.closest('.field-item-box')?.querySelector('.field-display-type'); if(tlbl) tlbl.textContent = this.options[this.selectedIndex].text;">
                 @foreach (['text','textarea','rich_text','select','checkbox','radio','file','date'] as $type)
                     <option value="{{ $type }}" {{ $currentType === $type ? 'selected' : '' }}>{{ ucwords(str_replace('_', ' ', $type)) }}</option>
                 @endforeach
@@ -34,7 +34,7 @@
         
         <div class="flex-1 d-flex items-center min-w-150 pt-2 flex-wrap-15">
             <label class="text-light cursor-pointer items-center flex-gap-10 mb-0">
-                <input type="checkbox" name="{{ $reqName }}" value="1" {{ old($reqName, $field->required ?? false) ? 'checked' : '' }}> Required
+                <input type="checkbox" name="{{ $reqName }}" value="1" {{ old($reqName, $field->required ?? false) ? 'checked' : '' }} onchange="let rlbl = this.closest('.field-item-box')?.querySelector('.field-display-req'); if(rlbl) rlbl.style.display = this.checked ? 'inline-block' : 'none'; if(window.updateLivePreview) window.updateLivePreview();"> Required
             </label>
             
             <div class="file-multiple-wrapper items-center flex-gap-15" style="display: {{ $currentType === 'file' ? 'flex' : 'none' }};">
@@ -71,7 +71,7 @@
                 @if(!str_starts_with($opt, 'application/') && !str_starts_with($opt, 'image/'))
                     <div class="option-item">
                         <span class="text-muted">&bull;</span>
-                        <input type="text" name="{{ $optionsNameArray }}" value="{{ $opt }}" class="m-0 flex-grow-1" required placeholder="Option value">
+                        <input type="text" name="{{ $optionsNameArray }}" value="{{ $opt }}" class="m-0 flex-grow-1" {{ $isAdd ? '' : 'required' }} placeholder="Option value" oninput="if(window.updateLivePreview) window.updateLivePreview();">
                         <button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove(); if(window.updateLivePreview) window.updateLivePreview();">X</button>
                     </div>
                 @endif
