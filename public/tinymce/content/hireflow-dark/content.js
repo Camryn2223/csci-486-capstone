@@ -1,0 +1,10 @@
+/* This file is bundled with the code from the following third party libraries */
+
+/**
+ * http://prismjs.com/
+ * Dracula Theme originally by Zeno Rocha [@zenorocha]
+ * https://draculatheme.com/
+ *
+ * Ported for PrismJS by Albert Vallverdu [@byverdu]
+ */
+tinymce.Resource.add('content/hireflow-dark/content.css', `body{background:#1f2327;color:#e6e6e6;font-family:Arial,sans-serif;font-size:14px;line-height:1.6}a{color:#a97dff}blockquote{border-left:4px solid #3a3f45;color:#bdbdbd;padding-left:15px;font-style:italic}ol,ul{padding-left:20px;margin-bottom:1em}table{border-collapse:collapse;width:100%}td,th{border:1px solid #3a3f45;padding:8px 10px}`)

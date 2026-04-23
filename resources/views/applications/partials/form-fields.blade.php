@@ -81,6 +81,15 @@
                               {{ $isPreview ? 'disabled' : '' }}>{{ old("answers.{$field->id}") }}</textarea>
                     <small class="char-counter text-muted d-block mt-5" style="text-align: right;">0 / {{ $charMax }}</small>
 
+                @elseif ($field->type === 'rich_text')
+                    @php $charMax = $field->char_max ?? 5000; @endphp
+                    <textarea id="field_{{ $field->id }}" name="answers[{{ $field->id }}]" rows="6"
+                              data-char-max="{{ $charMax }}"
+                              maxlength="{{ $charMax }}"
+                              class="tinymce-applicant char-counted {{ $isPreview ? 'preview-input' : '' }} {{ $errClass }}"
+                              {{ $isPreview ? 'disabled' : '' }}>{{ old("answers.{$field->id}") }}</textarea>
+                    <small class="char-counter text-muted d-block mt-5" style="text-align: right;">0 / {{ $charMax }}</small>
+
                 @elseif ($field->type === 'date')
                     <input type="date" id="field_{{ $field->id }}" name="answers[{{ $field->id }}]"
                            value="{{ old("answers.{$field->id}") }}"

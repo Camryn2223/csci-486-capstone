@@ -26,8 +26,8 @@
         <div class="flex-1 min-w-200">
             <label>Type</label>
             <select name="{{ $typeName }}" class="field-type-select" onchange="toggleFieldType(this)">
-                @foreach (['text','textarea','select','checkbox','radio','file','date'] as $type)
-                    <option value="{{ $type }}" {{ $currentType === $type ? 'selected' : '' }}>{{ ucfirst($type) }}</option>
+                @foreach (['text','textarea','rich_text','select','checkbox','radio','file','date'] as $type)
+                    <option value="{{ $type }}" {{ $currentType === $type ? 'selected' : '' }}>{{ ucwords(str_replace('_', ' ', $type)) }}</option>
                 @endforeach
             </select>
         </div>
@@ -54,9 +54,9 @@
         </div>
     </div>
 
-    <div class="char-max-wrapper flex-gap-10 items-center mt-15" style="display: {{ in_array($currentType, ['text', 'textarea']) ? 'flex' : 'none' }};">
+    <div class="char-max-wrapper flex-gap-10 items-center mt-15" style="display: {{ in_array($currentType, ['text', 'textarea', 'rich_text']) ? 'flex' : 'none' }};">
         <label class="mb-0 text-light">Max Characters:</label>
-        <input type="number" name="{{ $charMaxName }}" value="{{ old($charMaxName, $field->char_max ?? ($currentType === 'textarea' ? 1024 : 128)) }}" class="m-0 w-auto" min="1" max="5000" oninput="if(window.updateLivePreview) window.updateLivePreview();">
+        <input type="number" name="{{ $charMaxName }}" value="{{ old($charMaxName, $field->char_max ?? ($currentType === 'text' ? 128 : 1024)) }}" class="m-0 w-auto" min="1" max="5000" oninput="if(window.updateLivePreview) window.updateLivePreview();">
     </div>
 
     <div class="file-size-max-wrapper flex-gap-10 items-center mt-15" style="display: {{ $currentType === 'file' ? 'flex' : 'none' }};">

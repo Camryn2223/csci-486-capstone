@@ -66,10 +66,13 @@ class JobPositionController extends Controller
         $validated = $request->validate([
             'title'        => ['required', 'string', 'max:255'],
             'template_id'  => ['required', 'exists:application_templates,id'],
-            'description'  => ['required', 'string'],
-            'requirements' => ['required', 'string'],
+            'description'  => ['nullable', 'string'],
+            'requirements' => ['nullable', 'string'],
             'status'       => ['required', 'in:open,closed'],
         ]);
+
+        $validated['description'] = clean($validated['description'] ?? '');
+        $validated['requirements'] = clean($validated['requirements'] ?? '');
 
         $organization->jobPositions()->create([
             ...$validated,
@@ -115,10 +118,13 @@ class JobPositionController extends Controller
         $validated = $request->validate([
             'title'        => ['required', 'string', 'max:255'],
             'template_id'  => ['required', 'exists:application_templates,id'],
-            'description'  => ['required', 'string'],
-            'requirements' => ['required', 'string'],
+            'description'  => ['nullable', 'string'],
+            'requirements' => ['nullable', 'string'],
             'status'       => ['required', 'in:open,closed'],
         ]);
+
+        $validated['description'] = clean($validated['description'] ?? '');
+        $validated['requirements'] = clean($validated['requirements'] ?? '');
 
         $jobPosition->update($validated);
 

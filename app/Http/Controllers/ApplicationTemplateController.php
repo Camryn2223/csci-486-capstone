@@ -106,7 +106,7 @@ class ApplicationTemplateController extends Controller
             'request_phone'  => ['nullable', 'boolean'],
             'fields'         => ['nullable', 'array'],
             'fields.*.label' => ['required', 'string', 'max:255'],
-            'fields.*.type'  => ['required', 'in:text,textarea,select,checkbox,radio,file,date'],
+            'fields.*.type'  => ['required', 'in:text,textarea,rich_text,select,checkbox,radio,file,date'],
             'fields.*.required' => ['nullable', 'boolean'],
             'fields.*.file_multiple' => ['nullable', 'boolean'],
             'fields.*.file_max' => ['nullable', 'integer', 'min:2', 'max:10'],

@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!titleInput || !descInput || !reqsInput || !templateInput) return;
 
         const title = titleInput.value || 'Untitled Position';
+        
+        // For rich text, use value sync'd by TinyMCE or directly from textarea
         const desc = descInput.value || 'No description provided.';
         const reqs = reqsInput.value || 'No requirements provided.';
         const templateId = templateInput.value;
@@ -33,10 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (titleEl) titleEl.textContent = title;
         
         const descEl = document.getElementById('preview-desc');
-        if (descEl) descEl.textContent = desc;
+        if (descEl) descEl.innerHTML = desc;
         
         const reqsEl = document.getElementById('preview-reqs');
-        if (reqsEl) reqsEl.textContent = reqs;
+        if (reqsEl) reqsEl.innerHTML = reqs;
 
         document.querySelectorAll('.template-preview-block').forEach(el => el.style.display = 'none');
         

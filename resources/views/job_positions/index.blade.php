@@ -61,7 +61,7 @@
                         <span class="ml-10">{{ $position->applications_count ?? 0 }} application(s)</span>
                     @endcan
                 @else
-                    <span class="text-muted">{{ Str::limit($position->description, 100) }}</span>
+                    <span class="text-muted">{{ Str::limit(strip_tags($position->description), 100) }}</span>
                 @endif
             </p>
         </div>

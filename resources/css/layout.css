@@ -62,12 +62,12 @@ a:hover {
 
 .container {
   padding: 30px;
-  max-width: 900px;
+  max-width: 90%;
   margin: 0 auto;
 }
 
 .container-wide {
-  max-width: 1200px;
+  max-width: 90%;
 }
 
 .navbar {

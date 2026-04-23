@@ -27,10 +27,10 @@
 
     <div class="card">
         <h2>Description</h2>
-        <p class="white-space-pre mt-0">{{ $jobPosition->description }}</p>
+        <div class="mt-0 rich-text-content">{!! clean($jobPosition->description) !!}</div>
 
         <h2 class="mt-30">Requirements</h2>
-        <p class="white-space-pre mt-0">{{ $jobPosition->requirements }}</p>
+        <div class="mt-0 rich-text-content">{!! clean($jobPosition->requirements) !!}</div>
         
         @auth
             <hr class="divider">

@@ -27,10 +27,10 @@
 @endif
 
 <label>Description</label>
-<textarea name="description" id="input-desc" rows="4" required oninput="updatePreview()">{{ old('description', $jobPosition->description ?? '') }}</textarea>
+<textarea name="description" id="input-desc" class="tinymce-editor" rows="6">{{ old('description', $jobPosition->description ?? '') }}</textarea>
 
 <label>Requirements</label>
-<textarea name="requirements" id="input-reqs" rows="4" required oninput="updatePreview()">{{ old('requirements', $jobPosition->requirements ?? '') }}</textarea>
+<textarea name="requirements" id="input-reqs" class="tinymce-editor" rows="6">{{ old('requirements', $jobPosition->requirements ?? '') }}</textarea>
 
 <label>Status</label>
 <select name="status">

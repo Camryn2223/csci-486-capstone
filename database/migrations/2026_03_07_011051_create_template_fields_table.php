@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('template_id')->constrained('application_templates')->onDelete('cascade');
             $table->string('label');
-            $table->enum('type', ['text', 'textarea', 'select', 'checkbox', 'radio', 'file', 'date']);
+            $table->enum('type', ['text', 'textarea', 'rich_text', 'select', 'checkbox', 'radio', 'file', 'date']);
             $table->json('options')->nullable();
             $table->boolean('required')->default(false);
             $table->boolean('file_multiple')->default(false);

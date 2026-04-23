@@ -17,6 +17,9 @@
         })();
     </script>
     
+    <!-- TinyMCE 8 (via Cloud CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@8/tinymce.min.js"></script>
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>

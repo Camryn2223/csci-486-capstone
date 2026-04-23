@@ -172,7 +172,7 @@ class TemplateFieldController extends Controller
     {
         return [
             'label'     => ['required', 'string', 'max:255'],
-            'type'      => ['required', 'in:text,textarea,select,checkbox,radio,file,date'],
+            'type'      => ['required', 'in:text,textarea,rich_text,select,checkbox,radio,file,date'],
             'options'   => ['required_if:type,select,checkbox,radio', 'nullable', 'array', 'min:1'],
             'options.*' => ['string', 'max:255'],
             'required'  => ['boolean'],

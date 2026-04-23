@@ -43,6 +43,8 @@
                     
                     @if($answer->document)
                         @include('applications.partials.document-card', ['document' => $answer->document])
+                    @elseif($answer->field->type === 'rich_text')
+                        <div class="rich-text-content mt-5">{!! clean($answer->value ?? 'No answer provided') !!}</div>
                     @else
                         <span class="white-space-pre">{{ $answer->value ?? 'No answer provided' }}</span>
                     @endif

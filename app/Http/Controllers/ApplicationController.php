@@ -93,20 +93,34 @@ class ApplicationController extends Controller
                     $maxFiles = $field->file_max ?? 5;
                     $rules["answers.{$field->id}"] = [$field->required ? 'required' : 'nullable', 'array', "max:{$maxFiles}"];
                     $rules["answers.{$field->id}.*"] = ['file', "max:{$maxKB}", 'mimetypes:' . $mimes];
-                    
+
                     $messages["answers.{$field->id}.*.mimetypes"] = "Each file for {$field->label} must be a file of type: {$friendlyMimes}.";
                     $messages["answers.{$field->id}.*.max"] = "Each file for {$field->label} must not be larger than {$maxMB}MB.";
                     $messages["answers.{$field->id}.max"] = "You cannot upload more than {$maxFiles} files for {$field->label}.";
                 } else {
                     $rules["answers.{$field->id}"] = [$field->required ? 'required' : 'nullable', 'file', "max:{$maxKB}", 'mimetypes:' . $mimes];
-                    
+
                     $messages["answers.{$field->id}.mimetypes"] = "The {$field->label} must be a file of type: {$friendlyMimes}.";
                     $messages["answers.{$field->id}.max"] = "The {$field->label} must not be larger than {$maxMB}MB.";
                 }
-            } elseif ($field->type === 'text' || $field->type === 'textarea') {
-                $maxChar = $field->char_max ?? ($field->type === 'textarea' ? 1024 : 128);
+            } elseif (in_array($field->type, ['text', 'textarea'])) {
+                $maxChar = $field->char_max ?? 5000;
                 $rules["answers.{$field->id}"] = [$field->required ? 'required' : 'nullable', 'string', "max:{$maxChar}"];
                 $messages["answers.{$field->id}.max"] = "The {$field->label} must not exceed {$maxChar} characters.";
+            } elseif ($field->type === 'rich_text') {
+                $maxChar = $field->char_max ?? 5000;
+
+                $rules["answers.{$field->id}"] = [
+                    $field->required ? 'required' : 'nullable',
+                    'string',
+                    function ($attribute, $value, $fail) use ($field, $maxChar) {
+                        $plainText = trim(html_entity_decode(strip_tags($value ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+                        if (mb_strlen($plainText) > $maxChar) {
+                            $fail("The {$field->label} must not exceed {$maxChar} characters.");
+                        }
+                    },
+                ];
             }
         }
 
@@ -172,6 +186,9 @@ class ApplicationController extends Controller
                 } else {
                     $val = $validated['answers'][$field->id] ?? null;
                     if ($val !== null) {
+                        if ($field->type === 'rich_text') {
+                            $val = clean($val);
+                        }
                         $application->answers()->create([
                             'template_field_id' => $field->id,
                             'value'             => is_array($val) ? implode(', ', $val) : $val,

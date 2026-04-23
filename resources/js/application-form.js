@@ -35,6 +35,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 });
+
+                // Sync restored values to TinyMCE instances if any
+                if (typeof tinymce !== 'undefined') {
+                    setTimeout(() => {
+                        tinymce.editors.forEach(editor => {
+                            const input = document.getElementById(editor.id);
+                            if (input && input.value && !editor.getContent()) {
+                                editor.setContent(input.value);
+                            }
+                        });
+                    }, 500); // Give TinyMCE a moment to initialize
+                }
             } catch (e) {
                 console.error('Failed to parse saved form data');
             }
@@ -44,6 +56,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Note: File inputs cannot be safely restored programmatically due to browser security restrictions.
         // Therefore, we do not save files to sessionStorage to avoid crashing quota limits with base64 blobs.
         appForm.addEventListener('input', function(e) {
+            if (typeof tinymce !== 'undefined') {
+                tinymce.triggerSave();
+            }
+
             const formData = new FormData(appForm);
             const dataObj = {};
             
@@ -61,6 +77,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         appForm.addEventListener('submit', function(e) {
+            // Force TinyMCE to update textareas before submit validates or payload is sent
+            if (typeof tinymce !== 'undefined') {
+                tinymce.triggerSave();
+            }
+
             const wrappers = document.querySelectorAll('.multi-file-wrapper');
             let exceedMax = false;
             
@@ -147,24 +168,48 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Character counter live updates
-    document.querySelectorAll('.char-counted').forEach(input => {
-        const max = parseInt(input.getAttribute('data-char-max'), 10);
-        const counter = input.nextElementSibling;
-        
-        const updateCounter = () => {
-            const current = input.value.length;
-            if(counter) {
-                counter.textContent = `${current} / ${max}`;
-                if (current >= max) {
-                    counter.classList.add('text-danger');
-                } else {
-                    counter.classList.remove('text-danger');
-                }
-            }
-        };
-        
-        input.addEventListener('input', updateCounter);
-        updateCounter(); // initialize state on load
-    });
+    const getPlainTextFromHtml = (html) => {
+        const temp = document.createElement('div');
+        temp.innerHTML = html || '';
+        return temp.textContent || temp.innerText || '';
+    };
 
+    window.updateCharCounter = function(input) {
+        if (!input || !input.hasAttribute('data-char-max')) return;
+
+        const max = parseInt(input.getAttribute('data-char-max'), 10);
+        const counter = input.parentElement?.querySelector('.char-counter');
+
+        if (!counter || Number.isNaN(max)) return;
+
+        let current = 0;
+
+        if (input.classList.contains('tinymce-applicant') && typeof tinymce !== 'undefined') {
+            const editor = tinymce.get(input.id);
+
+            if (editor) {
+                current = editor.getContent({ format: 'text' }).length;
+            } else {
+                current = getPlainTextFromHtml(input.value).length;
+            }
+        } else {
+            current = input.value.length;
+        }
+
+        counter.textContent = `${current} / ${max}`;
+        counter.classList.toggle('text-danger', current >= max);
+    };
+
+    window.initCharCounters = function(scope = document) {
+        scope.querySelectorAll('.char-counted').forEach(input => {
+            if (!input.dataset.charCounterBound) {
+                input.addEventListener('input', () => window.updateCharCounter(input));
+                input.dataset.charCounterBound = '1';
+            }
+
+            window.updateCharCounter(input);
+        });
+    };
+
+    window.initCharCounters(document);
 });

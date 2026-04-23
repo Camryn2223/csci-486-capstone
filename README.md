@@ -21,6 +21,7 @@ A Laravel application running in Docker with MySQL, structured using the **Model
 ### Tools & Interfaces
 - [phpMyAdmin](#phpmyadmin)
 - [Recommended VSCode Setup](#recommended-vscode-setup)
+- [Developing in VSCode Attached to the Container](#developing-in-vscode-attached-to-the-container)
 
 ### Container Management
 - [Resetting the Container](#resetting-the-container)
@@ -51,17 +52,22 @@ Make sure Docker Desktop is **running** before executing any commands below.
 
 ## First-Time Setup
 
+Run these commands from a normal host terminal in the project folder:
+
 ```bash
 git clone https://github.com/Camryn2223/csci-486-capstone.git
 cd csci-486-capstone
 docker compose up --build -d
-npm install
-npm run build
+docker compose exec app composer install
+docker compose exec app npm install
+docker compose exec app npm run build
 ```
 
 Wait for `ready to handle connections` in the logs (`docker compose logs app -f`), then open [http://localhost:8080](http://localhost:8080).
 
-For active development, run `npm run dev` in a separate terminal instead of `npm run build` to watch for changes automatically.
+If you plan to do your development from **VSCode attached to the container**, use the Docker startup commands above, then continue with the commands in [Developing in VSCode Attached to the Container](#developing-in-vscode-attached-to-the-container).
+
+For active development from a normal host terminal, run `docker compose exec app npm run dev` in a separate terminal instead of `npm run build` to watch for changes automatically.
 
 ---
 
@@ -207,9 +213,15 @@ If you are using a separate `laravel_testing` database, you can switch to it fro
 
 ## Recommended VSCode Setup
 
+This project supports two VSCode workflows:
+
+1. **Open the folder locally on your host machine** and let VSCode use local PHP/Composer tooling.
+2. **Attach VSCode to the running `app` container** and do all PHP, Composer, and npm work inside Docker. This is the recommended workflow for this project.
+
 **Extensions:**
 - PHP Intelephense (`bmewburn.vscode-intelephense-client`)
 - Laravel Extra Intellisense (`amiralizadeh9480.laravel-extra-intellisense`)
+- Dev Containers (`ms-vscode-remote.remote-containers`)
 
 **Disable built-in PHP features** - add to VSCode User Settings JSON:
 ```json
@@ -217,7 +229,9 @@ If you are using a separate `laravel_testing` database, you can switch to it fro
 "php.validate.enable": false
 ```
 
-**Install PHP and Composer locally** (for IDE tooling only - the app runs in Docker):
+### If you open the project locally in VSCode
+
+Install PHP and Composer locally for IDE tooling:
 
 | OS | Instructions |
 |----|--------------|
@@ -232,6 +246,143 @@ Then install dependencies locally (restart VSCode first):
 
 ```bash
 composer install
+```
+
+### If you attach VSCode to the container
+
+You do **not** need to install PHP, Composer, Node, or npm on your host machine for editor support in this workflow. VSCode, Intelephense, Composer, Artisan, and npm will all run inside the `app` container instead.
+
+---
+
+## Developing in VSCode Attached to the Container
+
+This is the recommended workflow for this project. Once VSCode is attached to the `app` container, the integrated terminal is already running inside Docker, so you can use normal Laravel, Composer, and npm commands directly without prefixing them with `docker compose exec app`.
+
+Use this section for commands you run **after VSCode is already attached**. Commands that start or stop Docker itself still belong in the regular Docker sections above because those are run from your host machine.
+
+### Opening the project in the container
+
+1. Install the **Dev Containers** extension in VSCode.
+2. Open the project folder in VSCode.
+3. Run **Dev Containers: Reopen in Container**.
+4. Open a new terminal in VSCode. That terminal is now inside the `app` container.
+
+If the Docker containers are not already running, start them first from a host terminal:
+
+```bash
+docker compose up -d
+```
+
+### First-time setup from the attached VSCode terminal
+
+Once VSCode is attached to the container, run these commands in the attached terminal:
+
+```bash
+composer install
+npm install
+npm run build
+```
+
+Use `npm run build` once to create the initial compiled assets.
+After that, use `npm run dev` during active frontend development.
+
+### Starting the application
+
+For this project, Docker Compose starts the web server for you. Once the containers are up, the app is available at [http://localhost:8080](http://localhost:8080).
+
+You normally do **not** need to run `php artisan serve` inside the attached container.
+
+### Running Laravel and Composer commands
+
+From the attached VSCode terminal, run commands directly:
+
+```bash
+php artisan migrate
+php artisan db:seed
+php artisan test
+composer install
+```
+
+### Rebuilding CSS and JavaScript
+
+From the attached VSCode terminal, use:
+
+```bash
+npm install
+npm run dev
+```
+
+- `npm install` installs or updates frontend dependencies inside the container.
+- `npm run dev` starts Vite in watch mode and automatically rebuilds assets while you work.
+
+Leave `npm run dev` running in its own terminal while editing CSS or JavaScript.
+
+When you want a production-style asset build instead of the live watcher, run:
+
+```bash
+npm run build
+```
+
+Run `npm install` again after pulling changes to `package.json` or after rebuilding/resetting the container if your frontend dependencies are missing.
+
+### Resetting or reseeding the database while attached to the container
+
+From the attached VSCode terminal, use the normal Artisan commands directly.
+
+#### Reseed the current local development database
+
+Use this when you want to run the seeders again against your existing local development database:
+
+```bash
+php artisan db:seed
+```
+
+If your seeders need to re-run without duplicate data, use the seeder logic designed for that project, or reset the database first.
+
+#### Reset the local development database and reseed it
+
+This completely rebuilds your normal local development database from scratch and then seeds it again:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+Use this when your schema or seeded data is out of sync and you want a clean reset.
+
+#### Reset only the schema, then seed separately
+
+```bash
+php artisan migrate:fresh
+php artisan db:seed
+```
+
+This is equivalent to `php artisan migrate:fresh --seed`, but split into two commands.
+
+#### Testing database while attached to the container
+
+To rebuild and reseed the testing database manually from the attached container terminal:
+
+```bash
+php artisan migrate:fresh --seed --env=testing
+```
+
+To only reseed the testing database:
+
+```bash
+php artisan db:seed --env=testing
+```
+
+### Quick command reference for the attached VSCode terminal
+
+```bash
+composer install
+php artisan migrate
+php artisan db:seed
+php artisan migrate:fresh --seed
+php artisan test
+npm install
+npm run dev
+npm run build
 ```
 
 ---

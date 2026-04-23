@@ -2,10 +2,10 @@
     <h1 class="mt-0">Apply for: <span id="preview-title">{{ $jobPosition?->title ?? 'Untitled Position' }}</span></h1>
     <p class="text-primary fs-18 mb-20"><strong>Organization:</strong> {{ $organization->name }}</p>
 
-    <p id="preview-desc" class="white-space-pre text-light">{{ $jobPosition?->description ?? 'No description provided.' }}</p>
+    <div id="preview-desc" class="text-light rich-text-content">{!! clean($jobPosition?->description ?? 'No description provided.') !!}</div>
 
     <h3 class="mt-25">Requirements:</h3>
-    <p id="preview-reqs" class="white-space-pre text-light">{{ $jobPosition?->requirements ?? 'No requirements provided.' }}</p>
+    <div id="preview-reqs" class="text-light rich-text-content">{!! clean($jobPosition?->requirements ?? 'No requirements provided.') !!}</div>
 </div>
 
 <div class="card">

@@ -93,3 +93,32 @@ h2 {
   font-size: 24px;
   line-height: 1;
 }
+
+/* HTML Purifier Render Helpers */
+.rich-text-content {
+  line-height: 1.6;
+}
+.rich-text-content p {
+  margin-bottom: 1em;
+}
+.rich-text-content a {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+.rich-text-content ul {
+  list-style: disc;
+  padding-left: 20px;
+  margin-bottom: 1em;
+}
+.rich-text-content ol {
+  list-style: decimal;
+  padding-left: 20px;
+  margin-bottom: 1em;
+}
+.rich-text-content blockquote {
+  border-left: 4px solid var(--border-default);
+  padding-left: 15px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 1em;
+}

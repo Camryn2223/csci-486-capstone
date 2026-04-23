@@ -56,12 +56,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fileOptionsContainer) fileOptionsContainer.style.display = 'block';
             if (multipleWrapper) multipleWrapper.style.display = 'flex';
             if (fileSizeMaxWrapper) fileSizeMaxWrapper.style.display = 'flex';
-        } else if (['text', 'textarea'].includes(type)) {
+        } else if (['text', 'textarea', 'rich_text'].includes(type)) {
             if (charMaxWrapper) {
                 charMaxWrapper.style.display = 'flex';
                 const charMaxInput = charMaxWrapper.querySelector('input');
                 if (charMaxInput && !charMaxInput.value) {
-                    charMaxInput.value = (type === 'textarea') ? 1024 : 128;
+                    charMaxInput.value = (type === 'text') ? 128 : 1024;
                 }
             }
         }
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="drag-handle-icon" title="Drag to reorder">☰</span>
                         <div>
                             <strong class="fs-16 field-display-label">${labelInput.value.replace(/</g, '&lt;')}</strong>
-                            <span class="status status-awaiting-interview ml-10 field-display-type">${typeInput.value}</span>
+                            <span class="status status-awaiting-interview ml-10 field-display-type">${typeInput.value.replace('_', ' ')}</span>
                             <span class="status status-needs-review ml-5 field-display-req" style="display:${reqInput.checked ? 'inline-block' : 'none'}">Required</span>
                         </div>
                     </div>
@@ -131,8 +131,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="flex-wrap-15">
                             <div class="flex-1 min-w-200">
                                 <label>Type</label>
-                                <select name="fields[${fieldCounter}][type]" class="field-type-select" onchange="toggleFieldType(this); this.closest('.field-item-box').querySelector('.field-display-type').textContent = this.value;">
-                                    ${['text','textarea','select','checkbox','radio','file','date'].map(t => `<option value="${t}" ${typeInput.value===t?'selected':''}>${t.charAt(0).toUpperCase() + t.slice(1)}</option>`).join('')}
+                                <select name="fields[${fieldCounter}][type]" class="field-type-select" onchange="toggleFieldType(this); this.closest('.field-item-box').querySelector('.field-display-type').textContent = this.options[this.selectedIndex].text;">
+                                    ${['text','textarea','rich_text','select','checkbox','radio','file','date'].map(t => `<option value="${t}" ${typeInput.value===t?'selected':''}>${t.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</option>`).join('')}
                                 </select>
                             </div>
                             
@@ -156,9 +156,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
 
-                        <div class="char-max-wrapper flex-gap-10 items-center mt-15" style="display: ${['text','textarea'].includes(typeInput.value)?'flex':'none'};">
+                        <div class="char-max-wrapper flex-gap-10 items-center mt-15" style="display: ${['text','textarea','rich_text'].includes(typeInput.value)?'flex':'none'};">
                             <label class="mb-0 text-light">Max Characters:</label>
-                            <input type="number" name="fields[${fieldCounter}][char_max]" value="${charMaxInput ? charMaxInput.value : (typeInput.value==='textarea'?1024:128)}" class="m-0 w-auto" min="1" max="5000">
+                            <input type="number" name="fields[${fieldCounter}][char_max]" value="${charMaxInput ? charMaxInput.value : (typeInput.value==='text'?128:1024)}" class="m-0 w-auto" min="1" max="5000">
                         </div>
 
                         <div class="file-size-max-wrapper flex-gap-10 items-center mt-15" style="display: ${typeInput.value==='file'?'flex':'none'};">
@@ -303,6 +303,18 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.text())
             .then(html => {
                 previewContainer.innerHTML = html;
+
+                if (typeof window.initCharCounters === 'function') {
+                    window.initCharCounters(previewContainer);
+                }
+
+                if (typeof tinymce !== 'undefined') {
+                    tinymce.remove('.tinymce-applicant');
+
+                    if (typeof window.initTinyMceEditors === 'function') {
+                        window.initTinyMceEditors('.tinymce-applicant');
+                    }
+                }
             })
             .catch(err => console.error('Preview update failed:', err));
         }, 200);
