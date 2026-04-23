@@ -6,6 +6,8 @@ use App\Enums\Permission;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OrganizationController;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -30,5 +32,10 @@ class AppServiceProvider extends ServiceProvider
                 return $user->hasPermissionIn($organization, $permission->value);
             });
         }
+
+        // Register the dashboard layout route here to safely drop-in without overwriting routes/web.php
+        Route::middleware(['web', 'auth'])
+            ->patch('/user/dashboard-layout', [OrganizationController::class, 'updateDashboardLayout'])
+            ->name('dashboard.layout');
     }
 }

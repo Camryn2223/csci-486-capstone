@@ -224,4 +224,23 @@ class OrganizationController extends Controller
 
         return view('organizations.applications', compact('organization', 'applications'));
     }
+
+    /**
+     * Update the authenticated user's dashboard layout preferences.
+     */
+    public function updateDashboardLayout(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $validated = $request->validate([
+            'layout'      => ['required', 'array'],
+            'layout.*.id' => ['required', 'string'],
+            'layout.*.x'  => ['required', 'numeric'],
+            'layout.*.y'  => ['required', 'numeric'],
+            'layout.*.w'  => ['required', 'numeric'],
+            'layout.*.h'  => ['required', 'numeric'],
+        ]);
+
+        $request->user()->update(['dashboard_layout' => $validated['layout']]);
+
+        return response()->json(['success' => true]);
+    }
 }

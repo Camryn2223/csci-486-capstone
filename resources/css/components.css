@@ -654,34 +654,34 @@ nav[role="navigation"] p {
   color: inherit;
 }
 
-.org-dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  align-items: stretch;
+/* GridStack Integration Adjustments */
+.grid-stack-item-content.card {
+  margin-bottom: 0 !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.dash-drag-handle {
+  cursor: grab;
+  user-select: none;
+}
+
+.dash-drag-handle:active {
+  cursor: grabbing;
+}
+
+.grid-stack-item-content .org-dashboard-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .org-dashboard-panel {
   display: flex;
   flex-direction: column;
-  min-height: 360px;
-  max-height: 360px;
   margin-bottom: 0;
-}
-
-.org-dashboard-panel-lg {
-  min-height: 560px;
-  max-height: 560px;
-}
-
-.org-dashboard-panel-span-2 {
-  grid-column: span 2;
-}
-
-.org-dashboard-calendar-panel {
-  min-height: 560px;
-  max-height: none;
-  overflow: visible;
 }
 
 .org-dashboard-panel-header {
@@ -697,15 +697,19 @@ nav[role="navigation"] p {
   margin-bottom: 12px;
 }
 
+.org-dashboard-calendar-panel {
+  overflow: hidden;
+}
+
 .org-dashboard-calendar-body {
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
   flex: 1;
 }
 
 .org-dashboard-calendar-body #mini-calendar-view {
   height: 100%;
-  min-height: 500px;
+  min-height: 0;
 }
 
 .org-dashboard-scroll {
@@ -729,11 +733,6 @@ nav[role="navigation"] p {
 
 .org-dashboard-entry p:last-child {
   margin-bottom: 0;
-}
-
-.org-dashboard-panel-actions {
-  min-height: 220px;
-  max-height: 220px;
 }
 
 .org-action-grid {
@@ -774,21 +773,6 @@ nav[role="navigation"] p {
   line-height: 1.45;
 }
 
-.org-dashboard-calendar-panel {
-  overflow: hidden;
-}
-
-.org-dashboard-calendar-body {
-  min-height: 0;
-  overflow: hidden;
-  flex: 1;
-}
-
-.org-dashboard-calendar-body #mini-calendar-view {
-  height: 100%;
-  min-height: 400px;
-}
-
 .org-dashboard-scroll .grid-members {
   margin-right: 2px;
 }
@@ -797,19 +781,15 @@ nav[role="navigation"] p {
   margin-bottom: 0;
 }
 
-@media (max-width: 1100px) {
-  .org-dashboard-grid {
-    grid-template-columns: 1fr;
-  }
+.action-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    vertical-align: -3px;
+    stroke-width: 2;
+}
 
-  .org-dashboard-panel-span-2 {
-    grid-column: span 1;
-  }
-
-  .org-dashboard-panel,
-  .org-dashboard-panel-lg,
-  .org-dashboard-panel-actions {
-    min-height: auto;
-    max-height: none;
-  }
+.org-action-title {
+    display: inline-flex;
+    align-items: center;
 }

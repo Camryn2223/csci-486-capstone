@@ -24,6 +24,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string $password
  * @property string $role interviewer | chairman
  * @property \Carbon\Carbon|null $email_verified_at
+ * @property array|null $dashboard_layout
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
@@ -40,6 +41,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'role',
+        'dashboard_layout',
     ];
 
     protected $hidden = [
@@ -53,6 +55,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
             'role'              => 'string',
+            'dashboard_layout'  => 'array',
         ];
     }
 

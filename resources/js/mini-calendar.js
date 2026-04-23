@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        height: 500,
+        height: '100%',
+        fixedWeekCount: false,
         headerToolbar: { 
             left: 'title', 
             center: '', 
@@ -62,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     calendar.render();
+    window.miniCalendar = calendar;
 
     var toggleBtn = document.getElementById('toggle-expand');
     if (toggleBtn) {
@@ -100,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             } else {
                 document.getElementById('calendar-overlay')?.remove();
-                calendar.setOption('height', 500);
+                calendar.setOption('height', '100%');
                 calendar.setOption('headerToolbar', { 
                     left: 'title', 
                     center: '', 

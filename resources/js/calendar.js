@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         height: 700,
+        fixedWeekCount: false,
         headerToolbar: { 
             left: 'prev,next today', 
             center: 'title', 

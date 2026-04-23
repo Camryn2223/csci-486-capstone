@@ -17,7 +17,7 @@
         })();
     </script>
     
-    <!-- TinyMCE 8 (via Cloud CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/tinymce@8/tinymce.min.js"></script>
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -89,5 +89,8 @@
     </button>
 
     @stack('scripts')
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>
