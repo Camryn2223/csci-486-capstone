@@ -15,11 +15,13 @@
         </div>
     </div>
 
-    <div class="card">
-        <h2 class="mt-0 border-bottom-divider pb-15">Preview: {{ $applicationTemplate->name }}</h2>
-        <p class="text-muted fs-14 mb-25">This is how the application form will appear to applicants. <em>(Form submission is disabled in preview)</em></p>
+    <div class="card application-template-preview-card">
+        <h2 class="mt-0 border-bottom-divider application-template-preview-title">Preview: {{ $applicationTemplate->name }}</h2>
+        <p class="text-muted fs-14 application-template-preview-description">This is how the application form will appear to applicants. <em>(Form submission is disabled in preview)</em></p>
 
-        @include('applications.partials.form-fields', ['template' => $applicationTemplate, 'isPreview' => true])
+        <div class="application-template-preview-fields">
+            @include('applications.partials.form-fields', ['template' => $applicationTemplate, 'isPreview' => true])
+        </div>
     </div>
 </div>
 @endsection

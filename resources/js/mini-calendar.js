@@ -67,19 +67,31 @@ document.addEventListener('DOMContentLoaded', function() {
     if (toggleBtn) {
         toggleBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            const wrapper = document.getElementById('calendar-wrapper');
+
+            const wrapper = document.getElementById('calendar-wrapper') || calendarEl.closest('.org-dashboard-calendar-panel');
+            const filterContainer = document.getElementById('filter-container');
+
+            if (!wrapper) return;
+
             const isExpanded = wrapper.classList.toggle('calendar-expanded');
             
             this.textContent = isExpanded ? 'Collapse Calendar' : '⛶ Expand Calendar';
-            document.getElementById('filter-container').style.display = isExpanded ? 'inline-block' : 'none';
+
+            if (filterContainer) {
+                filterContainer.style.display = isExpanded ? 'inline-block' : 'none';
+            }
 
             if (isExpanded) {
-                let overlay = document.createElement('div');
-                overlay.id = 'calendar-overlay';
-                overlay.className = 'calendar-overlay';
-                overlay.onclick = () => document.getElementById('toggle-expand').click();
-                document.body.appendChild(overlay);
-                
+                let overlay = document.getElementById('calendar-overlay');
+
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'calendar-overlay';
+                    overlay.className = 'calendar-overlay';
+                    overlay.onclick = () => toggleBtn.click();
+                    document.body.appendChild(overlay);
+                }
+
                 calendar.setOption('height', 'calc(90vh - 100px)');
                 calendar.setOption('headerToolbar', { 
                     left: 'prev,next today', 

@@ -8,8 +8,8 @@ use App\Models\Organization;
 use App\Models\User;
 
 /**
- * Authorization policy for Interview records. Feedback submission is
- * restricted to the assigned interviewer.
+ * Authorization policy for Interview records. Notes/feedback submission is
+ * restricted to the assigned interviewers.
  */
 class InterviewPolicy
 {
@@ -59,8 +59,8 @@ class InterviewPolicy
     }
 
     /**
-     * Determine whether the user can submit feedback for an interview. Only
-     * the assigned interviewers may submit feedback.
+     * Determine whether the user can submit notes/feedback for an interview. Only
+     * the assigned interviewers may submit feedback on their pivot record.
      */
     public function submitFeedback(User $user, Interview $interview): bool
     {

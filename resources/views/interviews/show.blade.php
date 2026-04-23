@@ -20,7 +20,9 @@
             @if ($interviewer->pivot->notes)
                 <hr class="divider-20">
                 <h2>Feedback from {{ $interviewer->name }}</h2>
-                <p class="feedback-box">{{ $interviewer->pivot->notes }}</p>
+                <div class="feedback-box rich-text-content">
+                    {!! clean($interviewer->pivot->notes) !!}
+                </div>
                 <p class="text-muted fs-13"><em>Submitted: {{ \Carbon\Carbon::parse($interviewer->pivot->feedback_submitted_at)->format('M j, Y g:i A') }}</em></p>
             @endif
         @endforeach

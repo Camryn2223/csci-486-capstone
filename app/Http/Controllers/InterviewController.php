@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 /**
- * Handles scheduling, updating, canceling, and feedback submission for
+ * Handles scheduling, updating, canceling, and notes submission for
  * interviews.
  */
 class InterviewController extends Controller
@@ -255,31 +255,27 @@ class InterviewController extends Controller
     }
 
     /**
-     * Submit feedback notes for a completed interview. Evaluated and stored 
+     * Submit/Update ongoing notes for an interview. Evaluated and stored 
      * purely on the specific acting interviewer's pivot row.
      */
-    public function submitFeedback(Request $request, Interview $interview): RedirectResponse
+    public function submitFeedback(Request $request, Interview $interview): \Illuminate\Http\JsonResponse|RedirectResponse
     {
         $this->authorize('submitFeedback', $interview);
 
-        if (! $interview->isCompleted()) {
-            return back()->withErrors(['interview' => 'Feedback can only be submitted for completed interviews.']);
-        }
-
-        if ($interview->hasFeedbackFrom(Auth::user())) {
-            return back()->withErrors(['interview' => 'Feedback has already been submitted by you for this interview.']);
-        }
-
         $validated = $request->validate([
-            'notes' => ['required', 'string', 'max:5000'],
+            'notes' => ['nullable', 'string', 'max:10000'],
         ]);
 
         $interview->interviewers()->updateExistingPivot(Auth::id(), [
-            'notes'                 => $validated['notes'],
+            'notes'                 => filled($validated['notes'] ?? null) ? clean($validated['notes']) : null,
             'feedback_submitted_at' => now(),
         ]);
 
-        return back()->with('success', 'Feedback submitted.');
+        if ($request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json') {
+            return response()->json(['message' => 'Notes saved.']);
+        }
+
+        return back()->with('success', 'Notes saved.');
     }
 
     /**

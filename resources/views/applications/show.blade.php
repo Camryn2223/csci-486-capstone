@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container container-wide">
     <div class="card card-header-flex-start">
         <div>
             <h1 class="m-0">Application - {{ $application->applicant_name }}</h1>
@@ -16,84 +16,92 @@
         <a href="{{ route('applications.index', [$application->jobPosition->organization, $application->jobPosition]) }}" class="btn btn-outline">Back to Applications</a>
     </div>
 
-    @can('updateStatus', $application)
-        <div class="card">
-            <h2 class="mt-0">Update Status</h2>
-            <form method="POST" action="{{ route('applications.status', $application) }}" class="form-inline-start">
-                @csrf
-                @method('PATCH')
-                <select name="status" class="max-w-300 mb-0">
-                    @foreach (['submitted', 'under_review', 'needs_chairman_review', 'no_longer_under_consideration', 'withdrawn'] as $status)
-                        <option value="{{ $status }}" {{ $application->status === $status ? 'selected' : '' }}>
-                            {{ str_replace('_', ' ', Str::title($status)) }}
-                        </option>
-                    @endforeach
-                </select>
-                <button type="submit" class="btn">Update Status</button>
-            </form>
-        </div>
-    @endcan
-
-    @if ($application->answers->isNotEmpty())
-        <div class="card">
-            <h2 class="mt-0">Application Answers</h2>
-            @foreach ($application->answers as $answer)
-                <div class="mb-15 pb-15 border-bottom-divider">
-                    <strong class="d-block mb-5 text-primary">{{ $answer->field->label }}:</strong>
-                    
-                    @if($answer->document)
-                        @include('applications.partials.document-card', ['document' => $answer->document])
-                    @elseif($answer->field->type === 'rich_text')
-                        <div class="rich-text-content mt-5">{!! clean($answer->value ?? 'No answer provided') !!}</div>
-                    @else
-                        <span class="white-space-pre">{{ $answer->value ?? 'No answer provided' }}</span>
-                    @endif
+    <div class="split-layout">
+        <div class="split-main">
+            @can('updateStatus', $application)
+                <div class="card">
+                    <h2 class="mt-0">Update Status</h2>
+                    <form method="POST" action="{{ route('applications.status', $application) }}" class="form-inline-start">
+                        @csrf
+                        @method('PATCH')
+                        <select name="status" class="max-w-300 mb-0">
+                            @foreach (['submitted', 'under_review', 'needs_chairman_review', 'no_longer_under_consideration', 'withdrawn'] as $status)
+                                <option value="{{ $status }}" {{ $application->status === $status ? 'selected' : '' }}>
+                                    {{ str_replace('_', ' ', Str::title($status)) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="btn">Update Status</button>
+                    </form>
                 </div>
-            @endforeach
-        </div>
-    @endif
-
-    <div class="card">
-        <div class="card-header-flex mb-20">
-            <h2 class="m-0">Interviews ({{ $application->interviews->count() }})</h2>
-            @can('create', [App\Models\Interview::class, $application])
-                <a href="{{ route('interviews.create', $application) }}" class="btn btn-sm">+ Schedule Interview</a>
             @endcan
-        </div>
 
-        @forelse ($application->interviews as $interview)
-            <div class="entry-box entry-top flex-wrap flex-gap-10">
-                <div>
-                    <strong class="fs-16">{{ $interview->scheduled_at->format('M j, Y g:i A') }}</strong>
-                    <span class="text-muted ml-10">Interviewer(s): {{ $interview->interviewers->pluck('name')->implode(', ') }}</span>
-                    <span class="status status-{{ $interview->status === 'scheduled' ? 'needs-review' : ($interview->status === 'completed' ? 'complete' : 'danger') }} ml-10">{{ ucfirst($interview->status) }}</span>
+            @if ($application->answers->isNotEmpty())
+                <div class="card">
+                    <h2 class="mt-0">Application Answers</h2>
+                    @foreach ($application->answers as $answer)
+                        <div class="mb-15 pb-15 border-bottom-divider">
+                            <strong class="d-block mb-5 text-primary">{{ $answer->field->label }}:</strong>
+                            
+                            @if($answer->document)
+                                @include('applications.partials.document-card', ['document' => $answer->document])
+                            @elseif($answer->field->type === 'rich_text')
+                                <div class="rich-text-content mt-5">{!! clean($answer->value ?? 'No answer provided') !!}</div>
+                            @else
+                                <span class="white-space-pre">{{ $answer->value ?? 'No answer provided' }}</span>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
-                
-                <div class="flex-wrap-8">
-                    <a href="{{ route('interviews.show', $interview) }}" class="btn btn-sm btn-slate">View Details</a>
+            @endif
 
-                    @can('update', $interview)
-                        @if ($interview->status === 'scheduled')
-                            <a href="{{ route('interviews.edit', $interview) }}" class="btn btn-sm">Reschedule</a>
-
-                            <form method="POST" action="{{ route('interviews.complete', $interview) }}" class="m-0">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Mark this interview as completed?')">Mark Complete</button>
-                            </form>
-
-                            <form method="POST" action="{{ route('interviews.cancel', $interview) }}" class="m-0">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Cancel this interview?')">Cancel</button>
-                            </form>
-                        @endif
+            <div class="card">
+                <div class="card-header-flex mb-20">
+                    <h2 class="m-0">Interviews ({{ $application->interviews->count() }})</h2>
+                    @can('create', [App\Models\Interview::class, $application])
+                        <a href="{{ route('interviews.create', $application) }}" class="btn btn-sm">+ Schedule Interview</a>
                     @endcan
                 </div>
+
+                @forelse ($application->interviews as $interview)
+                    <div class="entry-box entry-top flex-wrap flex-gap-10">
+                        <div>
+                            <strong class="fs-16">{{ $interview->scheduled_at->format('M j, Y g:i A') }}</strong>
+                            <span class="text-muted ml-10">Interviewer(s): {{ $interview->interviewers->pluck('name')->implode(', ') }}</span>
+                            <span class="status status-{{ $interview->status === 'scheduled' ? 'needs-review' : ($interview->status === 'completed' ? 'complete' : 'danger') }} ml-10">{{ ucfirst($interview->status) }}</span>
+                        </div>
+                        
+                        <div class="flex-wrap-8">
+                            <a href="{{ route('interviews.show', $interview) }}" class="btn btn-sm btn-slate">View Details</a>
+
+                            @can('update', $interview)
+                                @if ($interview->status === 'scheduled')
+                                    <a href="{{ route('interviews.edit', $interview) }}" class="btn btn-sm">Reschedule</a>
+
+                                    <form method="POST" action="{{ route('interviews.complete', $interview) }}" class="m-0">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Mark this interview as completed?')">Mark Complete</button>
+                                    </form>
+
+                                    <form method="POST" action="{{ route('interviews.cancel', $interview) }}" class="m-0">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Cancel this interview?')">Cancel</button>
+                                    </form>
+                                @endif
+                            @endcan
+                        </div>
+                    </div>
+                @empty
+                    <p>No interviews scheduled.</p>
+                @endforelse
             </div>
-        @empty
-            <p>No interviews scheduled.</p>
-        @endforelse
+        </div>
+
+        <div class="split-sidebar split-sidebar-notes">
+            @include('partials.interview-notes', ['interviews' => $application->interviews])
+        </div>
     </div>
 </div>
 @endsection

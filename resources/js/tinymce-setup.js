@@ -10,17 +10,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return value || fallback;
     };
 
-    const buildConfig = (selector) => {
+    const buildConfig = (selector, overrides = {}) => {
         const isDark = isDarkMode();
 
-        const bgInput = cssVar('--bg-input', isDark ? '#1f2327' : '#ffffff');
-        const textMain = cssVar('--text-main', isDark ? '#e6e6e6' : '#1f2937');
-        const textMuted = cssVar('--text-muted', isDark ? '#bdbdbd' : '#6b7280');
-        const textPrimary = cssVar('--text-primary', isDark ? '#a97dff' : '#6d3fa9');
-        const borderDefault = cssVar('--border-default', isDark ? '#3a3f45' : '#d1d5db');
-        const bgPage = cssVar('--bg-page', isDark ? '#1a1d21' : '#f3f4f6');
+        cssVar('--bg-input', isDark ? '#1f2327' : '#ffffff');
+        cssVar('--text-main', isDark ? '#e6e6e6' : '#1f2937');
+        cssVar('--text-muted', isDark ? '#bdbdbd' : '#6b7280');
+        cssVar('--text-primary', isDark ? '#a97dff' : '#6d3fa9');
+        cssVar('--border-default', isDark ? '#3a3f45' : '#d1d5db');
+        cssVar('--bg-page', isDark ? '#1a1d21' : '#f3f4f6');
 
-        return {
+        const baseConfig = {
             selector,
             license_key: 'gpl',
             promotion: false,
@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
             skin_url: isDark
                 ? '/tinymce/skins/ui/hireflow-dark'
                 : '/tinymce/skins/ui/hireflow-light',
-
             content_css: isDark
                 ? '/tinymce/content/hireflow-dark/content.min.css'
                 : '/tinymce/content/hireflow-light/content.min.css',
@@ -53,18 +52,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 editor.on('init SetContent change keyup paste input undo redo', syncEditorState);
             }
         };
+
+        return {
+            ...baseConfig,
+            ...overrides
+        };
     };
 
-    const initTinyMceEditors = (selector) => {
+    const initTinyMceEditors = (selector, overrides = {}) => {
         if (!document.querySelector(selector)) return;
-        tinymce.init(buildConfig(selector));
+        tinymce.init(buildConfig(selector, overrides));
     };
 
     const rebuildTinyMceEditors = () => {
         tinymce.remove('.tinymce-editor');
         tinymce.remove('.tinymce-applicant');
+        tinymce.remove('.tinymce-note');
+
         initTinyMceEditors('.tinymce-editor');
         initTinyMceEditors('.tinymce-applicant');
+        initTinyMceEditors('.tinymce-note', {
+            height: 260,
+            toolbar: 'undo redo | bold italic underline | bullist numlist | link | removeformat',
+            block_formats: 'Paragraph=p'
+        });
     };
 
     window.initTinyMceEditors = initTinyMceEditors;

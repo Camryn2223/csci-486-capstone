@@ -36,17 +36,4 @@ trait HasInterviewerFeatures
             ->where('scheduled_at', '>=', now())
             ->orderBy('scheduled_at');
     }
-
-    /**
-     * Completed interviews assigned to this user for which feedback has not
-     * yet been submitted.
-     *
-     * @return BelongsToMany<Interview>
-     */
-    public function pendingFeedbackInterviews(): BelongsToMany
-    {
-        return $this->interviews()
-            ->where('status', 'completed')
-            ->whereNull('interview_user.feedback_submitted_at');
-    }
 }

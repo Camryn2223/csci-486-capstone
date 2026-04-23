@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container container-wide">
     <div class="card card-header-flex">
         <div>
             <h1 class="m-0">{{ $organization->name }}</h1>
@@ -17,199 +17,324 @@
         $canCreateInvites = Auth::user()->hasPermissionIn($organization, 'create_invites');
         $showTeamAccess = $canManageMembers || $canCreateInvites;
 
-        $canViewPositions = Auth::user()->hasPermissionIn($organization, 'review_applications') || Auth::user()->hasPermissionIn($organization, 'create_positions'); 
+        $canViewPositions = Auth::user()->hasPermissionIn($organization, 'review_applications') || Auth::user()->hasPermissionIn($organization, 'create_positions');
         $canCreatePositions = Auth::user()->hasPermissionIn($organization, 'create_positions');
+
         $canViewTemplates = Auth::user()->hasPermissionIn($organization, 'manage_templates') || Auth::user()->hasPermissionIn($organization, 'review_applications');
         $canCreateTemplates = Auth::user()->hasPermissionIn($organization, 'manage_templates');
-        $showHiringSetup = $canViewPositions || $canCreatePositions || $canViewTemplates || $canCreateTemplates;
 
         $canReviewApps = Auth::user()->hasPermissionIn($organization, 'review_applications');
         $canViewInterviews = Auth::user()->hasPermissionIn($organization, 'review_applications') || Auth::user()->hasPermissionIn($organization, 'schedule_interviews');
-        $showInterviewsApps = $canReviewApps || $canViewInterviews;
-        
+
         $isChairman = Auth::user()->isChairmanOf($organization);
+
         $needsReviewApps = collect();
         if ($isChairman) {
             $needsReviewApps = \App\Models\Application::where('status', 'needs_chairman_review')
-                ->whereHas('jobPosition', fn($q) => $q->where('organization_id', $organization->id))
+                ->whereHas('jobPosition', fn ($q) => $q->where('organization_id', $organization->id))
                 ->with('jobPosition')
                 ->latest()
                 ->get();
         }
     @endphp
 
-    @if($isChairman && $needsReviewApps->isNotEmpty())
-        <div class="card border-warning bg-warning-light">
-            <h2 class="mt-0 text-warning d-flex items-center flex-gap-10">
-                Applications Flagged for Chairman Review
-            </h2>
-            <div class="flex-col-10">
-                @foreach($needsReviewApps as $app)
-                    <div class="entry-box card-header-flex m-0 bg-warning-darker">
+    <div class="org-dashboard-grid">
+        <div class="card org-dashboard-panel org-dashboard-panel-span-2 org-dashboard-panel-actions">
+            <div class="org-dashboard-panel-header">
+                <div>
+                    <h2 class="m-0">Quick Actions</h2>
+                </div>
+            </div>
+
+            <div class="org-dashboard-scroll">
+                <div class="org-action-grid">
+                    @if($showTeamAccess)
+                        <a href="{{ route('organizations.members', $organization) }}" class="org-action-card">
+                            <strong class="org-action-title">Manage team access</strong>
+                            <span class="org-action-description">View members, update permissions, and handle invites.</span>
+                        </a>
+                    @endif
+
+                    @if($canReviewApps)
+                        <a href="{{ route('organizations.applications', $organization) }}" class="org-action-card">
+                            <strong class="org-action-title">Review submitted applications</strong>
+                            <span class="org-action-description">See every applicant in one place and keep hiring moving.</span>
+                        </a>
+                    @endif
+
+                    @if($canViewInterviews)
+                        <a href="{{ route('organizations.interviews.index', $organization) }}" class="org-action-card">
+                            <strong class="org-action-title">Open the interview calendar</strong>
+                            <span class="org-action-description">Check scheduled interviews and manage upcoming sessions.</span>
+                        </a>
+                    @endif
+
+                    @if($canViewPositions)
+                        <a href="{{ route('organizations.job-positions.index', $organization) }}" class="org-action-card">
+                            <strong class="org-action-title">Browse job postings</strong>
+                            <span class="org-action-description">Review open roles and see what candidates can apply for.</span>
+                        </a>
+                    @endif
+
+                    @if($canCreatePositions)
+                        <a href="{{ route('organizations.job-positions.create', $organization) }}" class="org-action-card">
+                            <strong class="org-action-title">Create a new job posting</strong>
+                            <span class="org-action-description">Add a new role and start collecting applications.</span>
+                        </a>
+                    @endif
+
+                    @if($canViewTemplates)
+                        <a href="{{ route('organizations.application-templates.index', $organization) }}" class="org-action-card">
+                            <strong class="org-action-title">Browse application forms</strong>
+                            <span class="org-action-description">Review the templates applicants fill out before they apply.</span>
+                        </a>
+                    @endif
+
+                    @if($canCreateTemplates)
+                        <a href="{{ route('organizations.application-templates.create', $organization) }}" class="org-action-card">
+                            <strong class="org-action-title">Create an application form</strong>
+                            <span class="org-action-description">Build a new template for a role or hiring workflow.</span>
+                        </a>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        @if($isChairman)
+            <div class="card org-dashboard-panel">
+                <div class="org-dashboard-panel-header">
+                    <div>
+                        <h2 class="m-0">Needs Chairman Review</h2>
+                        <p class="text-muted m-0 mt-5">{{ $needsReviewApps->count() }} application(s) waiting on you.</p>
+                    </div>
+                </div>
+
+                <div class="org-dashboard-scroll">
+                    <div class="org-dashboard-list">
+                        @forelse ($needsReviewApps as $application)
+                            <div class="org-dashboard-entry">
+                                <div class="card-header-flex">
+                                    <div>
+                                        <strong class="fs-16">{{ $application->applicant_name }}</strong>
+                                        <span class="text-muted ml-5">({{ $application->jobPosition->title }})</span>
+                                    </div>
+
+                                    <a href="{{ route('applications.show', $application) }}" class="btn btn-sm">Review</a>
+                                </div>
+
+                                <p class="m-0 mt-5 text-muted">
+                                    Status:
+                                    <strong class="text-light">{{ str_replace('_', ' ', \Illuminate\Support\Str::title($application->status)) }}</strong>
+                                    &bull;
+                                    Submitted: {{ $application->created_at->format('M j, Y') }}
+                                </p>
+                            </div>
+                        @empty
+                            <p class="m-0 text-muted">Nothing is waiting on chairman review right now.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if(Auth::user()->hasPermissionIn($organization, 'schedule_interviews'))
+            <div class="card org-dashboard-panel">
+                <div class="org-dashboard-panel-header">
+                    <div>
+                        <h2 class="m-0">Ready to Schedule</h2>
+                        <p class="text-muted m-0 mt-5">{{ $unscheduledApplications->count() }} active application(s) without interviews.</p>
+                    </div>
+                </div>
+
+                <div class="org-dashboard-scroll">
+                    <div class="org-dashboard-list">
+                        @forelse ($unscheduledApplications as $app)
+                            <div class="org-dashboard-entry">
+                                <div class="card-header-flex">
+                                    <div>
+                                        <strong class="fs-16">{{ $app->applicant_name }}</strong>
+                                        <span class="text-muted ml-5">({{ $app->jobPosition->title }})</span>
+                                        <span class="status status-{{ str_replace('_', '-', $app->status) }} ml-10">{{ str_replace('_', ' ', \Illuminate\Support\Str::title($app->status)) }}</span>
+                                    </div>
+
+                                    <div class="flex-gap-10 items-center">
+                                        <a href="{{ route('applications.show', $app) }}" class="btn btn-sm btn-slate">View App</a>
+                                        <a href="{{ route('interviews.create', $app) }}" class="btn btn-sm">Schedule</a>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="m-0 text-muted">All active applications already have interviews scheduled.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <div class="card org-dashboard-panel">
+            <div class="org-dashboard-panel-header">
+                <div>
+                    <h2 class="m-0">Open Positions</h2>
+                    <p class="text-muted m-0 mt-5">{{ $organization->openPositions->count() }} role(s) currently open.</p>
+                </div>
+            </div>
+
+            <div class="org-dashboard-scroll">
+                <div class="org-dashboard-list">
+                    @forelse ($organization->openPositions as $position)
+                        <div class="org-dashboard-entry">
+                            <div class="card-header-flex">
+                                <div>
+                                    <strong class="fs-16">{{ $position->title }}</strong>
+                                </div>
+
+                                <a href="{{ route('organizations.job-positions.show', [$organization, $position]) }}" class="btn btn-sm">View</a>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="m-0 text-muted">No open positions right now.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+        <div class="card org-dashboard-panel">
+            <div class="org-dashboard-panel-header">
+                <div>
+                    <h2 class="m-0">Members</h2>
+                    <p class="text-muted m-0 mt-5">{{ $organization->members->count() }} teammate(s) in this organization.</p>
+                </div>
+            </div>
+
+            <div class="org-dashboard-scroll">
+                <div class="grid-members">
+                    @foreach ($organization->members as $member)
+                        @php
+                            $memberInitial = strtoupper(mb_substr($member->name, 0, 1));
+                        @endphp
+
+                        @if($canManageMembers)
+                            <a href="{{ route('organizations.permissions.show', [$organization, $member]) }}" class="member-grid-box member-grid-link text-decoration-none">
+                                <div class="member-grid-person">
+                                    <div class="avatar-circle member-avatar bg-slate text-slate-dark">{{ $memberInitial }}</div>
+
+                                    <div class="member-grid-meta">
+                                        <strong class="d-block fs-16">{{ $member->name }}</strong>
+                                        <span class="text-muted fs-13">{{ ucfirst($member->role) }}</span>
+                                    </div>
+                                </div>
+                            </a>
+                        @else
+                            <div class="member-grid-box">
+                                <div class="member-grid-person">
+                                    <div class="avatar-circle member-avatar bg-slate text-slate-dark">{{ $memberInitial }}</div>
+
+                                    <div class="member-grid-meta">
+                                        <strong class="d-block fs-16">{{ $member->name }}</strong>
+                                        <span class="text-muted fs-13">{{ ucfirst($member->role) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        @if($canViewTemplates)
+            <div class="card org-dashboard-panel">
+                <div class="org-dashboard-panel-header">
+                    <div>
+                        <h2 class="m-0">Application Forms</h2>
+                        <p class="text-muted m-0 mt-5">{{ $organization->templates->count() }} template(s) available.</p>
+                    </div>
+                </div>
+
+                <div class="org-dashboard-scroll">
+                    <div class="org-dashboard-list">
+                        @forelse ($organization->templates as $template)
+                            <div class="org-dashboard-entry">
+                                <div class="card-header-flex">
+                                    <div>
+                                        <strong class="fs-16">{{ $template->name }}</strong>
+                                    </div>
+
+                                    <div class="flex-gap-10 items-center">
+                                        <a href="{{ route('organizations.application-templates.show', [$organization, $template]) }}" class="btn btn-sm btn-slate">Preview</a>
+
+                                        @can('update', $template)
+                                            <a href="{{ route('organizations.application-templates.edit', [$organization, $template]) }}" class="btn btn-sm">Edit</a>
+                                        @endcan
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="m-0 text-muted">No application forms have been created yet.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @can('viewAny', [App\Models\Interview::class, $organization])
+            <div id="calendar-wrapper" class="card org-dashboard-panel org-dashboard-panel-span-2 org-dashboard-panel-lg org-dashboard-calendar-panel">
+                <div class="org-dashboard-panel-header org-dashboard-panel-header-tight">
+                    <div class="flex-gap-20 items-center flex-wrap">
                         <div>
-                            <strong class="fs-16">{{ $app->applicant_name }}</strong>
-                            <span class="text-muted ml-5">({{ $app->jobPosition->title }})</span>
+                            <h2 class="m-0">Schedule Overview</h2>
                         </div>
-                        <a href="{{ route('applications.show', $app) }}" class="btn btn-sm btn-slate">Review</a>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    @endif
 
-    @if($showTeamAccess || $showHiringSetup || $showInterviewsApps)
-        <div class="card">
-            <h2 class="mt-0 mb-5 border-bottom-none">Quick Actions</h2>
-            
-            <div class="flex-col-20">
-                @if($showTeamAccess)
-                    <div>
-                        <h2 class="fs-14 text-primary mb-10 mt-10">Team & Access</h2>
-                        <div class="flex-wrap-12">
-                            @if($canManageMembers || $canCreateInvites)
-                                <a href="{{ route('organizations.members', $organization) }}" class="btn btn-sm">Manage Team</a>
-                            @endif
-                            @if($canManageMembers)
-                                <a href="{{ route('organizations.permissions.index', $organization) }}" class="btn btn-sm">Manage Permissions</a>
-                            @endif
-                        </div>
-                    </div>
-                @endif
+                        <div class="flex-gap-15 items-center flex-wrap">
+                            <div class="fs-14 text-muted flex-gap-15 items-center">
+                                <span class="flex-gap-5 items-center"><span class="legend-box legend-purple"></span> My Interviews</span>
+                                <span class="flex-gap-5 items-center"><span class="legend-box legend-gray"></span> Other Interviews</span>
+                            </div>
 
-                @if($showHiringSetup)
-                    <div>
-                        <h2 class="fs-14 text-primary mb-10 mt-0">Hiring Setup</h2>
-                        <div class="flex-wrap-12">
-                            @if($canViewPositions)
-                                <a href="{{ route('organizations.job-positions.index', $organization) }}" class="btn btn-sm btn-slate">View Job Positions</a>
-                            @endif
-                            @if($canCreatePositions)
-                                <a href="{{ route('organizations.job-positions.create', $organization) }}" class="btn btn-sm">Create Job Position</a>
-                            @endif
-                            @if($canViewTemplates)
-                                <a href="{{ route('organizations.application-templates.index', $organization) }}" class="btn btn-sm btn-slate">View Application Templates</a>
-                            @endif
-                            @if($canCreateTemplates)
-                                <a href="{{ route('organizations.application-templates.create', $organization) }}" class="btn btn-sm">Create Application Template</a>
-                            @endif
-                        </div>
-                    </div>
-                @endif
-
-                @if($showInterviewsApps)
-                    <div>
-                        <h2 class="fs-14 text-primary mb-10 mt-0">Interviews & Applications</h2>
-                        <div class="flex-wrap-12">
-                            @if($canReviewApps)
-                                <a href="{{ route('organizations.applications', $organization) }}" class="btn btn-sm btn-slate">View All Applications</a>
-                            @endif
                             @if($canViewInterviews)
-                                <a href="{{ route('organizations.interviews.index', $organization) }}" class="btn btn-sm btn-slate">Interview Calendar Page</a>
+                                <a href="{{ route('organizations.interviews.index', $organization) }}" class="btn btn-sm btn-slate">Open full calendar</a>
                             @endif
+
+                            <label id="filter-container" class="d-none cursor-pointer text-primary fw-bold fs-14 m-0">
+                                <input type="checkbox" id="filter-mine"> My Interviews Only
+                            </label>
+
+                            <button id="toggle-expand" class="btn btn-sm" type="button">⛶ Expand Calendar</button>
                         </div>
                     </div>
-                @endif
-            </div>
-        </div>
-    @endif
-
-    @if(Auth::user()->hasPermissionIn($organization, 'schedule_interviews'))
-        <h2 class="mt-0">Unscheduled Applications ({{ $unscheduledApplications->count() }})</h2>
-        <div class="card mb-35" style="max-height: 400px; overflow-y: auto;">
-            @forelse ($unscheduledApplications as $app)
-                <div class="entry-box card-header-flex m-0 mb-10 p-3">
-                    <div>
-                        <strong class="fs-16">{{ $app->applicant_name }}</strong>
-                        <span class="text-muted ml-5">({{ $app->jobPosition->title }})</span>
-                        <span class="status status-{{ str_replace('_', '-', $app->status) }} ml-10">{{ str_replace('_', ' ', Str::title($app->status)) }}</span>
-                    </div>
-                    <div class="flex-gap-10 items-center">
-                        <a href="{{ route('applications.show', $app) }}" class="btn btn-sm btn-slate">View App</a>
-                        <a href="{{ route('interviews.create', $app) }}" class="btn btn-sm">Schedule Interview</a>
-                    </div>
                 </div>
-            @empty
-                <p class="m-0 text-muted">All active applications have been scheduled for an interview.</p>
-            @endforelse
-        </div>
-    @endif
 
-    <h2>Open Positions</h2>
-    @forelse ($organization->openPositions as $position)
-        <div class="card entry-box card-header-flex mb-10 p-3">
-            <strong class="fs-16">{{ $position->title }}</strong>
-            <a href="{{ route('organizations.job-positions.show', [$organization, $position]) }}" class="btn btn-sm">View Position</a>
-        </div>
-    @empty
-        <div class="card"><p class="m-0">No open positions.</p></div>
-    @endforelse
+                <div class="org-dashboard-calendar-body">
+                    <div id="mini-calendar-view"></div>
+                </div>
+            </div>
 
-    <h2>Members ({{ $organization->members->count() }})</h2>
-    <div class="card mb-35">
-        <div class="grid-members">
-            @foreach ($organization->members as $member)
-                @if($canManageMembers)
-                    <a href="{{ route('organizations.permissions.show', [$organization, $member]) }}" class="member-grid-box text-decoration-none">
-                        <strong class="d-block">{{ $member->name }}</strong>
-                        <span class="text-muted fs-13">{{ ucfirst($member->role) }}</span>
-                    </a>
-                @else
-                    <div class="member-grid-box">
-                        <strong class="d-block">{{ $member->name }}</strong>
-                        <span class="text-muted fs-13">{{ ucfirst($member->role) }}</span>
-                    </div>
-                @endif
-            @endforeach
-        </div>
+            @php
+                $calendarEvents = $interviews->map(function ($inv) {
+                    $isMine = $inv->interviewers->contains('id', auth()->id());
+                    $interviewerNames = $inv->interviewers->pluck('name')->implode(', ');
+
+                    return [
+                        'id' => $inv->id,
+                        'title' => 'Interview: ' . $inv->application->applicant_name,
+                        'start' => $inv->scheduled_at->format('Y-m-d\TH:i:s'),
+                        'url' => route('interviews.show', $inv),
+                        'color' => $isMine ? 'var(--brand-base)' : 'var(--text-muted)',
+                        'extendedProps' => [
+                            'isMine' => $isMine,
+                            'position' => $inv->application->jobPosition->title,
+                            'interviewer' => $interviewerNames,
+                            'status' => $inv->status,
+                            'canUpdate' => auth()->user()->can('update', $inv),
+                        ],
+                    ];
+                });
+            @endphp
+
+            <script id="mini-calendar-events-data" type="application/json">
+                {!! json_encode($calendarEvents) !!}
+            </script>
+        @endcan
     </div>
-
-    @can('viewAny', [App\Models\Interview::class, $organization])
-        <h2 class="mt-0">Schedule Overview</h2>
-        <div id="calendar-wrapper" class="card position-relative" style="transition: all 0.3s ease;">
-            <div class="card-header-flex mb-15">
-                <div class="flex-gap-20 items-center">
-                    <div class="flex-gap-15 fs-13">
-                        <span class="flex-gap-5 items-center"><span class="legend-box legend-purple"></span> My Interviews</span>
-                        <span class="flex-gap-5 items-center"><span class="legend-box legend-gray"></span> Other Interviews</span>
-                    </div>
-                </div>
-                
-                <div class="flex-gap-15 items-center">
-                    <label id="filter-container" class="d-none cursor-pointer text-primary fw-bold fs-14 m-0">
-                        <input type="checkbox" id="filter-mine"> My Interviews Only
-                    </label>
-                    <button id="toggle-expand" class="btn btn-sm">⛶ Expand Calendar</button>
-                </div>
-            </div>
-            
-            <div id="mini-calendar-view" style="min-height: 400px;"></div>
-        </div>
-
-        @php
-            $calendarEvents = $interviews->map(function($inv) {
-                $isMine = $inv->interviewers->contains('id', auth()->id());
-                $interviewerNames = $inv->interviewers->pluck('name')->implode(', ');
-                return [
-                    'id' => $inv->id,
-                    'title' => 'Interview: ' . $inv->application->applicant_name,
-                    'start' => $inv->scheduled_at->format('Y-m-d\TH:i:s'),
-                    'url' => route('interviews.show', $inv),
-                    'color' => $isMine ? 'var(--brand-base)' : 'var(--text-muted)',
-                    'extendedProps' => [
-                        'isMine' => $isMine,
-                        'position' => $inv->application->jobPosition->title,
-                        'interviewer' => $interviewerNames,
-                        'status' => $inv->status,
-                        'canUpdate' => auth()->user()->can('update', $inv)
-                    ]
-                ];
-            });
-        @endphp
-
-        <script id="mini-calendar-events-data" type="application/json">
-            {!! json_encode($calendarEvents) !!}
-        </script>
-    @endcan
 </div>
 @endsection
 

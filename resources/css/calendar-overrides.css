@@ -73,3 +73,61 @@
 :root.dark .calendar-overlay {
   background: rgba(0, 0, 0, 0.85);
 }
+
+/* FullCalendar theme sync */
+.fc {
+  --fc-border-color: var(--border-default);
+  --fc-page-bg-color: var(--bg-card);
+  --fc-neutral-bg-color: var(--bg-entry);
+  --fc-neutral-text-color: var(--text-main);
+  --fc-today-bg-color: color-mix(in srgb, var(--brand-base) 10%, transparent);
+}
+
+.fc .fc-scrollgrid,
+.fc .fc-scrollgrid table,
+.fc .fc-theme-standard td,
+.fc .fc-theme-standard th,
+.fc .fc-col-header,
+.fc .fc-col-header-cell,
+.fc .fc-daygrid-day,
+.fc .fc-timegrid-slot,
+.fc .fc-list-day-cushion {
+  border-color: var(--border-default) !important;
+}
+
+.fc .fc-scrollgrid {
+  border-color: var(--border-default) !important;
+  background: var(--bg-card);
+}
+
+.fc .fc-col-header-cell {
+  background: var(--bg-entry);
+}
+
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number,
+.fc .fc-toolbar-title {
+  color: var(--text-main) !important;
+}
+
+.fc .fc-day-other .fc-daygrid-day-number {
+  color: var(--text-muted) !important;
+  opacity: 0.8;
+}
+
+.fc .fc-daygrid-day-frame,
+.fc .fc-scrollgrid-sync-inner {
+  background: var(--bg-card);
+}
+
+.fc .fc-day-today .fc-daygrid-day-frame {
+  background: color-mix(in srgb, var(--brand-base) 8%, var(--bg-card));
+}
+
+.fc .fc-daygrid-day-top {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.fc .fc-daygrid-event-dot {
+  border-color: currentColor;
+}

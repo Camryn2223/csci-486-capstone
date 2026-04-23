@@ -258,11 +258,17 @@
 .border-bottom-divider {
   border-bottom: 1px solid var(--border-default);
 }
+.border-top-none {
+  border-top: none !important;
+}
 .border-bottom-none {
   border-bottom: none !important;
 }
 .border-left-danger {
   border-left: 3px solid var(--danger-text);
+}
+.border-radius-6 {
+  border-radius: 6px;
 }
 
 hr.divider {
@@ -332,11 +338,52 @@ hr.divider-30 {
   top: 20px;
 }
 
+/* Note Specific Splits */
+.split-main {
+  flex: 2;
+  min-width: 0;
+}
+
+.split-sidebar {
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  position: sticky;
+  top: 20px;
+}
+
+.split-sidebar-notes {
+  flex: 1.2;
+  min-width: 380px;
+  max-width: 560px;
+}
+
 @media (max-width: 900px) {
   .split-layout {
     flex-direction: column;
   }
-  .split-preview {
+  .split-preview, .split-sidebar {
     position: static;
+    max-width: none;
+    width: 100%;
   }
+}
+
+/* Collapsible Detail Blocks */
+details summary {
+  list-style: none;
+  user-select: none;
+}
+details summary::-webkit-details-marker {
+  display: none;
+}
+details summary:not(.note-accordion-header)::after {
+  content: '▼';
+  float: right;
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+details[open] summary:not(.note-accordion-header)::after {
+  transform: rotate(180deg);
 }

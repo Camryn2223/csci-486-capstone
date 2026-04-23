@@ -9,3 +9,4 @@ import './job-preview';
 import './application-form';
 import './interviews-form';
 import './theme-toggle';
+import './notes';
