@@ -203,7 +203,7 @@
                                             </div>
 
                                             <div class="flex-gap-10 items-center">
-                                                <a href="{{ route('applications.show', $app) }}" class="btn btn-sm btn-slate">View App</a>
+                                                <a href="{{ route('applications.show', $app) }}" class="btn btn-sm btn-slate">View</a>
                                                 <a href="{{ route('interviews.create', $app) }}" class="btn btn-sm">Schedule</a>
                                             </div>
                                         </div>
@@ -229,7 +229,7 @@
                             </div>
 
                             @can('create', [App\Models\JobPosition::class, $organization])
-                                <a href="{{ route('organizations.job-positions.create', $organization) }}" class="btn btn-sm">+ Create Position</a>
+                                <a href="{{ route('organizations.job-positions.create', $organization) }}" class="btn btn-sm white-space-nowrap">+ Create Position</a>
                             @endcan
                         </div>
                     </div>
@@ -243,7 +243,19 @@
                                             <strong class="fs-16">{{ $position->title }}</strong>
                                         </div>
 
-                                        <a href="{{ route('organizations.job-positions.show', [$organization, $position]) }}" class="btn btn-sm">View</a>
+                                        <div class="flex-gap-5 items-center">
+                                            <a href="{{ route('organizations.job-positions.show', [$organization, $position]) }}" class="btn btn-sm">View</a>
+                                            @can('update', $position)
+                                                <a href="{{ route('organizations.job-positions.edit', [$organization, $position]) }}" class="btn btn-sm btn-slate">Edit</a>
+                                            @endcan
+                                            @can('delete', $position)
+                                                <form method="POST" action="{{ route('organizations.job-positions.destroy', [$organization, $position]) }}" class="d-inline m-0">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this position?')">Delete</button>
+                                                </form>
+                                            @endcan
+                                        </div>
                                     </div>
                                 </div>
                             @empty
@@ -257,11 +269,17 @@
             <div class="grid-stack-item" {!! $getGsAttrs('members', 6, 3) !!}>
                 <div class="grid-stack-item-content card org-dashboard-panel">
                     <div class="org-dashboard-panel-header dash-drag-handle" title="Drag to move">
-                        <div class="flex-gap-10 items-center">
-                            <div>
-                                <h2 class="m-0">Members</h2>
-                                <p class="text-muted m-0 mt-5">{{ $organization->members->count() }} teammate(s) in this organization.</p>
+                        <div class="card-header-flex w-full">
+                            <div class="flex-gap-10 items-center">
+                                <div>
+                                    <h2 class="m-0">Members</h2>
+                                    <p class="text-muted m-0 mt-5">{{ $organization->members->count() }} teammate(s) in this organization.</p>
+                                </div>
                             </div>
+
+                            @if($showTeamAccess)
+                                <a href="{{ route('organizations.members', $organization) }}" class="btn btn-sm white-space-nowrap">Manage Team</a>
+                            @endif
                         </div>
                     </div>
 
@@ -305,11 +323,17 @@
                 <div class="grid-stack-item" {!! $getGsAttrs('templates', 6, 3) !!}>
                     <div class="grid-stack-item-content card org-dashboard-panel">
                         <div class="org-dashboard-panel-header dash-drag-handle" title="Drag to move">
-                            <div class="flex-gap-10 items-center">
-                                <div>
-                                    <h2 class="m-0">Application Forms</h2>
-                                    <p class="text-muted m-0 mt-5">{{ $organization->templates->count() }} template(s) available.</p>
+                            <div class="card-header-flex w-full">
+                                <div class="flex-gap-10 items-center">
+                                    <div>
+                                        <h2 class="m-0">Application Forms</h2>
+                                        <p class="text-muted m-0 mt-5">{{ $organization->templates->count() }} template(s) available.</p>
+                                    </div>
                                 </div>
+
+                                @if($canCreateTemplates)
+                                    <a href="{{ route('organizations.application-templates.create', $organization) }}" class="btn btn-sm white-space-nowrap">+ Create Template</a>
+                                @endif
                             </div>
                         </div>
 
@@ -322,11 +346,18 @@
                                                 <strong class="fs-16">{{ $template->name }}</strong>
                                             </div>
 
-                                            <div class="flex-gap-10 items-center">
-                                                <a href="{{ route('organizations.application-templates.show', [$organization, $template]) }}" class="btn btn-sm btn-slate">Preview</a>
+                                            <div class="flex-gap-5 items-center">
+                                                <a href="{{ route('organizations.application-templates.show', [$organization, $template]) }}" class="btn btn-sm">View</a>
 
                                                 @can('update', $template)
-                                                    <a href="{{ route('organizations.application-templates.edit', [$organization, $template]) }}" class="btn btn-sm">Edit</a>
+                                                    <a href="{{ route('organizations.application-templates.edit', [$organization, $template]) }}" class="btn btn-sm btn-slate">Edit</a>
+                                                @endcan
+                                                @can('delete', $template)
+                                                    <form method="POST" action="{{ route('organizations.application-templates.destroy', [$organization, $template]) }}" class="d-inline m-0">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this template?')">Delete</button>
+                                                    </form>
                                                 @endcan
                                             </div>
                                         </div>

@@ -6,57 +6,60 @@
 
 @section('content')
 <div class="container container-wide">
-    <div class="card-header-flex mb-20">
-        <h1 class="m-0">Create Application Template - {{ $organization->name }}</h1>
-        <a href="{{ route('organizations.application-templates.index', $organization) }}" class="btn btn-outline">Back to Templates</a>
+    <div class="card card-header-flex">
+        <h1 class="m-0">Create Application Template</h1>
+        <div class="flex-gap-10">
+            <a href="{{ route('organizations.application-templates.index', $organization) }}" class="btn btn-outline">Back to Templates</a>
+            <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline">Back to Organization</a>
+        </div>
     </div>
 
     <div class="split-layout">
         <div class="split-builder">
-            <form id="template-settings-form" method="POST" action="{{ route('organizations.application-templates.store', $organization) }}">
-                @csrf
-                
-                <div class="card">
+            <div class="card">
+                <form id="template-settings-form" method="POST" action="{{ route('organizations.application-templates.store', $organization) }}">
+                    @csrf
+                    
                     @include('application_templates.partials.settings-fields', ['template' => null])
-                </div>
 
-                <div class="card-header-flex mt-30 mb-10">
-                    <h2 class="m-0 border-bottom-none pb-0">Custom Fields</h2>
-                    <span class="text-muted fs-13">Drag the ☰ icon to reorder fields automatically.</span>
-                </div>
-
-                <div id="fields-list">
-                    <!-- Custom fields appended here by JS -->
-                </div>
-
-                <div class="card card-dashed-purple" id="add-field-card">
-                    <h2 class="mt-0 border-bottom-none">Add New Field</h2>
-                    
-                    @include('application_templates.partials.field-form-inputs', [
-                        'idPrefix' => 'add',
-                        'labelName' => 'add_label',
-                        'typeName' => 'add_type',
-                        'reqName' => 'add_required',
-                        'fileMultName' => 'add_file_multiple',
-                        'fileMaxName' => 'add_file_max',
-                        'charMaxName' => 'add_char_max',
-                        'fileSizeMaxName' => 'add_file_size_max',
-                        'optionsName' => 'add_options',
-                        'optionsNameArray' => 'add_options[]',
-                        'fileOptionsNameArray' => 'add_file_options[]',
-                        'field' => null,
-                        'isAdd' => true
-                    ])
-                    
-                    <div class="mt-15">
-                        <button type="button" class="btn btn-outline" onclick="addFieldToCreateForm()">Add Field</button>
+                    <div class="card-header-flex mt-30 mb-10">
+                        <h2 class="m-0 border-bottom-none pb-0">Custom Fields</h2>
+                        <span class="text-muted fs-13">Drag the ☰ icon to reorder fields automatically.</span>
                     </div>
-                </div>
 
-                <div class="mt-30">
-                    <button type="submit" class="btn">Create Application Template</button>
-                </div>
-            </form>
+                    <div id="fields-list">
+                        <!-- Custom fields appended here by JS -->
+                    </div>
+
+                    <div class="card card-dashed-purple" id="add-field-card">
+                        <h2 class="mt-0 border-bottom-none">Add New Field</h2>
+                        
+                        @include('application_templates.partials.field-form-inputs', [
+                            'idPrefix' => 'add',
+                            'labelName' => 'add_label',
+                            'typeName' => 'add_type',
+                            'reqName' => 'add_required',
+                            'fileMultName' => 'add_file_multiple',
+                            'fileMaxName' => 'add_file_max',
+                            'charMaxName' => 'add_char_max',
+                            'fileSizeMaxName' => 'add_file_size_max',
+                            'optionsName' => 'add_options',
+                            'optionsNameArray' => 'add_options[]',
+                            'fileOptionsNameArray' => 'add_file_options[]',
+                            'field' => null,
+                            'isAdd' => true
+                        ])
+                        
+                        <div class="mt-15">
+                            <button type="button" class="btn btn-outline" onclick="addFieldToCreateForm()">Add Field</button>
+                        </div>
+                    </div>
+
+                    <div class="mt-30">
+                        <button type="submit" class="btn">Create Application Template</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <div class="split-preview">

@@ -4,13 +4,13 @@
 <div class="container">
     <div class="card card-header-flex">
         <div>
-            <h1 class="m-0">{{ isset($isPublicView) && $isPublicView ? 'Open Positions' : 'Job Positions' }} - {{ $organization->name }}</h1>
+            <h1 class="m-0">{{ isset($isPublicView) && $isPublicView ? 'Open Positions - ' . $organization->name : 'All Job Positions' }}</h1>
             @if(isset($isPublicView) && $isPublicView && Auth::check() && (Auth::user()->isChairmanOf($organization) || Auth::user()->hasPermissionIn($organization, 'review_applications')))
                 <p class="text-muted m-0 mt-5">Viewing as public guest.</p>
             @endif
         </div>
         
-        <div class="flex-gap-10">
+        <div class="flex-gap-10 items-center">
             @if(Auth::check() && (Auth::user()->isChairmanOf($organization) || Auth::user()->hasPermissionIn($organization, 'review_applications')))
                 @if(isset($isPublicView) && $isPublicView)
                     <a href="{{ route('organizations.job-positions.index', $organization) }}" class="btn btn-slate white-space-nowrap">Management View</a>
@@ -23,6 +23,17 @@
                 @can('create', [App\Models\JobPosition::class, $organization])
                     <a href="{{ route('organizations.job-positions.create', $organization) }}" class="btn white-space-nowrap">+ Create Position</a>
                 @endcan
+            @endif
+
+            @if(Auth::check())
+                @if(!isset($isPublicView) || !$isPublicView)
+                    @can('viewAny', [App\Models\ApplicationTemplate::class, $organization])
+                        <a href="{{ route('organizations.application-templates.index', $organization) }}" class="btn btn-outline white-space-nowrap">View Application Templates</a>
+                    @endcan
+                @endif
+                <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline white-space-nowrap">Back to Organization</a>
+            @else
+                <a href="{{ url('/') }}" class="btn btn-outline white-space-nowrap">Back to Home</a>
             @endif
         </div>
     </div>
@@ -38,7 +49,7 @@
                         <a href="{{ route('organizations.job-positions.show', [$organization, $position]) }}" class="btn btn-sm">View</a>
                         
                         @can('update', $position)
-                            <a href="{{ route('organizations.job-positions.edit', [$organization, $position]) }}" class="btn btn-sm">Edit</a>
+                            <a href="{{ route('organizations.job-positions.edit', [$organization, $position]) }}" class="btn btn-sm btn-slate">Edit</a>
                         @endcan
                         
                         @can('delete', $position)
@@ -68,18 +79,5 @@
     @empty
         <div class="card"><p class="m-0">No open positions at this time.</p></div>
     @endforelse
-
-    <div class="mt-20 flex-gap-10">
-        @if(Auth::check())
-            <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline">Back to Organization</a>
-            @if(!isset($isPublicView) || !$isPublicView)
-                @can('viewAny', [App\Models\ApplicationTemplate::class, $organization])
-                    <a href="{{ route('organizations.application-templates.index', $organization) }}" class="btn btn-outline">View Application Templates</a>
-                @endcan
-            @endif
-        @else
-            <a href="{{ url('/') }}" class="btn btn-outline">Back to Home</a>
-        @endif
-    </div>
 </div>
 @endsection

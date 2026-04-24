@@ -3,7 +3,7 @@
 @section('content')
 <div class="container container-wide">
     <div class="card card-header-flex">
-        <h1 class="m-0">Interview Calendar - {{ $organization->name }}</h1>
+        <h1 class="m-0">Interview Calendar</h1>
         <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline">Back to Organization</a>
     </div>
 

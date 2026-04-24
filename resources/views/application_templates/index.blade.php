@@ -3,23 +3,27 @@
 @section('content')
 <div class="container">
     <div class="card card-header-flex">
-        <h1 class="m-0">Application Templates - {{ $organization->name }}</h1>
-        @can('create', [App\Models\ApplicationTemplate::class, $organization])
-            <a href="{{ route('organizations.application-templates.create', $organization) }}" class="btn">+ Create Application Template</a>
-        @endcan
+        <h1 class="m-0">All Application Templates</h1>
+        <div class="flex-gap-10">
+            @can('create', [App\Models\ApplicationTemplate::class, $organization])
+                <a href="{{ route('organizations.application-templates.create', $organization) }}" class="btn">+ Create Application Template</a>
+            @endcan
+            <a href="{{ route('organizations.job-positions.index', $organization) }}" class="btn btn-outline">View Job Positions</a>
+            <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline">Back to Organization</a>
+        </div>
     </div>
 
     @forelse ($templates as $template)
         <div class="card entry-box">
             <div class="entry-top">
                 <strong class="fs-18">{{ $template->name }}</strong>
-                <div>
-                    <a href="{{ route('organizations.application-templates.show', [$organization, $template]) }}" class="btn btn-sm">Preview</a>
+                <div class="flex-gap-5">
+                    <a href="{{ route('organizations.application-templates.show', [$organization, $template]) }}" class="btn btn-sm">View</a>
                     @can('update', $template)
-                        <a href="{{ route('organizations.application-templates.edit', [$organization, $template]) }}" class="btn btn-sm ml-5">Edit Fields</a>
+                        <a href="{{ route('organizations.application-templates.edit', [$organization, $template]) }}" class="btn btn-sm btn-slate">Edit</a>
                     @endcan
                     @can('delete', $template)
-                        <form method="POST" action="{{ route('organizations.application-templates.destroy', [$organization, $template]) }}" class="d-inline ml-5 m-0">
+                        <form method="POST" action="{{ route('organizations.application-templates.destroy', [$organization, $template]) }}" class="d-inline m-0">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this template?')">Delete</button>
@@ -34,10 +38,5 @@
     @empty
         <div class="card"><p>No templates yet.</p></div>
     @endforelse
-
-    <div class="mt-20 flex-gap-10">
-        <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline">Back to Organization</a>
-        <a href="{{ route('organizations.job-positions.index', $organization) }}" class="btn btn-outline">View Job Positions</a>
-    </div>
 </div>
 @endsection

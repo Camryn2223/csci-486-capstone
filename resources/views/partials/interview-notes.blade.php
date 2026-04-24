@@ -84,12 +84,6 @@
             </details>
         @empty
             <div class="text-center py-20">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-muted mb-10 opacity-70">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="9" y1="9" x2="15" y2="9"></line>
-                    <line x1="9" y1="13" x2="15" y2="13"></line>
-                    <line x1="9" y1="17" x2="15" y2="17"></line>
-                </svg>
                 <p class="text-muted fs-14 m-0">No interviews scheduled yet.</p>
             </div>
         @endforelse

@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\ApplicationController;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -37,5 +38,14 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware(['web', 'auth'])
             ->patch('/user/dashboard-layout', [OrganizationController::class, 'updateDashboardLayout'])
             ->name('dashboard.layout');
+
+        // Application sharing & exporting routes
+        Route::middleware(['web', 'auth'])
+            ->post('/applications/{application}/share', [ApplicationController::class, 'share'])
+            ->name('applications.share');
+            
+        Route::middleware(['web', 'auth'])
+            ->get('/applications/{application}/pdf', [ApplicationController::class, 'previewPdf'])
+            ->name('applications.pdf');
     }
 }

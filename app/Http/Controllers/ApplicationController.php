@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\JobPosition;
 use App\Models\Organization;
+use App\Mail\ApplicationShared;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 /**
@@ -211,7 +214,7 @@ class ApplicationController extends Controller
         $this->authorize('view', $application);
 
         $application->load([
-            'jobPosition.organization',
+            'jobPosition.organization.members',
             'template.fields',
             'answers.field',
             'answers.document',
@@ -236,6 +239,57 @@ class ApplicationController extends Controller
         $application->update(['status' => $validated['status']]);
 
         return back()->with('success', 'Application status updated.');
+    }
+
+    /**
+     * Convert the application to a PDF and email it to internal or external addresses.
+     */
+    public function share(Request $request, Application $application): RedirectResponse
+    {
+        $this->authorize('view', $application);
+
+        $validated = $request->validate([
+            'emails'   => ['required', 'array'],
+            'emails.*' => ['email'],
+            'message'  => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $application->load([
+            'jobPosition.organization',
+            'answers.field',
+            'answers.document',
+            'interviews.interviewers'
+        ]);
+
+        // Generate the PDF
+        $pdf = Pdf::loadView('applications.pdf', compact('application'));
+        $pdfContent = $pdf->output();
+
+        // Send email with PDF attached
+        Mail::to($validated['emails'])->send(new ApplicationShared($application, $validated['message'] ?? null, $pdfContent));
+
+        return back()->with('success', 'Application PDF successfully generated and shared via email.');
+    }
+    
+    /**
+     * Stream the application as a PDF directly to the browser.
+     */
+    public function previewPdf(Application $application)
+    {
+        $this->authorize('view', $application);
+
+        $application->load([
+            'jobPosition.organization',
+            'answers.field',
+            'answers.document',
+            'interviews.interviewers'
+        ]);
+
+        $pdf = Pdf::loadView('applications.pdf', compact('application'));
+        
+        $filename = preg_replace('/[^A-Za-z0-9\- ]/', '', $application->applicant_name) . ' - Application.pdf';
+
+        return $pdf->stream($filename);
     }
 
     /**

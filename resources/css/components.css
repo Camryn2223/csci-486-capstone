@@ -782,14 +782,14 @@ nav[role="navigation"] p {
 }
 
 .action-icon {
-    width: 18px;
-    height: 18px;
-    margin-right: 8px;
-    vertical-align: -3px;
-    stroke-width: 2;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: -3px;
+  stroke-width: 2;
 }
 
 .org-action-title {
-    display: inline-flex;
-    align-items: center;
+  display: inline-flex;
+  align-items: center;
 }

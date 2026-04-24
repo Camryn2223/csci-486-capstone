@@ -3,8 +3,8 @@
 @section('content')
 <div class="container">
     <div class="card card-header-flex">
-        <h1 class="m-0">All Applications - {{ $organization->name }}</h1>
-        <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline">Back to Dashboard</a>
+        <h1 class="m-0">All Applications</h1>
+        <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline">Back to Organization</a>
     </div>
 
     @forelse ($applications as $application)

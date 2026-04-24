@@ -2,9 +2,12 @@
 
 @section('content')
 <div class="container container-wide">
-    <div class="card-header-flex mb-20">
-        <h1 class="m-0">Create Job Position - {{ $organization->name }}</h1>
-        <a href="{{ route('organizations.job-positions.index', $organization) }}" class="btn btn-outline">Back to Positions</a>
+    <div class="card card-header-flex">
+        <h1 class="m-0">Create Job Position</h1>
+        <div class="flex-gap-10">
+            <a href="{{ route('organizations.job-positions.index', $organization) }}" class="btn btn-outline">Back to Positions</a>
+            <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline">Back to Organization</a>
+        </div>
     </div>
 
     <div class="split-layout">

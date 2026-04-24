@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+@endpush
+
 @section('content')
 <div class="container container-wide">
     <div class="card card-header-flex-start">
@@ -10,7 +14,26 @@
             <p class="m-0 mt-5"><strong>Email:</strong> @if(!str_contains($application->applicant_email, 'no-email-')) <a href="mailto:{{ $application->applicant_email }}">{{ $application->applicant_email }}</a> @else <em>No Email Provided</em> @endif</p>
             <p class="m-0 mt-5"><strong>Phone:</strong> {{ $application->applicant_phone ?? 'Not provided' }}</p>
             <p class="m-0 mt-5"><strong>Submitted:</strong> {{ $application->created_at->format('M j, Y g:i A') }}</p>
-            <p class="m-0 mt-15"><strong>Status:</strong> <span class="status status-{{ str_replace('_', '-', $application->status) }}">{{ str_replace('_', ' ', Str::title($application->status)) }}</span></p>
+            
+            <div class="mt-15 flex-gap-10 items-center">
+                <strong class="m-0">Status:</strong>
+                @can('updateStatus', $application)
+                    <form method="POST" action="{{ route('applications.status', $application) }}" class="m-0 d-flex flex-gap-10 items-center">
+                        @csrf
+                        @method('PATCH')
+                        <select name="status" class="m-0 w-auto" style="min-width: 200px; padding-top: 6px; padding-bottom: 6px;">
+                            @foreach (['submitted', 'under_review', 'needs_chairman_review', 'no_longer_under_consideration', 'withdrawn'] as $status)
+                                <option value="{{ $status }}" {{ $application->status === $status ? 'selected' : '' }}>
+                                    {{ str_replace('_', ' ', Str::title($status)) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="btn btn-sm m-0">Update</button>
+                    </form>
+                @else
+                    <span class="status status-{{ str_replace('_', '-', $application->status) }} m-0">{{ str_replace('_', ' ', Str::title($application->status)) }}</span>
+                @endcan
+            </div>
         </div>
         
         <a href="{{ route('applications.index', [$application->jobPosition->organization, $application->jobPosition]) }}" class="btn btn-outline">Back to Applications</a>
@@ -18,24 +41,6 @@
 
     <div class="split-layout">
         <div class="split-main">
-            @can('updateStatus', $application)
-                <div class="card">
-                    <h2 class="mt-0">Update Status</h2>
-                    <form method="POST" action="{{ route('applications.status', $application) }}" class="form-inline-start">
-                        @csrf
-                        @method('PATCH')
-                        <select name="status" class="max-w-300 mb-0">
-                            @foreach (['submitted', 'under_review', 'needs_chairman_review', 'no_longer_under_consideration', 'withdrawn'] as $status)
-                                <option value="{{ $status }}" {{ $application->status === $status ? 'selected' : '' }}>
-                                    {{ str_replace('_', ' ', Str::title($status)) }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <button type="submit" class="btn">Update Status</button>
-                    </form>
-                </div>
-            @endcan
-
             @if ($application->answers->isNotEmpty())
                 <div class="card">
                     <h2 class="mt-0">Application Answers</h2>
@@ -100,8 +105,62 @@
         </div>
 
         <div class="split-sidebar split-sidebar-notes">
+            <div class="card mb-20" style="padding: 0; overflow: hidden;">
+                <div class="card-header-flex border-bottom-divider" style="padding: 15px 20px; background: var(--bg-entry);">
+                    <h2 class="m-0 fs-18 flex-gap-10 items-center">
+                        <i data-lucide="share-2" class="text-primary" style="width: 20px; height: 20px;"></i> 
+                        Share Application
+                    </h2>
+                    
+                    <a href="{{ route('applications.pdf', $application) }}" target="_blank" class="btn btn-sm btn-slate m-0">Preview PDF</a>
+                </div>
+                
+                <div style="padding: 15px 20px;">
+                    <p class="text-muted fs-13 mb-15">Email a generated PDF version of this application to internal members or external recipients.</p>
+                    <form method="POST" action="{{ route('applications.share', $application) }}">
+                        @csrf
+                        <div class="mb-15">
+                            <label>Recipients</label>
+                            <select id="share_emails" name="emails[]" multiple required autocomplete="off">
+                                <option value="">Type email or select...</option>
+                                @foreach($application->jobPosition->organization->members as $member)
+                                    <option value="{{ $member->email }}">{{ $member->name }} ({{ $member->email }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="mb-15">
+                            <label>Optional Message</label>
+                            <textarea name="message" rows="3" placeholder="I thought you should review this candidate..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn w-full">Email PDF</button>
+                    </form>
+                </div>
+            </div>
+
             @include('partials.interview-notes', ['interviews' => $application->interviews])
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('share_emails')) {
+                new TomSelect('#share_emails', {
+                    plugins: ['remove_button'],
+                    create: true,
+                    createFilter: function(input) {
+                        // Regex to broadly match valid emails
+                        var regex = /^[\w\-\.\+]+@([\w\-]+\.)+[\w\-]{2,4}$/;
+                        return regex.test(input);
+                    },
+                    placeholder: "Select members or type external emails..."
+                });
+            }
+        });
+    </script>
+@endpush

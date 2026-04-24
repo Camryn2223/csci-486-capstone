@@ -4,7 +4,7 @@
 <div class="container">
     <div class="card card-header-flex">
         <h1 class="m-0">Two-Factor Authentication</h1>
-        <a href="{{ route('dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
+        <a href="{{ route('dashboard') }}" class="btn btn-outline">Back to Organization</a>
     </div>
 
     <div class="card">
