@@ -118,13 +118,15 @@ class InterviewController extends Controller
         }
 
         foreach ($interview->interviewers as $interviewer) {
-            Notification::route('mail', $interviewer->email)
-                ->notify(new InterviewScheduledNotification(
-                    $interview, 
-                    $validated['email_subject'], 
-                    $validated['email_body'],
-                    $interviewer->name
-                ));
+            if ($interviewer->interview_email_notifications) {
+                Notification::route('mail', $interviewer->email)
+                    ->notify(new InterviewScheduledNotification(
+                        $interview, 
+                        $validated['email_subject'], 
+                        $validated['email_body'],
+                        $interviewer->name
+                    ));
+            }
         }
 
         return redirect()
@@ -216,8 +218,10 @@ class InterviewController extends Controller
         }
         
         foreach ($interview->interviewers as $interviewer) {
-            Notification::route('mail', $interviewer->email)
-                ->notify(new InterviewRescheduledNotification($interview, $oldScheduledAt, $interviewer->name));
+            if ($interviewer->interview_email_notifications) {
+                Notification::route('mail', $interviewer->email)
+                    ->notify(new InterviewRescheduledNotification($interview, $oldScheduledAt, $interviewer->name));
+            }
         }
 
         return redirect()
@@ -247,10 +251,11 @@ class InterviewController extends Controller
         }
         
         foreach ($interview->interviewers as $interviewer) {
-            Notification::route('mail', $interviewer->email)
-                ->notify(new InterviewCanceledNotification($interview, $interviewer->name));
+            if ($interviewer->interview_email_notifications) {
+                Notification::route('mail', $interviewer->email)
+                     ->notify(new InterviewCanceledNotification($interview, $interviewer->name));
+            }
         }
-
         return back()->with('success', 'Interview canceled and notifications sent.');
     }
 

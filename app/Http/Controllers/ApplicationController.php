@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\JobPosition;
 use App\Models\Organization;
 use App\Mail\ApplicationShared;
+use App\Mail\ApplicationRejected;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -239,6 +240,30 @@ class ApplicationController extends Controller
         $application->update(['status' => $validated['status']]);
 
         return back()->with('success', 'Application status updated.');
+    }
+
+    /**
+     * Mark an application as no longer under consideration and notify the applicant.
+     */
+    public function reject(Request $request, Application $application): RedirectResponse
+    {
+        $this->authorize('updateStatus', $application);
+
+        $validated = $request->validate([
+            'rejection_reason' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $application->update(['status' => 'no_longer_under_consideration']);
+
+        $application->load('jobPosition.organization');
+
+        if (! str_contains($application->applicant_email, 'no-email-')) {
+            Mail::to($application->applicant_email)->send(
+                new ApplicationRejected($application, $validated['rejection_reason'] ?? null)
+            );
+        }
+
+        return back()->with('success', 'Application status updated and applicant notified.');
     }
 
     /**

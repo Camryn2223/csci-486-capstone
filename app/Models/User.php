@@ -42,6 +42,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'role',
         'dashboard_layout',
+        'interview_email_notifications',
     ];
 
     protected $hidden = [
@@ -56,6 +57,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password'          => 'hashed',
             'role'              => 'string',
             'dashboard_layout'  => 'array',
+                    'interview_email_notifications'  => 'boolean',
         ];
     }
 

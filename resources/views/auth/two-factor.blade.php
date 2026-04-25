@@ -3,11 +3,32 @@
 @section('content')
 <div class="container">
     <div class="card card-header-flex">
-        <h1 class="m-0">Two-Factor Authentication</h1>
-        <a href="{{ route('dashboard') }}" class="btn btn-outline">Back to Organization</a>
+        <h1 class="m-0">Settings</h1>
+        <a href="{{ route('dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
     </div>
 
+    {{-- Notifications Section --}}
+    @if ($hasReviewPermission)
+        <div class="card">
+            <h2 class="mt-0">Notifications</h2>
+
+            <form method="POST" action="{{ route('two-factor.notifications') }}" class="m-0">
+                @csrf
+                @method('PATCH')
+                <div class="d-flex items-center flex-gap-10">
+                    <input type="hidden" name="interview_email_notifications" value="0">
+                    <input type="checkbox" name="interview_email_notifications" value="1" id="interview-notif" {{ $user->interview_email_notifications ? 'checked' : '' }}>
+                    <label for="interview-notif" class="m-0" style="cursor: pointer;">Email me when interviews are scheduled for applications I can review</label>
+                </div>
+                <button type="submit" class="btn btn-sm mt-15">Save Notification Settings</button>
+            </form>
+        </div>
+    @endif
+
+    {{-- Two-Factor Authentication Section --}}
     <div class="card">
+        <h2 class="mt-0">Two-Factor Authentication</h2>
+
         @if (! $user->two_factor_secret)
             <p class="text-muted fs-16">Two-factor authentication is not enabled on your account.</p>
 

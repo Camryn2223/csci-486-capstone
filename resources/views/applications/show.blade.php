@@ -18,17 +18,33 @@
             <div class="mt-15 flex-gap-10 items-center">
                 <strong class="m-0">Status:</strong>
                 @can('updateStatus', $application)
-                    <form method="POST" action="{{ route('applications.status', $application) }}" class="m-0 d-flex flex-gap-10 items-center">
+                    <form method="POST" action="{{ route('applications.status', $application) }}" id="status-form" class="m-0 d-flex flex-gap-10 items-center">
                         @csrf
                         @method('PATCH')
-                        <select name="status" class="m-0 w-auto" style="min-width: 200px; padding-top: 6px; padding-bottom: 6px;">
+                        <select name="status" id="status-select" class="m-0 w-auto" style="min-width: 200px; padding-top: 6px; padding-bottom: 6px;">
                             @foreach (['submitted', 'under_review', 'needs_chairman_review', 'no_longer_under_consideration', 'withdrawn'] as $status)
                                 <option value="{{ $status }}" {{ $application->status === $status ? 'selected' : '' }}>
                                     {{ str_replace('_', ' ', Str::title($status)) }}
                                 </option>
                             @endforeach
                         </select>
-                        <button type="submit" class="btn btn-sm m-0">Update</button>
+                        <button type="button" id="status-update-btn" class="btn btn-sm m-0">Update</button>
+                    </form>
+
+                    <form method="POST" action="{{ route('applications.reject', $application) }}" id="reject-form" class="m-0">
+                        @csrf
+                        <div id="rejection-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+                            <div class="card" style="width:500px; max-width:90%; margin:0;">
+                                <h2 class="mt-0">No Longer Under Consideration</h2>
+                                <p class="text-muted">This will email the applicant to inform them. You may include an optional message explaining the reason.</p>
+                                <label>Reason (optional)</label>
+                                <textarea name="rejection_reason" id="rejection-reason-input" rows="4" placeholder="We appreciate your interest, however..."></textarea>
+                                <div class="d-flex flex-gap-10 justify-end mt-15">
+                                    <button type="button" id="rejection-cancel" class="btn btn-outline">Cancel</button>
+                                    <button type="submit" class="btn btn-danger">Confirm & Notify</button>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 @else
                     <span class="status status-{{ str_replace('_', '-', $application->status) }} m-0">{{ str_replace('_', ' ', Str::title($application->status)) }}</span>
@@ -44,10 +60,11 @@
             @if ($application->answers->isNotEmpty())
                 <div class="card">
                     <h2 class="mt-0">Application Answers</h2>
-                    @foreach ($application->answers as $answer)
-                        <div class="mb-15 pb-15 border-bottom-divider">
-                            <strong class="d-block mb-5 text-primary">{{ $answer->field->label }}:</strong>
-                            
+                    @foreach ($application->answers->groupBy('template_field_id') as $fieldId => $answers)
+                    <div class="mb-15 pb-15 border-bottom-divider">
+                        <strong class="d-block mb-5 text-primary">{{ $answers->first()->field->label }}:</strong>
+
+                        @foreach ($answers as $answer)
                             @if($answer->document)
                                 @include('applications.partials.document-card', ['document' => $answer->document])
                             @elseif($answer->field->type === 'rich_text')
@@ -55,8 +72,9 @@
                             @else
                                 <span class="white-space-pre">{{ $answer->value ?? 'No answer provided' }}</span>
                             @endif
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
+                @endforeach
                 </div>
             @endif
 
@@ -149,18 +167,33 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            if (document.getElementById('share_emails')) {
-                new TomSelect('#share_emails', {
-                    plugins: ['remove_button'],
-                    create: true,
-                    createFilter: function(input) {
-                        // Regex to broadly match valid emails
-                        var regex = /^[\w\-\.\+]+@([\w\-]+\.)+[\w\-]{2,4}$/;
-                        return regex.test(input);
-                    },
-                    placeholder: "Select members or type external emails..."
-                });
-            }
+            const statusForm = document.getElementById('status-form');
+            const statusSelect = document.getElementById('status-select');
+            const updateBtn = document.getElementById('status-update-btn');
+            const modal = document.getElementById('rejection-modal');
+            const cancelBtn = document.getElementById('rejection-cancel');
+
+            if (!statusForm || !statusSelect || !updateBtn) return;
+
+            updateBtn.addEventListener('click', function() {
+                if (statusSelect.value === 'no_longer_under_consideration') {
+                    modal.style.display = 'flex';
+                } else {
+                    statusForm.submit();
+                }
+            });
+
+            cancelBtn.addEventListener('click', function() {
+                modal.style.display = 'none';
+                document.getElementById('rejection-reason-input').value = '';
+            });
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                    document.getElementById('rejection-reason-input').value = '';
+                }
+            });
         });
     </script>
 @endpush

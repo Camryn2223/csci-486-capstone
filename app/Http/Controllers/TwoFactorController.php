@@ -38,7 +38,11 @@ class TwoFactorController extends Controller
         /** @var User $user */
         $user = Auth::user()->fresh();
 
-        return view('auth.two-factor', compact('user'));
+        $hasReviewPermission = $user->organizations->contains(function ($org) use ($user) {
+            return $user->hasPermissionIn($org, 'review_applications');
+        });
+
+        return view('auth.two-factor', compact('user', 'hasReviewPermission'));
     }
 
     /**
@@ -127,5 +131,26 @@ class TwoFactorController extends Controller
         return redirect()
             ->route('two-factor.show')
             ->with('success', 'Two-factor authentication has been disabled.');
+    }
+
+    /**
+     * Toggle the interview email notifications setting for the authenticated user.
+     */
+    public function updateNotifications(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'interview_email_notifications' => ['required', 'boolean'],
+        ]);
+
+        $user->update([
+            'interview_email_notifications' => $validated['interview_email_notifications'],
+        ]);
+
+        return redirect()
+            ->route('two-factor.show')
+            ->with('success', 'Notification settings updated.');
     }
 }
