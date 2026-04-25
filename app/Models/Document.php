@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * @property int    $id
  * @property int    $application_id
+ * @property int|null $uploaded_by
  * @property string $filename
  * @property string $filepath
  * @property string $mimetype
@@ -26,6 +27,7 @@ class Document extends Model
 {
     protected $fillable = [
         'application_id',
+        'uploaded_by',
         'filename',
         'filepath',
         'mimetype',
@@ -39,6 +41,16 @@ class Document extends Model
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class);
+    }
+
+    /**
+     * The user who uploaded this document (null if uploaded by applicant).
+     *
+     * @return BelongsTo<User, Document>
+     */
+    public function uploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
     }
 
     /**

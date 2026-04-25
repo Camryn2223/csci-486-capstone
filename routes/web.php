@@ -136,8 +136,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('applications/{application}', [ApplicationController::class, 'show'])->name('applications.show');
     Route::patch('applications/{application}/status', [ApplicationController::class, 'updateStatus'])->name('applications.status');
     Route::post('applications/{application}/reject', [ApplicationController::class, 'reject'])->name('applications.reject');
+    
+    // Document fetching & deleting
     Route::get('documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
     Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+    
+    // Staff file upload for custom fields
+    Route::post('applications/{application}/fields/{templateField}/documents', [DocumentController::class, 'storeStaff'])->name('documents.storeStaff');
 
     /*
     |----------------------------------------------------------------------

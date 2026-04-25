@@ -66,24 +66,59 @@
 
     <div class="split-layout">
         <div class="split-main">
-            @if ($application->answers->isNotEmpty())
+            @if ($application->template->fields->isNotEmpty())
                 <div class="card">
                     <h2 class="mt-0">Application Answers</h2>
-                    @foreach ($application->answers->groupBy('template_field_id') as $fieldId => $answers)
-                    <div class="mb-15 pb-15 border-bottom-divider">
-                        <strong class="d-block mb-5 text-primary">{{ $answers->first()->field->label }}:</strong>
+                    @foreach ($application->template->fields as $field)
+                        @php
+                            $answers = $application->answers->where('template_field_id', $field->id);
+                        @endphp
+                        <div class="mb-15 pb-15 border-bottom-divider">
+                            <div class="card-header-flex items-start mb-5">
+                                <strong class="d-block text-primary" style="margin-top: 6px;">{{ $field->label }}:</strong>
+                            </div>
 
-                        @foreach ($answers as $answer)
-                            @if($answer->document)
-                                @include('applications.partials.document-card', ['document' => $answer->document])
-                            @elseif($answer->field->type === 'rich_text')
-                                <div class="rich-text-content mt-5">{!! clean($answer->value ?? 'No answer provided') !!}</div>
+                            @if($answers->isEmpty())
+                                <span class="text-muted text-italic">No answer provided</span>
                             @else
-                                <span class="white-space-pre">{{ $answer->value ?? 'No answer provided' }}</span>
+                                @foreach ($answers as $answer)
+                                    @if($answer->document)
+                                        @include('applications.partials.document-card', ['document' => $answer->document])
+                                    @elseif($field->type === 'rich_text')
+                                        <div class="rich-text-content mt-5">{!! clean($answer->value ?? '') !!}</div>
+                                    @else
+                                        <span class="white-space-pre">{{ $answer->value ?? '' }}</span>
+                                    @endif
+                                @endforeach
                             @endif
-                        @endforeach
-                    </div>
-                @endforeach
+
+                            @if($field->isFileField() && Auth::user()->can('view', $application))
+                                <form action="{{ route('documents.storeStaff', [$application, $field]) }}" method="POST" enctype="multipart/form-data" class="m-0 d-flex flex-gap-10 mt-10 items-center upload-document-form">
+                                    @csrf
+                                    <div class="custom-file-upload">
+                                        <input type="file"
+                                            id="document-upload-3"
+                                            name="document"
+                                            required
+                                            class="custom-file-upload-input"
+                                            title="Upload additional file">
+
+                                        <label for="document-upload-3" class="custom-file-upload-button">
+                                            Browse...
+                                        </label>
+
+                                        <span class="custom-file-upload-name">
+                                            No file selected.
+                                        </span>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-sm btn-slate m-0 upload-document-button">
+                                        Upload
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
             @endif
 
@@ -216,6 +251,21 @@
                     document.getElementById('rejection-reason-input').value = '';
                 }
             });
+        });
+
+        document.addEventListener('change', function (event) {
+            if (!event.target.matches('.custom-file-upload-input')) {
+                return;
+            }
+
+            const wrapper = event.target.closest('.custom-file-upload');
+            const fileNameElement = wrapper.querySelector('.custom-file-upload-name');
+
+            if (event.target.files.length > 0) {
+                fileNameElement.textContent = event.target.files[0].name;
+            } else {
+                fileNameElement.textContent = 'No file selected.';
+            }
         });
     </script>
 @endpush

@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\Document;
+use App\Models\TemplateField;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -57,6 +59,38 @@ class DocumentController extends Controller
             'filename' => $file->getClientOriginalName(),
             'filepath' => $filepath,
             'mimetype' => $file->getMimeType(),
+        ]);
+
+        return back()->with('success', 'Document uploaded successfully.');
+    }
+
+    /**
+     * Store a document uploaded by staff for a specific custom file field.
+     * No strict validation on size/mime types, just basic file presence, 
+     * since the uploader is a trusted internal user.
+     */
+    public function storeStaff(Request $request, Application $application, TemplateField $templateField): RedirectResponse
+    {
+        $this->authorize('view', $application);
+
+        $request->validate([
+            'document' => ['required', 'file'],
+        ]);
+
+        $file     = $request->file('document');
+        $filepath = $file->store("documents/{$application->id}", 'local');
+
+        $document = $application->documents()->create([
+            'uploaded_by' => Auth::id(),
+            'filename' => $file->getClientOriginalName(),
+            'filepath' => $filepath,
+            'mimetype' => $file->getMimeType(),
+        ]);
+
+        $application->answers()->create([
+            'template_field_id' => $templateField->id,
+            'value'             => $file->getClientOriginalName(),
+            'document_id'       => $document->id,
         ]);
 
         return back()->with('success', 'Document uploaded successfully.');

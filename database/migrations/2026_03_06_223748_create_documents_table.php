@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('application_id')->constrained('applications')->cascadeOnDelete();
+            $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('filename');
             $table->string('filepath');
             $table->string('mimetype');

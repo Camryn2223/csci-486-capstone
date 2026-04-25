@@ -90,7 +90,7 @@
                                         <i data-lucide="files" class="action-icon"></i>
                                         Review submitted applications
                                     </strong>
-                                    <span class="org-action-description">See every applicant in one place and keep hiring moving.</span>
+                                    <span class="org-action-description">See all applications in one place.</span>
                                 </a>
                             @endif
 
@@ -213,8 +213,8 @@
                                             </div>
 
                                             <div class="flex-gap-10 items-center">
-                                                <a href="{{ route('applications.show', $app) }}" class="btn btn-sm btn-slate">View</a>
-                                                <a href="{{ route('interviews.create', $app) }}" class="btn btn-sm">Schedule</a>
+                                                <a href="{{ route('applications.show', $app) }}" class="btn btn-sm">View</a>
+                                                <a href="{{ route('interviews.create', $app) }}" class="btn btn-sm btn-slate">Schedule</a>
                                             </div>
                                         </div>
                                     </div>

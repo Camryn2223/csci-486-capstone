@@ -234,8 +234,8 @@ class ApplicationController extends Controller
             'jobPosition.organization.members',
             'template.fields',
             'answers.field',
-            'answers.document',
-            'documents',
+            'answers.document.uploader',
+            'documents.uploader',
             'interviews.interviewers',
         ]);
 
@@ -298,9 +298,9 @@ class ApplicationController extends Controller
         $application->load([
             'jobPosition.organization',
             'answers.field',
-            'answers.document',
+            'answers.document.uploader',
             'interviews.interviewers',
-            'documents',
+            'documents.uploader',
         ]);
 
         // Generate the PDF
@@ -323,7 +323,7 @@ class ApplicationController extends Controller
         $application->load([
             'jobPosition.organization',
             'answers.field',
-            'answers.document',
+            'answers.document.uploader',
             'interviews.interviewers'
         ]);
 

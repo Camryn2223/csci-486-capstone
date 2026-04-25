@@ -103,7 +103,12 @@
             <div class="answer">
                 @foreach($answers as $answer)
                     @if($answer->document)
-                        <div class="attachment">[Attached Document: {{ $answer->document->filename }}]</div>
+                        <div class="attachment">
+                            [Attached Document: {{ $answer->document->filename }}]
+                            @if($answer->document->uploaded_by && $answer->document->uploader)
+                                <br><span style="font-size: 12px; color: #8b5cf6;">(Uploaded by: {{ $answer->document->uploader->name }})</span>
+                            @endif
+                        </div>
                     @elseif($answer->field->type === 'rich_text')
                         <div style="margin-top: 4px;">{!! strip_tags($answer->value ?? 'No answer provided', '<p><br><ul><ol><li><strong><em><b><i>') !!}</div>
                     @else
