@@ -52,5 +52,9 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware(['web', 'auth'])
             ->get('/applications/{application}/pdf', [ApplicationController::class, 'previewPdf'])
             ->name('applications.pdf');
+            
+        Route::middleware(['web', 'auth'])
+            ->delete('/applications/{application}', [ApplicationController::class, 'destroy'])
+            ->name('applications.destroy');
     }
 }

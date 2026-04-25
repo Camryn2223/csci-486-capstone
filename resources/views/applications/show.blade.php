@@ -52,7 +52,16 @@
             </div>
         </div>
         
-        <a href="{{ route('applications.index', [$application->jobPosition->organization, $application->jobPosition]) }}" class="btn btn-outline">Back to Applications</a>
+        <div class="flex-gap-10 items-center">
+            @can('delete', $application)
+                <form method="POST" action="{{ route('applications.destroy', $application) }}" class="m-0 d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-outline text-danger" style="border-color: var(--danger-border);" onclick="return confirm('Are you sure you want to delete this application? This action cannot be undone.')">Delete</button>
+                </form>
+            @endcan
+            <a href="{{ route('applications.index', [$application->jobPosition->organization, $application->jobPosition]) }}" class="btn btn-outline">Back to Applications</a>
+        </div>
     </div>
 
     <div class="split-layout">

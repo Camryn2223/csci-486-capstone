@@ -14,9 +14,15 @@
         <div class="card entry-box">
             <div class="entry-top">
                 <strong class="fs-18">{{ $application->applicant_name }} <span class="text-muted fs-14">({{ $application->applicant_email }})</span></strong>
-                <div class="flex-gap-5 items-center">
+                <div class="flex-gap-10 items-center">
                     <a href="{{ route('applications.show', $application) }}" class="btn btn-sm">View</a>
-                
+                    @can('delete', $application)
+                        <form method="POST" action="{{ route('applications.destroy', $application) }}" class="d-inline m-0">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this application?')">Delete</button>
+                        </form>
+                    @endcan
                 </div>
             </div>
             <p class="m-0 mt-5 text-muted">

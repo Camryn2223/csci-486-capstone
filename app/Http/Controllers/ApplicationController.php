@@ -11,6 +11,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 /**
@@ -315,6 +316,30 @@ class ApplicationController extends Controller
         $filename = preg_replace('/[^A-Za-z0-9\- ]/', '', $application->applicant_name) . ' - Application.pdf';
 
         return $pdf->stream($filename);
+    }
+    
+    /**
+     * Delete an application.
+     */
+    public function destroy(Application $application): RedirectResponse
+    {
+        $this->authorize('delete', $application);
+
+        $organization = $application->jobPosition->organization;
+
+        // Delete documents from storage
+        foreach ($application->documents as $document) {
+            Storage::disk('local')->delete($document->filepath);
+        }
+        
+        // Remove the directory
+        Storage::disk('local')->deleteDirectory("documents/{$application->id}");
+
+        $application->delete();
+
+        return redirect()
+            ->route('organizations.applications', $organization)
+            ->with('success', 'Application deleted successfully.');
     }
 
     /**
