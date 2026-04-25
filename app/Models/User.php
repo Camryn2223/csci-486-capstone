@@ -43,6 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'dashboard_layout',
         'interview_email_notifications',
+        'application_email_notifications',
     ];
 
     protected $hidden = [
@@ -57,8 +58,20 @@ class User extends Authenticatable implements MustVerifyEmail
             'password'          => 'hashed',
             'role'              => 'string',
             'dashboard_layout'  => 'array',
-                    'interview_email_notifications'  => 'boolean',
+            'interview_email_notifications'  => 'boolean',
+            'application_email_notifications' => 'boolean',
         ];
+    }
+
+    /**
+     * Determine if two-factor authentication has been enabled and confirmed.
+     * This overrides the default Fortify trait method to prevent the system
+     * from enforcing 2FA before the user has successfully confirmed a code.
+     */
+    public function hasEnabledTwoFactorAuthentication()
+    {
+        return ! is_null($this->two_factor_secret) &&
+               ! is_null($this->two_factor_confirmed_at);
     }
 
     /**

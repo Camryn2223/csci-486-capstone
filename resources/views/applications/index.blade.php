@@ -7,7 +7,10 @@
             <h1 class="m-0">Applications - {{ $jobPosition->title }}</h1>
             <p class="text-muted m-0 mt-5">Organization: {{ $organization->name }}</p>
         </div>
-        <a href="{{ route('organizations.job-positions.show', [$organization, $jobPosition]) }}" class="btn btn-outline">Back to Position</a>
+        <div class="flex-gap-10 items-center">
+            <a href="{{ route('organizations.job-positions.show', [$organization, $jobPosition]) }}" class="btn btn-outline">Back to Position</a>
+            <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline">Back to Organization</a>
+        </div>
     </div>
 
     @forelse ($applications as $application)

@@ -19,6 +19,8 @@ return new class extends Migration
             $table->text('two_factor_recovery_codes')->nullable();
             $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->json('dashboard_layout')->nullable();
+            $table->boolean('interview_email_notifications')->default(false);
+            $table->boolean('application_email_notifications')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

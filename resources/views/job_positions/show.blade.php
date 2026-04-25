@@ -5,7 +5,6 @@
     <div class="card card-header-flex">
         <div>
             <h1 class="m-0">Job Position: {{ $jobPosition->title }}</h1>
-            <p class="text-muted m-0 mt-5">{{ $organization->name }}</p>
         </div>
         <div class="flex-gap-10 items-center">
             @can('update', $jobPosition)

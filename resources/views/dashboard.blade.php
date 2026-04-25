@@ -18,7 +18,7 @@
                 @can('create', App\Models\Organization::class)
                     <a href="{{ route('organizations.create') }}" class="btn">Create Organization</a>
                 @endcan
-                <a href="{{ route('two-factor.show') }}" class="btn btn-slate">Two-Factor Settings</a>
+                <a href="{{ route('settings.show') }}" class="btn btn-slate">User Settings</a>
             </div>
         </div>
     </div>

@@ -7,10 +7,12 @@ use App\Models\JobPosition;
 use App\Models\Organization;
 use App\Mail\ApplicationShared;
 use App\Mail\ApplicationRejected;
+use App\Notifications\ApplicationSubmittedNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -203,8 +205,21 @@ class ApplicationController extends Controller
             }
         }
 
+        // Notify reviewers
+        $reviewers = $organization->members()
+            ->where('application_email_notifications', true)
+            ->get()
+            ->filter(function ($member) use ($organization) {
+                return $member->hasPermissionIn($organization, 'review_applications');
+            });
+
+        foreach ($reviewers as $reviewer) {
+            Notification::route('mail', $reviewer->email)
+                ->notify(new ApplicationSubmittedNotification($application, $reviewer->name));
+        }
+
         return redirect()
-            ->route('organizations.job-positions.show', [$organization, $jobPosition])
+            ->route('organizations.job-positions.index', $organization)
             ->with('success', 'Your application has been submitted successfully.');
     }
 
@@ -284,17 +299,18 @@ class ApplicationController extends Controller
             'jobPosition.organization',
             'answers.field',
             'answers.document',
-            'interviews.interviewers'
+            'interviews.interviewers',
+            'documents',
         ]);
 
         // Generate the PDF
         $pdf = Pdf::loadView('applications.pdf', compact('application'));
         $pdfContent = $pdf->output();
 
-        // Send email with PDF attached
+        // Send email with PDF and documents attached
         Mail::to($validated['emails'])->send(new ApplicationShared($application, $validated['message'] ?? null, $pdfContent));
 
-        return back()->with('success', 'Application PDF successfully generated and shared via email.');
+        return back()->with('success', 'Application PDF and documents successfully generated and shared via email.');
     }
     
     /**

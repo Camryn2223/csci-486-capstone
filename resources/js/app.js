@@ -1,6 +1,6 @@
 import './bootstrap';
 import './flash-messages';
-import './two-factor';
+import './settings';
 import './calendar';
 import './mini-calendar';
 import './tinymce-setup';

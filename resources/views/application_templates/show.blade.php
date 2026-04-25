@@ -7,11 +7,12 @@
             <h1 class="m-0">Template Summary: {{ $applicationTemplate->name }}</h1>
             <p class="m-0 mt-5 text-muted">Created by {{ $applicationTemplate->creator->name }}</p>
         </div>
-        <div>
+        <div class="flex-gap-10 items-center">
             @can('update', $applicationTemplate)
-                <a href="{{ route('organizations.application-templates.edit', [$organization, $applicationTemplate]) }}" class="btn mr-5">Edit Fields</a>
+                <a href="{{ route('organizations.application-templates.edit', [$organization, $applicationTemplate]) }}" class="btn">Edit Fields</a>
             @endcan
-            <a href="{{ route('organizations.application-templates.index', $organization) }}" class="btn btn-outline">Back</a>
+            <a href="{{ route('organizations.application-templates.index', $organization) }}" class="btn btn-outline">Back to Application Templates</a>
+            <a href="{{ route('organizations.show', $organization) }}" class="btn btn-outline">Back to Organization</a>
         </div>
     </div>
 

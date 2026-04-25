@@ -176,6 +176,19 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('share_emails')) {
+                new TomSelect('#share_emails', {
+                    plugins: ['remove_button'],
+                    create: true,
+                    createFilter: function(input) {
+                        // Regex to broadly match valid emails
+                        var regex = /^[\w\-\.\+]+@([\w\-]+\.)+[\w\-]{2,4}$/;
+                        return regex.test(input);
+                    },
+                    placeholder: "Select members or type external emails..."
+                });
+            }
+
             const statusForm = document.getElementById('status-form');
             const statusSelect = document.getElementById('status-select');
             const updateBtn = document.getElementById('status-update-btn');

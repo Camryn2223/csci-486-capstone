@@ -38,9 +38,18 @@ class ApplicationShared extends Mailable
     {
         $filename = preg_replace('/[^A-Za-z0-9\- ]/', '', $this->application->applicant_name) . ' - Application.pdf';
 
-        return [
+        $attachments = [
             Attachment::fromData(fn () => $this->pdfContent, $filename)
                 ->withMime('application/pdf'),
         ];
+
+        // Attach any supporting documents uploaded as part of the application
+        foreach ($this->application->documents as $document) {
+            $attachments[] = Attachment::fromStorageDisk('local', $document->filepath)
+                ->as($document->filename)
+                ->withMime($document->mimetype);
+        }
+
+        return $attachments;
     }
 }

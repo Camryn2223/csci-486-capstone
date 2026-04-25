@@ -70,7 +70,17 @@
                                         <i data-lucide="users-round" class="action-icon"></i>
                                         Manage team access
                                     </strong>
-                                    <span class="org-action-description">View members, update permissions, and handle invites.</span>
+                                    <span class="org-action-description">View members, manage roles, and handle organization invites.</span>
+                                </a>
+                            @endif
+
+                            @if($canManageMembers)
+                                <a href="{{ route('organizations.permissions.index', $organization) }}" class="org-action-card">
+                                    <strong class="org-action-title">
+                                        <i data-lucide="shield-check" class="action-icon"></i>
+                                        Manage permissions
+                                    </strong>
+                                    <span class="org-action-description">Grant or revoke specific feature access for your teammates.</span>
                                 </a>
                             @endif
 

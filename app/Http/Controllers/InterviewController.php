@@ -9,6 +9,9 @@ use App\Models\User;
 use App\Notifications\InterviewScheduledNotification;
 use App\Notifications\InterviewRescheduledNotification;
 use App\Notifications\InterviewCanceledNotification;
+use App\Notifications\StaffInterviewScheduledNotification;
+use App\Notifications\StaffInterviewRescheduledNotification;
+use App\Notifications\StaffInterviewCanceledNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -120,10 +123,8 @@ class InterviewController extends Controller
         foreach ($interview->interviewers as $interviewer) {
             if ($interviewer->interview_email_notifications) {
                 Notification::route('mail', $interviewer->email)
-                    ->notify(new InterviewScheduledNotification(
+                    ->notify(new StaffInterviewScheduledNotification(
                         $interview, 
-                        $validated['email_subject'], 
-                        $validated['email_body'],
                         $interviewer->name
                     ));
             }
@@ -220,7 +221,7 @@ class InterviewController extends Controller
         foreach ($interview->interviewers as $interviewer) {
             if ($interviewer->interview_email_notifications) {
                 Notification::route('mail', $interviewer->email)
-                    ->notify(new InterviewRescheduledNotification($interview, $oldScheduledAt, $interviewer->name));
+                    ->notify(new StaffInterviewRescheduledNotification($interview, $oldScheduledAt, $interviewer->name));
             }
         }
 
@@ -253,7 +254,7 @@ class InterviewController extends Controller
         foreach ($interview->interviewers as $interviewer) {
             if ($interviewer->interview_email_notifications) {
                 Notification::route('mail', $interviewer->email)
-                     ->notify(new InterviewCanceledNotification($interview, $interviewer->name));
+                     ->notify(new StaffInterviewCanceledNotification($interview, $interviewer->name));
             }
         }
         return back()->with('success', 'Interview canceled and notifications sent.');

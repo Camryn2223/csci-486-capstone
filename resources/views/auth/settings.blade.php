@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="card card-header-flex">
-        <h1 class="m-0">Settings</h1>
+        <h1 class="m-0">User Settings</h1>
         <a href="{{ route('dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
     </div>
 
@@ -12,15 +12,25 @@
         <div class="card">
             <h2 class="mt-0">Notifications</h2>
 
-            <form method="POST" action="{{ route('two-factor.notifications') }}" class="m-0">
+            <form method="POST" action="{{ route('settings.notifications') }}" class="m-0 flex-col-15">
                 @csrf
                 @method('PATCH')
+                
                 <div class="d-flex items-center flex-gap-10">
                     <input type="hidden" name="interview_email_notifications" value="0">
                     <input type="checkbox" name="interview_email_notifications" value="1" id="interview-notif" {{ $user->interview_email_notifications ? 'checked' : '' }}>
-                    <label for="interview-notif" class="m-0" style="cursor: pointer;">Email me when interviews are scheduled for applications I can review</label>
+                    <label for="interview-notif" class="m-0" style="cursor: pointer;">Email me when I am scheduled as an interviewer</label>
                 </div>
-                <button type="submit" class="btn btn-sm mt-15">Save Notification Settings</button>
+
+                <div class="d-flex items-center flex-gap-10">
+                    <input type="hidden" name="application_email_notifications" value="0">
+                    <input type="checkbox" name="application_email_notifications" value="1" id="application-notif" {{ $user->application_email_notifications ? 'checked' : '' }}>
+                    <label for="application-notif" class="m-0" style="cursor: pointer;">Email me when an application is submitted that I can review</label>
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-sm">Save Notification Settings</button>
+                </div>
             </form>
         </div>
     @endif
@@ -32,7 +42,7 @@
         @if (! $user->two_factor_secret)
             <p class="text-muted fs-16">Two-factor authentication is not enabled on your account.</p>
 
-            <form method="POST" action="{{ route('two-factor.store') }}">
+            <form method="POST" action="{{ route('settings.store') }}">
                 @csrf
                 <label>Confirm your password to enable 2FA</label>
                 <input type="password" name="password" required autocomplete="current-password">
@@ -48,14 +58,23 @@
 
             <p class="text-muted">Or enter this setup key manually: <code class="text-primary fs-16">{{ decrypt($user->two_factor_secret) }}</code></p>
 
-            <form method="POST" action="{{ route('two-factor.confirm') }}" class="mt-25">
+            <form method="POST" action="{{ route('settings.confirm') }}" class="mt-25">
                 @csrf
                 <label>Authenticator Code</label>
                 <input type="text" name="code" inputmode="numeric" required autofocus autocomplete="one-time-code" class="max-w-300">
                 @error('code')
                     <span class="text-danger d-block mb-15" style="margin-top: -10px;">{{ $message }}</span>
                 @enderror
-                <button type="submit" class="btn">Confirm Setup</button>
+                
+                <div class="d-flex flex-gap-10 mt-10">
+                    <button type="submit" class="btn m-0">Confirm Setup</button>
+                </div>
+            </form>
+            
+            <form method="POST" action="{{ route('settings.cancel-setup') }}" class="m-0 mt-15">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline text-danger m-0" style="border-color: var(--danger-border);">Cancel Setup</button>
             </form>
 
         @else
@@ -71,7 +90,7 @@
                 @endforeach
             </div>
 
-            <form method="POST" action="{{ route('two-factor.regenerate') }}">
+            <form method="POST" action="{{ route('settings.regenerate') }}">
                 @csrf
                 @method('PUT')
                 <label>Confirm password to regenerate codes</label>
@@ -84,7 +103,7 @@
             <hr class="divider">
 
             <h2 class="mt-0 text-danger">Disable 2FA</h2>
-            <form method="POST" action="{{ route('two-factor.destroy') }}">
+            <form method="POST" action="{{ route('settings.destroy') }}">
                 @csrf
                 @method('DELETE')
                 <label>Confirm password to disable</label>

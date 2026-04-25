@@ -46,6 +46,7 @@
         .attachment {
             color: #6b7280;
             font-style: italic;
+            margin-top: 4px;
         }
         .interview-block {
             margin-bottom: 25px;
@@ -96,17 +97,19 @@
 
     <h2>Application Answers</h2>
     
-    @foreach($application->answers as $answer)
+    @foreach($application->answers->groupBy('template_field_id') as $fieldId => $answers)
         <div class="qa-block">
-            <div class="question">{{ $answer->field->label }}</div>
+            <div class="question">{{ $answers->first()->field->label }}</div>
             <div class="answer">
-                @if($answer->document)
-                    <span class="attachment">[Attached Document: {{ $answer->document->filename }}]</span>
-                @elseif($answer->field->type === 'rich_text')
-                    {!! strip_tags($answer->value ?? 'No answer provided', '<p><br><ul><ol><li><strong><em><b><i>') !!}
-                @else
-                    {!! nl2br(e($answer->value ?? 'No answer provided')) !!}
-                @endif
+                @foreach($answers as $answer)
+                    @if($answer->document)
+                        <div class="attachment">[Attached Document: {{ $answer->document->filename }}]</div>
+                    @elseif($answer->field->type === 'rich_text')
+                        <div style="margin-top: 4px;">{!! strip_tags($answer->value ?? 'No answer provided', '<p><br><ul><ol><li><strong><em><b><i>') !!}</div>
+                    @else
+                        <div style="margin-top: 4px;">{!! nl2br(e($answer->value ?? 'No answer provided')) !!}</div>
+                    @endif
+                @endforeach
             </div>
         </div>
     @endforeach

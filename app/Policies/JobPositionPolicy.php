@@ -22,19 +22,10 @@ class JobPositionPolicy
 
     /**
      * Determine whether the user can view a specific job position.
-     * Open positions are public. Closed positions require specific permissions.
+     * The position view is an internal staff-only view.
      */
-    public function view(?User $user, JobPosition $jobPosition): bool
+    public function view(User $user, JobPosition $jobPosition): bool
     {
-        if ($jobPosition->isOpen()) {
-            return true;
-        }
-
-        // If the position is closed, only authenticated staff can see it
-        if (! $user) {
-            return false;
-        }
-
         return $user->isChairmanOf($jobPosition->organization)
             || $user->hasPermissionIn($jobPosition->organization, 'review_applications')
             || $user->hasPermissionIn($jobPosition->organization, 'create_positions');

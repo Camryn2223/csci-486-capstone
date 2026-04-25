@@ -10,7 +10,7 @@ use App\Http\Controllers\JobPositionController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationUserPermissionController;
 use App\Http\Controllers\TemplateFieldController;
-use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\UserSettingsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -98,6 +98,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         */
         Route::get('job-positions/create', [JobPositionController::class, 'create'])->name('job-positions.create');
         Route::post('job-positions', [JobPositionController::class, 'store'])->name('job-positions.store');
+        Route::get('job-positions/{jobPosition}', [JobPositionController::class, 'show'])->name('job-positions.show');
         Route::get('job-positions/{jobPosition}/edit', [JobPositionController::class, 'edit'])->name('job-positions.edit');
         Route::put('job-positions/{jobPosition}', [JobPositionController::class, 'update'])->name('job-positions.update');
         Route::delete('job-positions/{jobPosition}', [JobPositionController::class, 'destroy'])->name('job-positions.destroy');
@@ -154,19 +155,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |----------------------------------------------------------------------
-    | User Security
+    | User Settings & Security
     |----------------------------------------------------------------------
     */
-    Route::prefix('user/two-factor')->name('two-factor.')->group(function () {
-        Route::get('/', [TwoFactorController::class, 'show'])->name('show');
-        Route::post('/', [TwoFactorController::class, 'store'])->name('store');
-        Route::post('confirm', [TwoFactorController::class, 'confirm'])->name('confirm');
-        Route::put('recovery-codes', [TwoFactorController::class, 'regenerateCodes'])->name('regenerate');
-        Route::delete('/', [TwoFactorController::class, 'destroy'])->name('destroy');
-        Route::patch('notifications', [TwoFactorController::class, 'updateNotifications'])->name('notifications');
+    Route::prefix('user/settings')->name('settings.')->group(function () {
+        Route::get('/', [UserSettingsController::class, 'show'])->name('show');
+        Route::patch('notifications', [UserSettingsController::class, 'updateNotifications'])->name('notifications');
+        Route::post('two-factor', [UserSettingsController::class, 'store'])->name('store');
+        Route::post('two-factor/confirm', [UserSettingsController::class, 'confirm'])->name('confirm');
+        Route::put('two-factor/recovery-codes', [UserSettingsController::class, 'regenerateCodes'])->name('regenerate');
+        Route::delete('two-factor/cancel', [UserSettingsController::class, 'cancelTwoFactor'])->name('cancel-setup');
+        Route::delete('two-factor', [UserSettingsController::class, 'destroy'])->name('destroy');
     });
 });
-
-// Final catch-all for public routes
-Route::get('organizations/{organization}/job-positions/{jobPosition}', [JobPositionController::class, 'show'])
-    ->name('organizations.job-positions.show');

@@ -29,7 +29,7 @@
     <div class="navbar">
         @auth
             <h1>
-                HireFlow
+                <a href="{{ url('/') }}" style="color: inherit; text-decoration: none;">HireFlow</a>
                 <span class="subtag">({{ auth()->user()->name }} - {{ auth()->user()->role }})</span>
             </h1>
 
@@ -41,14 +41,14 @@
                 @endphp
                 <a href="{{ $dashRoute }}">Dashboard</a>
                 <a href="{{ route('organizations.index') }}">Organizations</a>
-                <a href="{{ route('two-factor.show') }}">Settings</a>
+                <a href="{{ route('settings.show') }}">Settings</a>
                 <form method="POST" action="{{ route('logout') }}" class="d-inline m-0">
                     @csrf
                     <button type="submit">Logout</button>
                 </form>
             </div>
         @else
-            <h1>HireFlow</h1>
+            <h1><a href="{{ url('/') }}" style="color: inherit; text-decoration: none;">HireFlow</a></h1>
 
             <div class="nav-right">
                 <a href="{{ route('login') }}">Sign In</a>
