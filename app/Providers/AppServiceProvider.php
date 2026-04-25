@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Enums\Permission;
+use App\Models\Application;
 use App\Models\Organization;
 use App\Models\User;
+use App\Observers\ApplicationObserver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OrganizationController;
@@ -26,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Register Application observer to auto-cancel interviews
+        Application::observe(ApplicationObserver::class);
+
         foreach (Permission::cases() as $permission) {
             $gateName = str_replace('_', '-', $permission->value);
 
