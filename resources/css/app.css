@@ -55,10 +55,10 @@
   --btn-slate-hover: #cbd5e1;
   --btn-slate-text: #334155;
 
-  --success-bg: #baf9d8;
+  --success-bg: #41fc9b;
   --success-bg-hover: #13592e;
-  --success-text: #ffffff;
-  --success-border: #a7f3d0;
+  --success-text: #2f3a4a;
+  --success-border: #44d290;
 
   --danger-bg: #dc2626;
   --danger-bg-hover: #b91c1c;
@@ -111,7 +111,7 @@
   --success-bg: #15803d;
   --success-bg-hover: #166534;
   --success-text: #ffffff;
-  --success-border: #0f3d1e;
+  --success-border: #165b2d;
 
   --danger-bg: #dc2626;
   --danger-bg-hover: #b91c1c;
