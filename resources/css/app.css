@@ -57,12 +57,12 @@
 
   --success-bg: #baf9d8;
   --success-bg-hover: #13592e;
-  --success-text: #065f46;
+  --success-text: #ffffff;
   --success-border: #a7f3d0;
 
-  --danger-bg: #ff9999;
-  --danger-bg-hover: #f48a8a;
-  --danger-text: #8b0a0a;
+  --danger-bg: #dc2626;
+  --danger-bg-hover: #b91c1c;
+  --danger-text: #ffffff;
   --danger-border: #fecaca;
 
   --scrollbar-track: #e5e7eb;
@@ -108,14 +108,14 @@
   --btn-slate-hover: #293341;
   --btn-slate-text: #e6e6e6;
 
-  --success-bg: #1a5c30;
+  --success-bg: #15803d;
   --success-bg-hover: #166534;
-  --success-text: #9dffb0;
+  --success-text: #ffffff;
   --success-border: #0f3d1e;
 
-  --danger-bg: #aa3333;
-  --danger-bg-hover: #882222;
-  --danger-text: #ffbcbc;
+  --danger-bg: #dc2626;
+  --danger-bg-hover: #b91c1c;
+  --danger-text: #ffffff;
   --danger-border: #5c1a1a;
 
   --scrollbar-track: #2f343a;
