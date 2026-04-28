@@ -65,7 +65,7 @@
                                 <strong class="fs-14 text-muted">{{ $other->name }}</strong>
                             </div>
 
-                            <div class="note-content fs-14">
+                            <div class="note-content fs-14 rich-text-content">
                                 @if(filled($other->pivot->notes))
                                     {!! clean($other->pivot->notes) !!}
                                 @else

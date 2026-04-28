@@ -15,7 +15,7 @@
                     <span class="status status-needs-review ml-10">{{ $application->jobPosition->title }}</span>
                 </div>
                 <div class="flex-gap-10 items-center">
-                    <a href="{{ route('applications.show', $application) }}" class="btn btn-sm">Review</a>
+                    <a href="{{ route('applications.show', $application) }}" class="btn btn-sm">View</a>
                     @can('delete', $application)
                         <form method="POST" action="{{ route('applications.destroy', $application) }}" class="d-inline m-0">
                             @csrf
